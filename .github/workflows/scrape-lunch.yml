@@ -2,8 +2,8 @@ name: 급식 자동 크롤링
 
 on:
   schedule:
-    # 매일 오전 7시(KST) = UTC 22:00(전날)
-    - cron: '0 22 * * *'
+    # 매일 정오 12:00(KST) = UTC 03:00
+    - cron: '0 3 * * *'
   # 수동 트리거도 가능
   workflow_dispatch:
 

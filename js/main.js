@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateClock();
     setInterval(updateClock, 1000);
 
+    // 채팅 내역 자정 초기화 (자동으로 Firebase DB까지 초기화됨)
+    cleanChatMessages();
+
     // Firebase에서 데이터 동기화 후 렌더
     startFirebaseSync(() => {
         render();

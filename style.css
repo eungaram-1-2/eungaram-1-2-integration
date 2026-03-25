@@ -118,10 +118,13 @@ button { font-family: inherit; }
 }
 
 .nav-menu.guest-mode {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    pointer-events: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    transform: none;
+    pointer-events: none;
 }
 
 .nav-logo {
@@ -172,9 +175,19 @@ button { font-family: inherit; }
     display: flex;
     list-style: none;
     gap: 2px;
-    flex: 1;
     justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: transparent;
+    z-index: 1003;
+    pointer-events: none;
 }
+
+.nav-menu li { pointer-events: auto; }
 
 .nav-menu a {
     padding: 7px 16px;
@@ -1928,18 +1941,21 @@ button { font-family: inherit; }
         position: fixed;
         top: 56px;
         left: 0; right: 0; bottom: 0;
+        height: auto;
         background: var(--bg-card);
         flex-direction: column;
+        align-items: stretch;
         padding: 16px;
         z-index: 1002;
         gap: 4px;
         overflow-y: auto;
         border-top: 1px solid var(--border);
+        pointer-events: auto;
     }
 
     .nav-menu.active { display: flex; }
 
-    .nav-menu li { width: 100%; }
+    .nav-menu li { width: 100%; pointer-events: auto; }
 
     .nav-menu a {
         display: block;
@@ -1957,6 +1973,7 @@ button { font-family: inherit; }
     .hamburger { display: flex; }
 
     .logo-subtitle { display: none; }
+    .logo-clock { display: none; }
     .logo-title { font-size: 0.95rem; }
     .logo-img { width: 32px; height: 32px; border-radius: 10px; }
 
@@ -2052,7 +2069,6 @@ button { font-family: inherit; }
 }
 
 @media (max-width: 360px) {
-    .logo-clock { display: none; }
     .nav-auth .btn { font-size: 0.78rem; padding: 5px 10px; }
 }
 

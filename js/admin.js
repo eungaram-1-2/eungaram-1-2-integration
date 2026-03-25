@@ -1,4 +1,82 @@
 // =============================================
+// 데이터 내보내기 / 불러오기
+// =============================================
+function exportData() {
+    const data = {
+        exported: new Date().toISOString(),
+        notices: DB.get('notices'),
+        board: DB.get('board'),
+        votes: DB.get('votes'),
+        ddays: DB.get('ddays'),
+        comments_notices: {},
+        comments_board: {}
+    };
+
+    // 모든 comments 데이터 포함
+    const allKeys = Object.keys(localStorage);
+    allKeys.forEach(key => {
+        if (key.startsWith('comments_notices_')) {
+            const postId = key.replace('comments_notices_', '');
+            data.comments_notices[postId] = DB.get(key);
+        } else if (key.startsWith('comments_board_')) {
+            const postId = key.replace('comments_board_', '');
+            data.comments_board[postId] = DB.get(key);
+        }
+    });
+
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `eungaram-backup-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('✅ 데이터 다운로드 완료!', 'success');
+}
+
+function importData() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            try {
+                const data = JSON.parse(evt.target.result);
+
+                if (data.notices) DB.set('notices', data.notices);
+                if (data.board) DB.set('board', data.board);
+                if (data.votes) DB.set('votes', data.votes);
+                if (data.ddays) DB.set('ddays', data.ddays);
+
+                if (data.comments_notices) {
+                    Object.entries(data.comments_notices).forEach(([postId, comments]) => {
+                        DB.set(`comments_notices_${postId}`, comments);
+                    });
+                }
+                if (data.comments_board) {
+                    Object.entries(data.comments_board).forEach(([postId, comments]) => {
+                        DB.set(`comments_board_${postId}`, comments);
+                    });
+                }
+
+                showToast(`✅ 데이터 불러오기 완료! (공지 ${data.notices?.length || 0}개)`, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } catch (err) {
+                showToast('❌ 파일 형식이 잘못되었습니다.', 'error');
+                console.error('Import error:', err);
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+// =============================================
 // 관리자 메뉴
 // =============================================
 let _adminUnlisten = null;
@@ -182,6 +260,8 @@ function renderAdmin() {
             <div class="adm-hero-actions">
                 <button class="btn btn-outline btn-sm" onclick="navigate('logs')">📋 활동 로그</button>
                 <button class="btn btn-outline btn-sm" onclick="navigate('boardlog')">📋 게시판 로그</button>
+                <button class="btn btn-outline btn-sm" onclick="exportData()">📥 데이터 다운로드</button>
+                <button class="btn btn-outline btn-sm" onclick="importData()">📤 데이터 업로드</button>
             </div>
         </div>
 

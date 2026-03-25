@@ -99,6 +99,7 @@ function renderPostDetail(type) {
                 </div>
                 <div class="post-detail-content">${escapeHtml(post.content)}</div>
                 ${attachHtml}
+                ${renderReactions(post, type, post.id)}
                 <div class="post-detail-actions">${actions}</div>
                 <div class="comments-section">
                     <h4>💬 댓글 ${comments.length}개</h4>

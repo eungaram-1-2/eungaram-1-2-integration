@@ -60,6 +60,7 @@ function renderDday() {
                     <div class="dday-info">
                         <h4>${escapeHtml(d.title)}</h4>
                         <span class="dday-date">${dateDisplay}</span>
+                        ${renderReactions(d, 'ddays', d.id)}
                     </div>
                 </div>
                 <div class="dday-right">

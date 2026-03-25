@@ -3656,3 +3656,53 @@ button { font-family: inherit; }
         max-width: 90%;
     }
 }
+
+/* ===================== 반응(Reactions) 스타일 ===================== */
+.reaction-bar {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.reaction-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border: 1.5px solid var(--border-light);
+    border-radius: 100px;
+    background: var(--bg-card);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.15s;
+    color: var(--text-muted);
+    font-family: inherit;
+}
+
+.reaction-btn:hover:not(:disabled) {
+    border-color: var(--rc);
+    background: color-mix(in srgb, var(--rc) 10%, transparent);
+    color: var(--rc);
+}
+
+.reaction-btn.active {
+    border-color: var(--rc);
+    background: color-mix(in srgb, var(--rc) 15%, transparent);
+    color: var(--rc);
+    font-weight: 700;
+}
+
+.reaction-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.reaction-emoji {
+    font-size: 0.95rem;
+}
+
+.reaction-count {
+    font-size: 0.78rem;
+    font-weight: 700;
+}

@@ -114,6 +114,7 @@ function renderVoteDetail() {
             ${attachHtml}
             <div style="margin-top:22px">${optionsHtml}</div>
             <div class="vote-total">${total}명 참여</div>
+            ${renderReactions(vote, 'votes', vote.id)}
             ${adminActions}
         </div>
     </div>`;

@@ -56,6 +56,7 @@ function _renderMessages(msgs) {
                 <span class="chat-msg-time">${formatDate(m.createdAt)}${editedBadge}${actionBtns ? ` ${actionBtns}` : ''}</span>
             </div>
             <div class="chat-msg-text">${escapeHtml(m.text)}</div>
+            ${renderReactions(m, 'chat', m.id)}
         </div>`;
     }).join('');
 }

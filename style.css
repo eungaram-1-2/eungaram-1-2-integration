@@ -2777,14 +2777,7 @@ button { font-family: inherit; }
 }
 
 .feature-mosaic .feature-card:first-child {
-    grid-column: span 2;
-}
-
-.feature-mosaic .feature-card:first-child .feature-card-inner {
-    flex-direction: row;
-    align-items: center;
-    gap: 24px;
-    text-align: left;
+    grid-column: span 1;
 }
 
 .feature-card-inner {
@@ -2911,7 +2904,7 @@ button { font-family: inherit; }
     }
 
     .feature-mosaic .feature-card:first-child {
-        grid-column: span 2;
+        grid-column: span 1;
     }
 
     .links-grid-v {

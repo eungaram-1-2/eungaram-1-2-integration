@@ -37,14 +37,23 @@ function _renderMessages(msgs) {
     return msgs.map(m => {
         const isOwn = user && user.id === m.authorId;
         const adminBadge = m.authorRole === 'admin' ? '<span class="user-badge badge-admin">관리자</span>' : '';
-        const deleteBtn = isAdmin()
-            ? `<button class="btn btn-ghost btn-sm" style="color:var(--danger);padding:2px 6px;font-size:0.7rem" onclick="deleteChatMessage('${m.id}')">삭제</button>`
-            : '';
+
+        let actionBtns = '';
+        if (isAdmin()) {
+            actionBtns = `<button class="btn btn-ghost btn-sm" style="color:var(--danger);padding:2px 6px;font-size:0.7rem" onclick="deleteChatMessage('${m.id}')">삭제</button>`;
+        } else if (isOwn) {
+            actionBtns = `
+                <button class="btn btn-ghost btn-sm" style="color:var(--primary);padding:2px 6px;font-size:0.7rem" onclick="editChatMessage('${m.id}')">수정</button>
+                <button class="btn btn-ghost btn-sm" style="color:var(--danger);padding:2px 6px;font-size:0.7rem" onclick="deleteChatMessage('${m.id}')">삭제</button>`;
+        }
+
+        const editedBadge = m.editedAt ? '<span style="font-size:0.65rem;color:var(--text-muted)"> (수정됨)</span>' : '';
+
         return `
         <div class="chat-msg ${isOwn ? 'chat-msg-mine' : 'chat-msg-other'}">
             <div class="chat-msg-header">
                 <span class="chat-msg-author">${escapeHtml(m.author)} ${adminBadge}</span>
-                <span class="chat-msg-time">${formatDate(m.createdAt)}${deleteBtn ? ` ${deleteBtn}` : ''}</span>
+                <span class="chat-msg-time">${formatDate(m.createdAt)}${editedBadge}${actionBtns ? ` ${actionBtns}` : ''}</span>
             </div>
             <div class="chat-msg-text">${escapeHtml(m.text)}</div>
         </div>`;
@@ -63,24 +72,40 @@ function _refreshChatMessages() {
 }
 
 function renderChat() {
+    // 비로그인 또는 밴/타임아웃은 채팅 접근 불가
+    if (!isLoggedIn()) {
+        return `
+        <div class="page">
+            <div class="empty-state">
+                <div class="empty-icon">🔒</div>
+                <p style="font-weight:700;font-size:1rem">로그인이 필요합니다.</p>
+                <p style="font-size:0.85rem;margin-top:8px;color:var(--text-muted)">채팅을 이용하려면 로그인하세요.</p>
+                <button class="btn btn-primary" style="margin-top:18px" onclick="navigate('login')">로그인하기</button>
+            </div>
+        </div>`;
+    }
+    if (isBanned() || isTimedOut()) {
+        return `
+        <div class="page">
+            <div class="empty-state">
+                <div class="empty-icon">🚫</div>
+                <p style="color:var(--danger);font-weight:700;font-size:1rem">접근할 수 없습니다.</p>
+                <p style="font-size:0.85rem;margin-top:8px;color:var(--text-muted)">정지되었거나 제한된 계정입니다.</p>
+            </div>
+        </div>`;
+    }
+
     cleanChatMessages();
     initChatListener();
     const user = currentUser();
     const msgs = DB.get('chat', []);
 
-    let chatForm = '';
-    if (!isLoggedIn()) {
-        chatForm = `<div style="padding:20px;text-align:center;color:var(--text-muted)">채팅을 하려면 로그인하세요.</div>`;
-    } else if (isBanned()) {
-        chatForm = `<div style="padding:20px;text-align:center;color:var(--danger);font-weight:600">⛔ 정지된 계정은 채팅할 수 없습니다.</div>`;
-    } else {
-        chatForm = `
-        <div class="chat-input-area">
-            <input type="text" id="chatInput" class="form-input" placeholder="메시지를 입력하세요..." maxlength="500"
-                onkeydown="if(event.key==='Enter')sendChatMessage()">
-            <button class="btn btn-primary btn-sm" onclick="sendChatMessage()" style="white-space:nowrap;margin-left:8px">전송</button>
-        </div>`;
-    }
+    const chatForm = `
+    <div class="chat-input-area">
+        <input type="text" id="chatInput" class="form-input" placeholder="메시지를 입력하세요..." maxlength="500"
+            onkeydown="if(event.key==='Enter')sendChatMessage()">
+        <button class="btn btn-primary btn-sm" onclick="sendChatMessage()" style="white-space:nowrap;margin-left:8px">전송</button>
+    </div>`;
 
     return `
     <div class="page">
@@ -130,11 +155,68 @@ function sendChatMessage() {
     input.focus();
 }
 
-function deleteChatMessage(id) {
-    if (!isAdmin()) { showToast('권한이 없습니다.', 'error'); return; }
-    if (!confirm('이 메시지를 삭제하시겠습니까?')) return;
+function editChatMessage(id) {
+    const user = currentUser();
+    if (!user) return;
+
     const msgs = DB.get('chat', []);
     const msg = msgs.find(m => m.id === id);
+    if (!msg) return;
+
+    if (!isAdmin() && msg.authorId !== user.id) {
+        showToast('자신의 메시지만 수정할 수 있습니다.', 'error');
+        return;
+    }
+
+    openModal('메시지 수정', `
+        <div class="form-group">
+            <label>메시지</label>
+            <textarea class="form-textarea" id="editChatText" maxlength="500" rows="4">${escapeHtml(msg.text)}</textarea>
+        </div>
+        <div style="display:flex;gap:10px">
+            <button class="btn btn-outline" style="flex:1" onclick="closeModal()">취소</button>
+            <button class="btn btn-primary" style="flex:2" onclick="submitEditChatMessage('${id}')">수정 완료</button>
+        </div>
+    `);
+}
+
+function submitEditChatMessage(id) {
+    const user = currentUser();
+    if (!user) return;
+
+    const titleV = Security.sanitize(document.getElementById('editChatText').value.trim().slice(0, 500));
+    if (!titleV) { showToast('메시지를 입력해주세요.', 'warning'); return; }
+
+    const msgs = DB.get('chat', []);
+    const idx = msgs.findIndex(m => m.id === id);
+    if (idx === -1) return;
+
+    if (!isAdmin() && msgs[idx].authorId !== user.id) {
+        showToast('자신의 메시지만 수정할 수 있습니다.', 'error');
+        return;
+    }
+
+    msgs[idx].text = titleV;
+    msgs[idx].editedAt = Date.now();
+    DB.set('chat', msgs);
+    closeModal();
+    showToast('메시지가 수정되었습니다.', 'success');
+}
+
+function deleteChatMessage(id) {
+    const user = currentUser();
+    if (!user) return;
+
+    const msgs = DB.get('chat', []);
+    const msg = msgs.find(m => m.id === id);
+    if (!msg) return;
+
+    if (!isAdmin() && msg.authorId !== user.id) {
+        showToast('자신의 메시지만 삭제할 수 있습니다.', 'error');
+        return;
+    }
+
+    if (!confirm('이 메시지를 삭제하시겠습니까?')) return;
     DB.set('chat', msgs.filter(m => m.id !== id));
     addLog('chat_delete', { messageId: id, text: msg?.text || '(내용 없음)' });
     showToast('메시지가 삭제되었습니다.', 'info');

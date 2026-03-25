@@ -4,9 +4,20 @@
 const DB = {
     get(key, def = []) {
         try { return JSON.parse(localStorage.getItem(key)) || def; }
-        catch { return def; }
+        catch (e) {
+            console.error(`[DB.get] 에러 (${key}):`, e);
+            return def;
+        }
     },
-    set(key, val) { localStorage.setItem(key, JSON.stringify(val)); },
+    set(key, val) {
+        try {
+            const json = JSON.stringify(val);
+            localStorage.setItem(key, json);
+            console.log(`[DB.set] ✓ "${key}" 저장됨 (${json.length} bytes)`);
+        } catch (e) {
+            console.error(`[DB.set] ✗ 저장 실패 (${key}):`, e.message);
+        }
+    },
     remove(key)   { localStorage.removeItem(key); }
 };
 

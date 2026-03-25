@@ -95,7 +95,7 @@ button { font-family: inherit; }
     border-bottom: 1px solid var(--glass-border);
     position: fixed;
     top: 0; left: 0; right: 0;
-    z-index: 1000;
+    z-index: 1001;
     height: 64px;
     transition: var(--transition);
 }
@@ -169,19 +169,12 @@ button { font-family: inherit; }
 }
 
 .nav-menu {
-    position: fixed;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    height: 64px;
     display: flex;
-    align-items: center;
     list-style: none;
     gap: 2px;
-    z-index: 1001;
-    pointer-events: none;
+    flex: 1;
+    justify-content: center;
 }
-.nav-menu > li { pointer-events: auto; }
 
 .nav-menu a {
     padding: 7px 16px;
@@ -1935,20 +1928,14 @@ button { font-family: inherit; }
         position: fixed;
         top: 56px;
         left: 0; right: 0; bottom: 0;
-        height: auto;
-        transform: none;
         background: var(--bg-card);
         flex-direction: column;
-        align-items: stretch;
-        justify-content: flex-start;
         padding: 16px;
-        z-index: 1001;
+        z-index: 1002;
         gap: 4px;
         overflow-y: auto;
         border-top: 1px solid var(--border);
-        pointer-events: auto;
     }
-    .nav-menu > li { pointer-events: auto; }
 
     .nav-menu.active { display: flex; }
 
@@ -2076,7 +2063,7 @@ button { font-family: inherit; }
     top: 56px; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.4);
     backdrop-filter: blur(4px);
-    z-index: 1000;
+    z-index: 999;
 }
 
 .menu-backdrop.active { display: block; }

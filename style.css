@@ -1928,7 +1928,7 @@ button { font-family: inherit; }
         background: var(--bg-card);
         flex-direction: column;
         padding: 16px;
-        z-index: 999;
+        z-index: 1001;
         gap: 4px;
         overflow-y: auto;
         border-top: 1px solid var(--border);
@@ -2058,7 +2058,7 @@ button { font-family: inherit; }
     top: 56px; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.4);
     backdrop-filter: blur(4px);
-    z-index: 998;
+    z-index: 1000;
 }
 
 .menu-backdrop.active { display: block; }

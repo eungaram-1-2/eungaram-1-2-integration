@@ -1,11 +1,7 @@
 // =============================================
-// 급식 메뉴 (CORS 프록시 경유 스크래핑)
+// 급식 메뉴 (GitHub Actions 크롤링)
 // =============================================
-const LUNCH_SCHOOL_URL = 'https://eungaram-m.goegh.kr/eungaram-m/ad/fm/foodmenu/selectFoodMenuView.do?mi=8056';
-const LUNCH_PROXIES    = [
-    'https://cors-anywhere.herokuapp.com/',
-    'https://api.allorigins.win/get?url='
-];
+const LUNCH_DATA_URL = 'data/lunch.json';
 
 function _lunchTodayStr() {
     const d = new Date();
@@ -13,103 +9,26 @@ function _lunchTodayStr() {
     return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
 }
 
-// td에서 메뉴 아이템 추출
-function _extractMenuFromTd(td) {
-    const clone = td.cloneNode(true);
-    clone.querySelectorAll('a').forEach(a => a.remove());
-    clone.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
-
-    return clone.textContent
-        .split('\n')
-        .map(line => {
-            line = line.trim();
-            if (line.includes('상세보기')) return null;
-            line = line.replace(/\([\d.]+\)/g, '');
-            line = line.replace(/\([가-힣]{1,3}\)/g, '');
-            line = line.replace(/[\d.]+\s*Kcal/gi, '');
-            line = line.replace(/\d{4}-\d{2}-\d{2}/g, '');
-            line = line.replace(/[월화수목금토일]\s*/g, '');
-            line = line.replace(/\[.*?\]/g, '');
-            line = line.trim();
-            return line.length > 0 ? line : null;
-        })
-        .filter(Boolean);
-}
-
-// 특정 날짜 문자열로 메뉴 td 찾기
-function _findMenuTdByDate(doc, dateStr) {
-    let dateTd = null;
-    for (const td of doc.querySelectorAll('td, th')) {
-        if (td.textContent.includes(dateStr)) {
-            dateTd = td;
-            break;
-        }
-    }
-    if (!dateTd) return null;
-
-    const tr     = dateTd.closest('tr');
-    const rowTds = tr ? Array.from(tr.querySelectorAll('td, th')) : [];
-
-    // 같은 행에서 br이 많은 td
-    let menuTd = null;
-    let maxBr  = 0;
-    for (const td of rowTds) {
-        const brs = td.querySelectorAll('br').length;
-        if (brs > maxBr) { maxBr = brs; menuTd = td; }
-    }
-
-    // br 없으면 다음 행에서 같은 열
-    if (!menuTd || maxBr < 2) {
-        const table  = dateTd.closest('table');
-        const rows   = table ? Array.from(table.querySelectorAll('tr')) : [];
-        const colIdx = rowTds.indexOf(dateTd);
-        for (let i = rows.indexOf(tr) + 1; i < rows.length; i++) {
-            const tds = rows[i].querySelectorAll('td, th');
-            if (colIdx < tds.length && tds[colIdx].querySelectorAll('br').length >= 2) {
-                menuTd = tds[colIdx];
-                break;
-            }
-        }
-    }
-
-    return menuTd || null;
-}
-
 // =============================================
-// HTML 한 번만 가져오기 (공유 캐시)
+// 급식 데이터 JSON 로드
 // =============================================
-let _rawHtmlPromise = null;
+let _lunchDataPromise = null;
 
-function _fetchRawHtml() {
-    if (_rawHtmlPromise) return _rawHtmlPromise;
+async function _fetchLunchData() {
+    if (_lunchDataPromise) return _lunchDataPromise;
 
-    _rawHtmlPromise = (async () => {
-        for (let i = 0; i < LUNCH_PROXIES.length; i++) {
-            try {
-                const proxy = LUNCH_PROXIES[i];
-                let fetchUrl, parseResponse;
-
-                if (proxy.includes('allorigins')) {
-                    fetchUrl = proxy + encodeURIComponent(LUNCH_SCHOOL_URL);
-                    parseResponse = (res) => res.json().then(json => json.contents || '');
-                } else {
-                    fetchUrl = proxy + LUNCH_SCHOOL_URL;
-                    parseResponse = (res) => res.text();
-                }
-
-                const res = await fetch(fetchUrl);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const html = await parseResponse(res);
-                if (html && html.length > 100) return html;
-            } catch (e) {
-                console.warn(`프록시 ${i+1}/${LUNCH_PROXIES.length} 실패:`, e.message);
-            }
+    _lunchDataPromise = (async () => {
+        try {
+            const res = await fetch(LUNCH_DATA_URL);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return await res.json();
+        } catch (e) {
+            console.warn('급식 데이터 로드 실패:', e.message);
+            return { updated: '', menus: {} };
         }
-        console.warn('모든 프록시 실패, 오프라인 모드');
-        return '';
     })();
 
-    return _rawHtmlPromise;
+    return _lunchDataPromise;
 }
 
 // =============================================
@@ -128,33 +47,26 @@ async function fetchLunchMenu() {
         return _todayMenuPromise;
     }
 
-    _todayMenuPromise = _fetchRawHtml().then(html => {
-        if (!html) return null;
-        const doc    = new DOMParser().parseFromString(html, 'text/html');
-        const menuTd = _findMenuTdByDate(doc, todayStr);
-        if (!menuTd) return null;
+    _todayMenuPromise = _fetchLunchData().then(data => {
+        const menu = data.menus[todayStr];
+        if (!menu || !menu.items.length) return null;
 
-        const items  = _extractMenuFromTd(menuTd);
-        const kcalM  = menuTd.textContent.match(/([\d.]+)\s*Kcal/i);
-        const kcal   = kcalM ? kcalM[1] : null;
-        if (!items.length) return null;
-
-        const menu = { items, kcal, date: todayStr };
-        localStorage.setItem(cacheKey, JSON.stringify(menu));
+        const result = { items: menu.items, kcal: menu.kcal, date: todayStr };
+        localStorage.setItem(cacheKey, JSON.stringify(result));
 
         // 어제 캐시 정리
         const yesterday = new Date(Date.now() - 86400000);
         const yp = n => String(n).padStart(2, '0');
         localStorage.removeItem(`lunch_${yesterday.getFullYear()}-${yp(yesterday.getMonth()+1)}-${yp(yesterday.getDate())}`);
 
-        return menu;
+        return result;
     });
 
     return _todayMenuPromise;
 }
 
 // =============================================
-// 주간 급식 (전체보기용) — HTML 1번만 요청
+// 주간 급식 (전체보기용)
 // =============================================
 async function fetchWeeklyLunch() {
     const dayNames  = ['일','월','화','수','목','금','토'];
@@ -179,27 +91,23 @@ async function fetchWeeklyLunch() {
         };
     });
 
-    // HTML 한 번만 가져오기
-    const html = await _fetchRawHtml();
-    if (!html) return weekDays;
-
-    const doc = new DOMParser().parseFromString(html, 'text/html');
+    // JSON 데이터 로드
+    const data = await _fetchLunchData();
 
     // 각 날짜별로 메뉴 추출
     for (const dayData of weekDays) {
-        const menuTd = _findMenuTdByDate(doc, dayData.date);
-        if (!menuTd) continue;
-
-        dayData.items = _extractMenuFromTd(menuTd);
-        const kcalM   = menuTd.textContent.match(/([\d.]+)\s*Kcal/i);
-        dayData.kcal  = kcalM ? kcalM[1] : null;
+        const menu = data.menus[dayData.date];
+        if (menu) {
+            dayData.items = menu.items;
+            dayData.kcal  = menu.kcal || null;
+        }
     }
 
     return weekDays;
 }
 
-// 스크립트 로드 시 즉시 프리패치
-_fetchRawHtml();
+// 스크립트 로드 시 프리페치
+_fetchLunchData();
 fetchLunchMenu();
 
 // =============================================
@@ -272,7 +180,7 @@ function renderLunch() {
                 </div>
             </div>
             <p style="text-align:center;font-size:0.8rem;color:var(--text-muted);margin-top:20px">
-                출처: <a href="${LUNCH_SCHOOL_URL}" target="_blank" rel="noopener noreferrer" style="color:var(--primary)">은가람 중학교 공식 홈페이지</a>
+                출처: <a href="https://eungaram-m.goegh.kr/eungaram-m/ad/fm/foodmenu/selectFoodMenuView.do?mi=8056" target="_blank" rel="noopener noreferrer" style="color:var(--primary)">은가람 중학교 공식 홈페이지</a>
             </p>
         </div>
     </div>`;
@@ -290,7 +198,7 @@ async function loadLunchPage() {
             <div class="lunch-empty" style="padding:48px 24px;text-align:center">
                 <div style="font-size:3rem;margin-bottom:16px">🚫</div>
                 <p style="font-weight:600;font-size:1rem">급식 정보를 불러올 수 없습니다.</p>
-                <p style="font-size:0.85rem;color:var(--text-muted);margin-top:8px">방학, 공휴일, 또는 네트워크 오류일 수 있습니다.</p>
+                <p style="font-size:0.85rem;color:var(--text-muted);margin-top:8px">방학, 공휴일, 또는 데이터 준비 중일 수 있습니다.</p>
             </div>`;
         return;
     }

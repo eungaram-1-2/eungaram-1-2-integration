@@ -184,19 +184,6 @@ function _lsSessionWrite(userId, patch) {
 
 /* ── 공개 API ── */
 
-// 로그인 시 IP 조회 후 저장
-async function sessionFetchIP(userId) {
-    try {
-        const res  = await fetch('https://api.ipify.org?format=json');
-        const data = await res.json();
-        const ip   = data.ip;
-        if (fbReady()) {
-            _fbDB.ref(`sessions/${userId}`).update({ ip });
-        } else {
-            _lsSessionWrite(userId, { ip });
-        }
-    } catch { /* 무시 */ }
-}
 
 // Firebase presence 연결 (로그인 시 1회 호출)
 function sessionConnect(userId) {

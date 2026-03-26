@@ -28,7 +28,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (isLoggedIn()) {
         const u = currentUser();
         sessionConnect(u.id);
-        setTimeout(() => sessionFetchIP(u.id), 2000); // 2초 후로 지연
     }
     // localStorage fallback heartbeat
     setInterval(() => { if (isLoggedIn()) sessionWriteHeartbeat(); }, 30000);

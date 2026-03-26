@@ -31,7 +31,6 @@ function login() {
         role: account.role
     });
     sessionConnect(account.id);
-    sessionFetchIP(account.id);
     showToast(`${account.nickname}님, 환영합니다!`, 'success');
     navigate('home');
 }

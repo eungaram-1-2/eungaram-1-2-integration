@@ -121,14 +121,11 @@ function _formatDuration(ms) {
 function _buildAdminRows() {
     const bans  = DB.get('bans');
     const users = ACCOUNTS.filter(a => a.role !== 'admin');
-    const _canSeeIP = currentUser()?.username === 'testdev';
-
     return users.map(u => {
         const banned  = bans.includes(u.id);
         const timeout = getTimeoutInfo(u.id);
         const online  = sessionIsOnline(u.id);
         const sess    = sessionGet(u.id);
-        const ip      = _canSeeIP ? (sess?.ip || '—') : null;
         const lastSeen = sess?.lastSeen || 0;
         const connectedAt = sess?.connectedAt || 0;
         const duration = online && connectedAt ? _formatDuration(Date.now() - connectedAt) : '—';
@@ -162,7 +159,6 @@ function _buildAdminRows() {
             <td>${accountBadge}</td>
             <td>${onlineBadge}</td>
             <td class="duration-cell adm-duration" data-ts="${connectedAt}">${duration}</td>
-            ${ip !== null ? `<td class="ip-cell adm-ip">${escapeHtml(ip)}</td>` : ''}
             <td><div class="adm-actions">${banBtn}${toBtn}</div></td>
         </tr>`;
     }).join('');
@@ -343,7 +339,6 @@ function renderAdmin() {
                             <th>계정 상태</th>
                             <th>접속 상태</th>
                             <th>체류 시간</th>
-                            ${currentUser()?.username === 'testdev' ? '<th>IP</th>' : ''}
                             <th>관리</th>
                         </tr>
                     </thead>

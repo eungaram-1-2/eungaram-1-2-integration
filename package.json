@@ -4,6 +4,7 @@
   "description": "은가람 중학교 1-2반 웹사이트",
   "main": "index.html",
   "scripts": {
+    "build": "node build.js",
     "scrape:lunch": "node scripts/scrape-lunch.js"
   },
   "keywords": [],

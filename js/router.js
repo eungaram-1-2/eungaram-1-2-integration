@@ -110,6 +110,7 @@ function render() {
     const app = document.getElementById('app');
     updateNav();
     applyTheme(getTheme());
+    updateEmergencyBanner();
 
     if (!isLoggedIn() && !GUEST_ALLOWED.includes(currentPage)) {
         app.innerHTML = renderLoginRequiredPage();

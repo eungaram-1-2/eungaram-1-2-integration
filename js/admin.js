@@ -300,6 +300,14 @@ function renderAdmin() {
             </div>
         </div>
 
+        <!-- 긴급 공지 -->
+        <div class="adm-panel">
+            <div class="adm-panel-header">
+                <span class="adm-panel-title">🚨 긴급 공지</span>
+            </div>
+            ${_renderEmergencyNoticeAdmin()}
+        </div>
+
         <!-- 관리자 현황 -->
         <div class="adm-panel">
             <div class="adm-panel-header">
@@ -572,4 +580,116 @@ function resetPwOverride(userId) {
     showToast(`${name}의 비밀번호가 초기화되었습니다.`, 'success');
     // 테이블만 다시 그리기
     unlockPwView();
+}
+
+// =============================================
+// 긴급 공지
+// =============================================
+function _renderEmergencyNoticeAdmin() {
+    const notice = DB.get('emergency_notice', null);
+    if (!notice || !notice.text) {
+        return `
+        <div style="padding:20px">
+            <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:14px">현재 등록된 긴급 공지가 없습니다.</p>
+            <button class="btn btn-primary btn-sm" onclick="showEmergencyNoticeModal(false)">🚨 긴급 공지 만들기</button>
+        </div>`;
+    }
+    const created = new Date(notice.createdAt).toLocaleString('ko-KR');
+    const updated = notice.updatedAt !== notice.createdAt
+        ? ` &nbsp;·&nbsp; 수정: ${new Date(notice.updatedAt).toLocaleString('ko-KR')}` : '';
+    return `
+    <div style="padding:20px">
+        <div class="emergency-admin-preview">
+            <span style="font-size:1.1rem;flex-shrink:0">🚨</span>
+            <span>${escapeHtml(notice.text)}</span>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="adm-btn adm-btn-warn" onclick="showEmergencyNoticeModal(true)">✏️ 수정</button>
+            <button class="adm-btn adm-btn-danger" onclick="deleteEmergencyNotice()">🗑️ 삭제</button>
+        </div>
+        <p style="font-size:0.73rem;color:var(--text-muted);margin-top:8px">작성: ${created}${updated}</p>
+    </div>`;
+}
+
+function showEmergencyNoticeModal(isEdit) {
+    if (!isAdmin()) { showToast('권한이 없습니다.', 'error'); return; }
+    const notice = DB.get('emergency_notice', null);
+    const currentText = isEdit && notice ? notice.text : '';
+    openModal(`🚨 긴급 공지 ${isEdit ? '수정' : '만들기'}`, `
+        <div style="margin-bottom:14px">
+            <label style="font-size:0.84rem;color:var(--text-muted);display:block;margin-bottom:6px">공지 내용 <span style="color:#dc2626">*</span></label>
+            <textarea id="emergencyNoticeText" class="form-input" rows="3" maxlength="200"
+                placeholder="긴급 공지 내용을 입력하세요..."
+                style="resize:vertical;width:100%">${escapeHtml(currentText)}</textarea>
+            <div style="font-size:0.73rem;color:var(--text-muted);text-align:right;margin-top:4px">
+                <span id="emergencyCharCount">${currentText.length}</span>/200
+            </div>
+        </div>
+        <div style="display:flex;gap:10px">
+            <button class="btn btn-outline" style="flex:1" onclick="closeModal()">취소</button>
+            <button class="btn btn-primary" style="flex:2" onclick="saveEmergencyNotice(${!!isEdit})">
+                💾 ${isEdit ? '수정 완료' : '긴급 공지 등록'}
+            </button>
+        </div>
+        <script>
+            (function() {
+                const ta = document.getElementById('emergencyNoticeText');
+                const cnt = document.getElementById('emergencyCharCount');
+                if (ta && cnt) ta.addEventListener('input', () => { cnt.textContent = ta.value.length; });
+                if (ta) ta.focus();
+            })();
+        <\/script>
+    `);
+}
+
+function saveEmergencyNotice(isEdit) {
+    if (!isAdmin()) { showToast('권한이 없습니다.', 'error'); return; }
+    const ta = document.getElementById('emergencyNoticeText');
+    if (!ta) return;
+    const text = ta.value.trim();
+    if (!text) { showToast('공지 내용을 입력해주세요.', 'warning'); ta.focus(); return; }
+
+    const existing = DB.get('emergency_notice', null);
+    const now = Date.now();
+    DB.set('emergency_notice', {
+        text,
+        createdAt: isEdit && existing ? existing.createdAt : now,
+        updatedAt: now
+    });
+    closeModal();
+    updateEmergencyBanner();
+    showToast(isEdit ? '✅ 긴급 공지가 수정되었습니다.' : '✅ 긴급 공지가 등록되었습니다.', 'success');
+    navigate('admin');
+}
+
+function deleteEmergencyNotice() {
+    if (!isAdmin()) { showToast('권한이 없습니다.', 'error'); return; }
+    if (!confirm('긴급 공지를 삭제하시겠습니까?')) return;
+    DB.set('emergency_notice', null);
+    updateEmergencyBanner();
+    showToast('✅ 긴급 공지가 삭제되었습니다.', 'success');
+    navigate('admin');
+}
+
+// =============================================
+// 긴급 공지 배너 렌더
+// =============================================
+function updateEmergencyBanner() {
+    const banner = document.getElementById('emergencyBanner');
+    const textEl = document.getElementById('emergencyBannerText');
+    if (!banner || !textEl) return;
+
+    const notice = DB.get('emergency_notice', null);
+    if (notice && notice.text) {
+        textEl.textContent = notice.text;
+        banner.style.display = '';
+        // 배너 높이만큼 콘텐츠 밀어내기
+        requestAnimationFrame(() => {
+            const h = banner.offsetHeight;
+            document.documentElement.style.setProperty('--emergency-h', h + 'px');
+        });
+    } else {
+        banner.style.display = 'none';
+        document.documentElement.style.setProperty('--emergency-h', '0px');
+    }
 }

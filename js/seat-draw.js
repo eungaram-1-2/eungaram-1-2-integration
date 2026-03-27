@@ -4,6 +4,10 @@
 
 const SEAT_COLS_DEFAULT = 6;
 
+// 드래그 상태
+let _seatDragFrom = null;
+let _seatDragged  = false;
+
 // 줄별 배경 색상 (파스텔)
 const SEAT_ROW_COLORS = [
     { bg: 'rgba(99,102,241,0.10)',  border: 'rgba(99,102,241,0.30)',  num: '#6366f1' },
@@ -65,7 +69,7 @@ function renderSeatDraw() {
                 📸 이미지 저장
             </button>
             <span style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap">
-                셀 클릭 시 직접 편집
+                클릭: 이름 편집 &nbsp;|&nbsp; 드래그: 자리 이동
             </span>
         </div>
     ` : `
@@ -172,20 +176,27 @@ function _buildSeatGrid(seats, cols, rows, n) {
             const idx = r * cols + c;
             if (idx < n) {
                 const name = seats[idx] || '?';
-                const clickAttr = admin
-                    ? `onclick="editSeat(${idx})" title="클릭하여 편집"`
+                const adminAttrs = admin
+                    ? `draggable="true"
+                       onclick="seatCellClick(event,${idx})"
+                       ondragstart="seatDragStart(event,${idx})"
+                       ondragover="seatDragOver(event,${idx})"
+                       ondrop="seatDrop(event,${idx})"
+                       ondragleave="seatDragLeave(event)"
+                       ondragend="seatDragEnd(event)"
+                       title="클릭: 이름 편집 | 드래그: 자리 이동"`
                     : '';
                 html += `
-                <div class="seat-cell" id="seat-${idx}" ${clickAttr} style="
+                <div class="seat-cell" id="seat-${idx}" ${adminAttrs} style="
                     background:${color.bg};
                     border:1.5px solid ${color.border};
                     border-radius:12px;
                     padding:12px 6px 10px;
                     text-align:center;
-                    transition:all 0.18s;
+                    transition:opacity 0.18s, outline 0.12s, transform 0.18s, box-shadow 0.18s;
                     position:relative;
                     box-shadow:0 2px 8px rgba(0,0,0,0.05);
-                    ${admin ? 'cursor:pointer' : ''}">
+                    ${admin ? 'cursor:grab' : ''}">
                     <div style="
                         position:absolute;top:6px;left:7px;
                         font-size:0.6rem;font-weight:800;
@@ -216,6 +227,82 @@ function _buildSeatGrid(seats, cols, rows, n) {
     }
     html += '</div>';
     return html;
+}
+
+function seatCellClick(e, idx) {
+    // 드래그 후 발생하는 클릭은 무시
+    if (_seatDragged) { _seatDragged = false; return; }
+    editSeat(idx);
+}
+
+function seatDragStart(e, idx) {
+    _seatDragFrom = idx;
+    _seatDragged  = false;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(idx));
+    setTimeout(() => {
+        const el = document.getElementById(`seat-${idx}`);
+        if (el) { el.style.opacity = '0.35'; el.style.cursor = 'grabbing'; }
+    }, 0);
+}
+
+function seatDragOver(e, idx) {
+    e.preventDefault();
+    if (_seatDragFrom === null || idx === _seatDragFrom) return;
+    e.dataTransfer.dropEffect = 'move';
+    document.querySelectorAll('.seat-cell').forEach(el => {
+        el.style.outline = '';
+        el.style.outlineOffset = '';
+    });
+    const el = document.getElementById(`seat-${idx}`);
+    if (el) {
+        el.style.outline = '2.5px dashed var(--primary, #6366f1)';
+        el.style.outlineOffset = '2px';
+    }
+}
+
+function seatDragLeave(e) {
+    // 자식 요소로 이동 시 flicker 방지
+    if (e.currentTarget.contains(e.relatedTarget)) return;
+    e.currentTarget.style.outline = '';
+    e.currentTarget.style.outlineOffset = '';
+}
+
+function seatDragEnd(e) {
+    const el = document.getElementById(`seat-${_seatDragFrom}`);
+    if (el) { el.style.opacity = ''; el.style.cursor = ''; }
+    document.querySelectorAll('.seat-cell').forEach(el => {
+        el.style.outline = '';
+        el.style.outlineOffset = '';
+    });
+    _seatDragFrom = null;
+}
+
+function seatDrop(e, toIdx) {
+    e.preventDefault();
+    const fromIdx = _seatDragFrom;
+    if (fromIdx === null || fromIdx === toIdx) return;
+
+    _seatDragged = true;
+
+    const students = _getSeatStudents();
+    const seats    = DB.get('seat_layout', null) || students.map(s => s.nickname);
+
+    // fromIdx 위치에서 꺼낸 뒤 toIdx 위치 다음에 삽입
+    const item = seats.splice(fromIdx, 1)[0];
+    const adjustedTo = fromIdx < toIdx ? toIdx - 1 : toIdx;
+    seats.splice(adjustedTo + 1, 0, item);
+
+    DB.set('seat_layout', seats);
+
+    // 그리드만 다시 렌더 (전체 페이지 리로드 없이)
+    const cols = DB.get('seat_cols', SEAT_COLS_DEFAULT);
+    const n    = seats.length;
+    const rows = Math.ceil(n / cols);
+    const grid = document.getElementById('seatGrid');
+    if (grid) grid.innerHTML = _buildSeatGrid(seats, cols, rows, n);
+
+    showToast(`${fromIdx + 1}번 → ${adjustedTo + 1}번 뒤로 이동했습니다.`, 'success');
 }
 
 function editSeat(idx) {

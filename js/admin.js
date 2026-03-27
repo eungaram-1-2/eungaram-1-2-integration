@@ -346,6 +346,21 @@ function renderAdmin() {
                 </table>
             </div>
         </div>
+
+        <!-- 비밀번호 조회 -->
+        <div class="adm-panel" id="pwViewPanel">
+            <div class="adm-panel-header">
+                <span class="adm-panel-title">🔑 비밀번호 조회</span>
+            </div>
+            <div id="pwViewContent">
+                <div style="padding:20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                    <input type="password" id="pwViewMaster" class="form-input" placeholder="마스터 비밀번호 입력" maxlength="50"
+                        style="max-width:260px" onkeydown="if(event.key==='Enter')unlockPwView()">
+                    <button class="btn btn-primary" onclick="unlockPwView()">🔓 확인</button>
+                    <span style="font-size:0.8rem;color:var(--text-muted)">모든 계정의 비밀번호를 조회합니다</span>
+                </div>
+            </div>
+        </div>
     </div>`;
 }
 
@@ -465,4 +480,96 @@ function clearTimeoutUser(userId) {
     addLog('clear_timeout', { targetId: userId, targetName: account?.username || userId, targetNick: name });
     showToast(`${name}의 타임아웃이 해제되었습니다.`, 'success');
     navigate('admin');
+}
+
+// ── 비밀번호 조회 ──────────────────────────────
+const PW_VIEW_MASTER = '1234';
+
+function unlockPwView() {
+    if (!isAdmin()) return;
+    const input = document.getElementById('pwViewMaster');
+    if (!input) return;
+    if (input.value !== PW_VIEW_MASTER) {
+        showToast('마스터 비밀번호가 틀렸습니다.', 'error');
+        input.value = '';
+        input.focus();
+        return;
+    }
+
+    const pwOverrides = DB.get('pw_overrides', {});
+    const allAccounts = [...ACCOUNTS].sort((a, b) => {
+        if (a.role === 'admin' && b.role !== 'admin') return 1;
+        if (a.role !== 'admin' && b.role === 'admin') return -1;
+        return String(a.id).localeCompare(String(b.id), undefined, { numeric: true });
+    });
+
+    const rows = allAccounts.map(a => {
+        const basePw    = String(a.password);
+        const overridePw = pwOverrides[a.id];
+        const isChanged  = overridePw !== undefined;
+        const displayPw  = isChanged ? overridePw : basePw;
+        const roleBadge  = a.role === 'admin'
+            ? `<span class="adm-badge adm-badge-active" style="background:rgba(139,92,246,0.12);color:#7c3aed">관리자</span>`
+            : `<span class="adm-badge" style="background:var(--primary-bg);color:var(--primary)">학생</span>`;
+        const changedBadge = isChanged
+            ? `<span style="font-size:0.68rem;color:#f59e0b;margin-left:6px">변경됨</span>` : '';
+        return `
+        <tr>
+            <td><span class="adm-username">${escapeHtml(a.username)}</span></td>
+            <td>${escapeHtml(a.nickname)}</td>
+            <td>${roleBadge}</td>
+            <td>
+                <span style="font-family:monospace;font-size:0.88rem;background:var(--primary-bg);padding:2px 8px;border-radius:4px">${escapeHtml(displayPw)}</span>
+                ${changedBadge}
+            </td>
+            <td>
+                ${isChanged
+                    ? `<button class="adm-btn adm-btn-danger" onclick="resetPwOverride('${escapeHtml(a.id)}')">초기화</button>`
+                    : '<span style="font-size:0.75rem;color:var(--text-muted)">기본값</span>'}
+            </td>
+        </tr>`;
+    }).join('');
+
+    const content = document.getElementById('pwViewContent');
+    if (!content) return;
+    content.innerHTML = `
+        <div style="padding:0 0 12px">
+            <div style="padding:8px 20px 4px;font-size:0.8rem;color:var(--text-muted)">
+                변경된 비밀번호는 <strong style="color:#f59e0b">변경됨</strong> 표시. 초기화 버튼으로 기본값으로 되돌릴 수 있습니다.
+            </div>
+            <div class="adm-table-wrap">
+                <table class="adm-table" id="pwViewTable">
+                    <thead><tr><th>아이디</th><th>닉네임</th><th>권한</th><th>비밀번호</th><th>관리</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
+            <div style="padding:12px 20px">
+                <button class="btn btn-ghost btn-sm" onclick="lockPwView()">🔒 잠금</button>
+            </div>
+        </div>`;
+}
+
+function lockPwView() {
+    const content = document.getElementById('pwViewContent');
+    if (!content) return;
+    content.innerHTML = `
+        <div style="padding:20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <input type="password" id="pwViewMaster" class="form-input" placeholder="마스터 비밀번호 입력" maxlength="50"
+                style="max-width:260px" onkeydown="if(event.key==='Enter')unlockPwView()">
+            <button class="btn btn-primary" onclick="unlockPwView()">🔓 확인</button>
+            <span style="font-size:0.8rem;color:var(--text-muted)">모든 계정의 비밀번호를 조회합니다</span>
+        </div>`;
+}
+
+function resetPwOverride(userId) {
+    if (!isAdmin()) return;
+    const account = ACCOUNTS.find(a => a.id === userId);
+    const name = account ? account.nickname : userId;
+    if (!confirm(`${name}의 비밀번호를 기본값으로 초기화할까요?`)) return;
+    const pwOverrides = DB.get('pw_overrides', {});
+    delete pwOverrides[userId];
+    DB.set('pw_overrides', pwOverrides);
+    showToast(`${name}의 비밀번호가 초기화되었습니다.`, 'success');
+    // 테이블만 다시 그리기
+    unlockPwView();
 }

@@ -64,18 +64,22 @@ function renderSeatDraw() {
 }
 
 function _buildSeatGrid(seats, cols, rows, n) {
+    const admin = isAdmin();
+    const editTip = admin ? 'title="클릭하여 직접 편집" style="cursor:pointer"' : '';
+    const editClick = admin ? `onclick="editSeat(${0})"` : '';
     let html = `<div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:8px;max-width:700px;margin:0 auto">`;
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
             const idx = r * cols + c;
             if (idx < n) {
                 const name = seats[idx] || '?';
+                const clickAttr = admin ? `onclick="editSeat(${idx})" title="클릭하여 편집" style="cursor:pointer"` : '';
                 html += `
-                <div class="seat-cell" id="seat-${idx}" style="
+                <div class="seat-cell" id="seat-${idx}" ${clickAttr} style="
                     background:var(--bg-card);border:2px solid var(--border);border-radius:10px;
                     padding:10px 4px;text-align:center;font-size:0.82rem;font-weight:700;
                     color:var(--text-primary);transition:all 0.2s;
-                    box-shadow:0 2px 6px rgba(0,0,0,0.06)">
+                    box-shadow:0 2px 6px rgba(0,0,0,0.06)${admin ? ';cursor:pointer' : ''}">
                     <div style="font-size:0.68rem;color:var(--text-muted);margin-bottom:2px">${idx + 1}번</div>
                     <div class="seat-name">${escapeHtml(name)}</div>
                 </div>`;
@@ -86,6 +90,47 @@ function _buildSeatGrid(seats, cols, rows, n) {
     }
     html += '</div>';
     return html;
+}
+
+function editSeat(idx) {
+    if (!isAdmin()) return;
+    const cell = document.getElementById(`seat-${idx}`);
+    if (!cell) return;
+    const nameEl = cell.querySelector('.seat-name');
+    if (!nameEl) return;
+    const current = nameEl.textContent.trim();
+
+    // 이미 편집 중이면 무시
+    if (cell.querySelector('input')) return;
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = current;
+    input.maxLength = 20;
+    input.style.cssText = 'width:100%;border:none;outline:none;background:transparent;text-align:center;font-size:0.82rem;font-weight:700;color:var(--text-primary);padding:0';
+
+    nameEl.replaceWith(input);
+    input.focus();
+    input.select();
+
+    function save() {
+        const val = input.value.trim() || current;
+        const seats = DB.get('seat_layout', null) || _getSeatStudents().map(s => s.nickname);
+        seats[idx] = val;
+        DB.set('seat_layout', seats);
+        const newNameEl = document.createElement('div');
+        newNameEl.className = 'seat-name';
+        newNameEl.textContent = val;
+        input.replaceWith(newNameEl);
+        cell.style.border = '2px solid var(--primary)';
+        setTimeout(() => { if (cell) cell.style.border = ''; }, 800);
+    }
+
+    input.addEventListener('blur', save);
+    input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+        if (e.key === 'Escape') { input.value = current; input.blur(); }
+    });
 }
 
 function changeSeatCols(val) {

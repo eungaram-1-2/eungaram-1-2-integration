@@ -90,27 +90,25 @@ function _renderVisitorStats(c) {
     const fmt = n => n.toLocaleString('ko-KR');
     el.innerHTML = `
         <div class="visitor-wrap">
-            <span class="visitor-label-head">👁 방문자</span>
-            <div class="visitor-items">
-                <div class="visitor-item">
-                    <span class="visitor-period">오늘</span>
-                    <span class="visitor-num">${fmt(c.today)}</span>
-                </div>
-                <div class="visitor-sep"></div>
-                <div class="visitor-item">
-                    <span class="visitor-period">이번 주</span>
-                    <span class="visitor-num">${fmt(c.week)}</span>
-                </div>
-                <div class="visitor-sep"></div>
-                <div class="visitor-item">
-                    <span class="visitor-period">이번 달</span>
-                    <span class="visitor-num">${fmt(c.month)}</span>
-                </div>
-                <div class="visitor-sep"></div>
-                <div class="visitor-item">
-                    <span class="visitor-period">올해</span>
-                    <span class="visitor-num">${fmt(c.year)}</span>
-                </div>
+            <div class="visitor-card">
+                <div class="visitor-card-icon">📅</div>
+                <div class="visitor-card-num">${fmt(c.today)}</div>
+                <div class="visitor-card-label">오늘</div>
+            </div>
+            <div class="visitor-card">
+                <div class="visitor-card-icon">📆</div>
+                <div class="visitor-card-num">${fmt(c.week)}</div>
+                <div class="visitor-card-label">이번 주</div>
+            </div>
+            <div class="visitor-card">
+                <div class="visitor-card-icon">🗓️</div>
+                <div class="visitor-card-num">${fmt(c.month)}</div>
+                <div class="visitor-card-label">이번 달</div>
+            </div>
+            <div class="visitor-card visitor-card-year">
+                <div class="visitor-card-icon">✨</div>
+                <div class="visitor-card-num">${fmt(c.year)}</div>
+                <div class="visitor-card-label">올해</div>
             </div>
         </div>`;
 }

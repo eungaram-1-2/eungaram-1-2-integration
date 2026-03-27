@@ -22,6 +22,18 @@ function _getSeatStudents() {
     return ACCOUNTS.filter(a => /^\d{5}$/.test(String(a.id))).sort((a, b) => Number(a.id) - Number(b.id));
 }
 
+// 기본 자리 순서: 31번, 32번을 25번, 26번 바로 뒤에 배치 (6열 기준 5행 3, 4번째 자리)
+function _defaultSeatOrder(names) {
+    const n = names.length;
+    if (n < 32) return [...names];
+    return [
+        ...names.slice(0, 26),   // 1~26번
+        names[30], names[31],    // 31번, 32번
+        ...names.slice(26, 30),  // 27~30번
+        ...names.slice(32),      // 33번 이상(있을 경우)
+    ];
+}
+
 function renderSeatDraw() {
     const saved    = DB.get('seat_layout', null);
     const cols     = DB.get('seat_cols', SEAT_COLS_DEFAULT);
@@ -29,7 +41,7 @@ function renderSeatDraw() {
     const n        = students.length;
     const rows     = Math.ceil(n / cols);
     const admin    = isAdmin();
-    const seats    = saved || students.map(s => s.nickname);
+    const seats    = saved || _defaultSeatOrder(students.map(s => s.nickname));
 
     const colsOptions = [4,5,6,7,8].map(c =>
         `<option value="${c}" ${c === cols ? 'selected' : ''}>${c}열</option>`
@@ -246,14 +258,18 @@ function seatDragStart(e, idx) {
     }, 0);
 }
 
+let _seatDragOverIdx = null;
+
 function seatDragOver(e, idx) {
     e.preventDefault();
     if (_seatDragFrom === null || idx === _seatDragFrom) return;
     e.dataTransfer.dropEffect = 'move';
-    document.querySelectorAll('.seat-cell').forEach(el => {
-        el.style.outline = '';
-        el.style.outlineOffset = '';
-    });
+    // 이전 hover 셀 초기화
+    if (_seatDragOverIdx !== null && _seatDragOverIdx !== idx) {
+        const prev = document.getElementById(`seat-${_seatDragOverIdx}`);
+        if (prev) { prev.style.outline = ''; prev.style.outlineOffset = ''; }
+    }
+    _seatDragOverIdx = idx;
     const el = document.getElementById(`seat-${idx}`);
     if (el) {
         el.style.outline = '2.5px dashed var(--primary, #6366f1)';
@@ -271,11 +287,12 @@ function seatDragLeave(e) {
 function seatDragEnd(e) {
     const el = document.getElementById(`seat-${_seatDragFrom}`);
     if (el) { el.style.opacity = ''; el.style.cursor = ''; }
-    document.querySelectorAll('.seat-cell').forEach(el => {
-        el.style.outline = '';
-        el.style.outlineOffset = '';
-    });
-    _seatDragFrom = null;
+    if (_seatDragOverIdx !== null) {
+        const hov = document.getElementById(`seat-${_seatDragOverIdx}`);
+        if (hov) { hov.style.outline = ''; hov.style.outlineOffset = ''; }
+    }
+    _seatDragFrom    = null;
+    _seatDragOverIdx = null;
 }
 
 function seatDrop(e, toIdx) {
@@ -286,23 +303,20 @@ function seatDrop(e, toIdx) {
     _seatDragged = true;
 
     const students = _getSeatStudents();
-    const seats    = DB.get('seat_layout', null) || students.map(s => s.nickname);
+    const seats    = DB.get('seat_layout', null) || _defaultSeatOrder(students.map(s => s.nickname));
 
-    // fromIdx 위치에서 꺼낸 뒤 toIdx 위치 다음에 삽입
-    const item = seats.splice(fromIdx, 1)[0];
-    const adjustedTo = fromIdx < toIdx ? toIdx - 1 : toIdx;
-    seats.splice(adjustedTo + 1, 0, item);
+    // 두 자리 교체 (swap) — 어느 방향이든 동일하게 동작
+    [seats[fromIdx], seats[toIdx]] = [seats[toIdx], seats[fromIdx]];
 
     DB.set('seat_layout', seats);
 
-    // 그리드만 다시 렌더 (전체 페이지 리로드 없이)
     const cols = DB.get('seat_cols', SEAT_COLS_DEFAULT);
     const n    = seats.length;
     const rows = Math.ceil(n / cols);
     const grid = document.getElementById('seatGrid');
     if (grid) grid.innerHTML = _buildSeatGrid(seats, cols, rows, n);
 
-    showToast(`${fromIdx + 1}번 → ${adjustedTo + 1}번 뒤로 이동했습니다.`, 'success');
+    showToast(`${fromIdx + 1}번 ↔ ${toIdx + 1}번 자리를 교체했습니다.`, 'success');
 }
 
 function editSeat(idx) {
@@ -332,7 +346,7 @@ function editSeat(idx) {
 
     function save() {
         const val = input.value.trim() || current;
-        const seats = DB.get('seat_layout', null) || _getSeatStudents().map(s => s.nickname);
+        const seats = DB.get('seat_layout', null) || _defaultSeatOrder(_getSeatStudents().map(s => s.nickname));
         seats[idx] = val;
         DB.set('seat_layout', seats);
         const newNameEl = document.createElement('div');

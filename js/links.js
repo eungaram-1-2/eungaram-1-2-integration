@@ -165,6 +165,39 @@ function openSchoolSongModal(src, title) {
                     <span id="ssp_loop_label">반복 꺼짐</span>
                 </button>
             </div>
+
+            <!-- 가사 섹션 -->
+            <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.2)">
+                <div style="font-size:0.95rem;font-weight:700;opacity:0.9;margin-bottom:14px">📝 교가 가사</div>
+                <div style="display:flex;gap:24px">
+                    <div style="flex:1">
+                        <div style="font-size:0.9rem;font-weight:700;color:#fff;opacity:0.8;margin-bottom:10px">1절</div>
+                        <div style="font-size:0.9rem;line-height:1.8;opacity:0.9">
+                            <div>검단산 정기 담아</div>
+                            <div>흐르는 은빛물결</div>
+                            <div style="margin-top:6px">한강물 굽이 굽이</div>
+                            <div>아름다운 미사강변에</div>
+                            <div style="margin-top:6px">지혜로운 마음으로</div>
+                            <div>우뚝 선 배움의 전당</div>
+                            <div style="margin-top:6px">온누리를 밝혀주는</div>
+                            <div>은가람중학교</div>
+                        </div>
+                    </div>
+                    <div style="flex:1">
+                        <div style="font-size:0.9rem;font-weight:700;color:#fff;opacity:0.8;margin-bottom:10px">2절</div>
+                        <div style="font-size:0.9rem;line-height:1.8;opacity:0.9">
+                            <div>소나무 푸른기상</div>
+                            <div>라일락 진한 향기</div>
+                            <div style="margin-top:6px">우리들 가슴속에</div>
+                            <div>가득찬 배움의 열정</div>
+                            <div style="margin-top:6px">사랑의 마음으로</div>
+                            <div>꿈키울 배움의 전당</div>
+                            <div style="margin-top:6px">찬란하게 빛밝히는</div>
+                            <div>은가람중학교</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <audio id="ssp_audio" src="${src}" preload="metadata" style="display:none"></audio>

@@ -295,11 +295,48 @@ async function downloadLunch() {
     }
 
     try {
+        // 원본 요소의 computed style 미리 수집 (CSS 변수 해석용)
+        const originalEls = [table, ...table.querySelectorAll('*')];
+        const computedStyles = originalEls.map(el => {
+            const cs = window.getComputedStyle(el);
+            return {
+                color:           cs.color,
+                backgroundColor: cs.backgroundColor,
+                borderColor:     cs.borderColor,
+                fontSize:        cs.fontSize,
+                fontWeight:      cs.fontWeight,
+                borderTopColor:  cs.borderTopColor,
+                borderBottomColor: cs.borderBottomColor,
+                borderLeftColor: cs.borderLeftColor,
+                borderRightColor: cs.borderRightColor,
+            };
+        });
+
         const canvas = await html2canvas(table, {
             scale: 2,
             backgroundColor: '#ffffff',
-            padding: 10,
-            logging: false
+            logging: false,
+            onclone: (_doc, clonedTable) => {
+                // CSS 변수가 해석된 실제 색상을 인라인으로 주입
+                const clonedEls = [clonedTable, ...clonedTable.querySelectorAll('*')];
+                clonedEls.forEach((el, i) => {
+                    const s = computedStyles[i];
+                    if (!s) return;
+                    el.style.color           = s.color;
+                    el.style.fontSize        = s.fontSize;
+                    el.style.fontWeight      = s.fontWeight;
+                    // 배경이 투명이면 흰색 유지, 아니면 원본 색 적용
+                    if (s.backgroundColor && s.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+                        el.style.backgroundColor = s.backgroundColor;
+                    } else {
+                        el.style.backgroundColor = 'transparent';
+                    }
+                    el.style.borderTopColor    = s.borderTopColor;
+                    el.style.borderBottomColor = s.borderBottomColor;
+                    el.style.borderLeftColor   = s.borderLeftColor;
+                    el.style.borderRightColor  = s.borderRightColor;
+                });
+            }
         });
 
         const link = document.createElement('a');

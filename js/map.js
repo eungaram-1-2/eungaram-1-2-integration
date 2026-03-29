@@ -121,11 +121,10 @@ function initMapPage() {
         zoomControl: true
     });
 
-    // OpenStreetMap 타일 레이어 (안정적인 CDN 사용)
-    L.tileLayer('https://tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png', {
+    // OpenStreetMap 타일 레이어
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19,
-        crossOrigin: 'anonymous'
+        maxZoom: 19
     }).addTo(_mapInstance);
 
     // 학교 기본 마커

@@ -113,62 +113,32 @@ function renderWeather() {
 async function loadWeatherPage() {
     const app = document.getElementById('app');
     try {
-        // 각 지역별 날씨 데이터 생성 함수
-        const generateWeatherForLocation = (lat, lon) => {
-            const now = new Date();
-            const dates = [];
-            const maxTemps = [];
-            const minTemps = [];
-            const weatherCodes = [];
-
-            // 위도에 따른 보정 (북쪽이 더 추움)
-            const latOffset = (37.5650 - lat) * 100;
-
-            // 월별 계절 기온 (하남시 기준 월 평균 최고기온 °C)
-            const monthBaseTemps = [3, 5, 11, 18, 23, 27, 30, 31, 26, 18, 10, 4];
-
-            for (let i = 0; i < 30; i++) {
-                const d = new Date(now);
-                d.setDate(d.getDate() + i);
-                const yyyy = d.getFullYear();
-                const mm = String(d.getMonth() + 1).padStart(2, '0');
-                const dd = String(d.getDate()).padStart(2, '0');
-                dates.push(`${yyyy}-${mm}-${dd}`);
-
-                // 계절 기반 기온 + 위도 보정 + 날짜 변동
-                const seasonalBase = monthBaseTemps[d.getMonth()];
-                const baseTemp = seasonalBase + latOffset * 0.8;
-                const dayHash = (d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate());
-                const variation = (dayHash % 10) - 5; // -5 ~ +4 변동
-
-                const maxTemp = Math.round(baseTemp + variation);
-                const minTemp = Math.round(baseTemp - 8 + variation);
-                maxTemps.push(maxTemp);
-                minTemps.push(minTemp);
-                weatherCodes.push(dayHash % 4);
-            }
-
+        // 실제 날씨 API에서 데이터를 가져오는 함수
+        const fetchWeatherForLocation = async (lat, lon) => {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,weather_code,time&timezone=Asia/Seoul`;
+            const response = await fetch(url);
+            const data = await response.json();
             return {
                 current: {
-                    temperature_2m: maxTemps[0],
-                    weather_code: weatherCodes[0],
-                    relative_humidity_2m: 50 + ((Math.floor(lat * 100) + Math.floor(lon * 100)) % 30),
-                    wind_speed_10m: 5 + ((Math.floor(lat * 100) + Math.floor(lon * 100)) % 15)
+                    temperature_2m: Math.round(data.current.temperature_2m),
+                    weather_code: data.current.weather_code,
+                    relative_humidity_2m: data.current.relative_humidity_2m,
+                    wind_speed_10m: Math.round(data.current.wind_speed_10m)
                 },
                 daily: {
-                    time: dates,
-                    temperature_2m_max: maxTemps,
-                    temperature_2m_min: minTemps,
-                    weather_code: weatherCodes
+                    time: data.daily.time,
+                    temperature_2m_max: data.daily.temperature_2m_max.map(t => Math.round(t)),
+                    temperature_2m_min: data.daily.temperature_2m_min.map(t => Math.round(t)),
+                    weather_code: data.daily.weather_code
                 }
             };
         };
 
         // 각 지역 현재 날씨
-        const locationWeathers = HANNAM_LOCATIONS.map(loc => ({
+        const locationWeathers = await Promise.all(HANNAM_LOCATIONS.map(async loc => ({
             ...loc,
-            weather: generateWeatherForLocation(loc.lat, loc.lon)
-        }));
+            weather: await fetchWeatherForLocation(loc.lat, loc.lon)
+        })));
 
         // 하남시 중심 1개월 예보 (첫번째 위치 사용)
         const mainWeather = locationWeathers[0].weather;

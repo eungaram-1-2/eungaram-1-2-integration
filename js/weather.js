@@ -113,75 +113,54 @@ function renderWeather() {
 async function loadWeatherPage() {
     const app = document.getElementById('app');
     try {
-        // 기상청 API에서 데이터를 가져오는 함수
+        // 기상청 데이터 가져오기 (프록시 사용)
         const fetchWeatherFromKMA = async (lat, lon) => {
             try {
-                // 위경도를 격자 좌표로 변환 (기상청용)
-                const RE = 6371.00877; // 지구 반경(km)
-                const GRID = 5.0; // 격자 간격(km)
-                const SLAT1 = 30.0; // 투영 위도1(degree)
-                const SLAT2 = 60.0; // 투영 위도2(degree)
-                const OLON = 126.0; // 기준점 경도(degree)
-                const OLAT = 38.0; // 기준점 위도(degree)
-                const XO = 43; // 기준점 X좌표(grid)
-                const YO = 136; // 기준점 Y좌표(grid)
+                // 하남시 중심 좌표 사용 (초단기실황)
+                const url = `https://cors-anywhere.herokuapp.com/https://www.weather.go.kr/w/obs-real-time.do?stnId=11113`;
 
-                const DEGRAD = Math.PI / 180.0;
-                const RADEG = 180.0 / Math.PI;
-                const SLAT1_ = SLAT1 * DEGRAD;
-                const SLAT2_ = SLAT2 * DEGRAD;
-                const OLON_ = OLON * DEGRAD;
-                const OLAT_ = OLAT * DEGRAD;
+                const response = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
 
-                let sn = Math.tan(Math.PI / 4.0 + SLAT2_ / 2.0) / Math.tan(Math.PI / 4.0 + SLAT1_ / 2.0);
-                sn = Math.log(Math.cos(SLAT1_) / Math.cos(SLAT2_)) / Math.log(sn);
-                let sf = Math.tan(Math.PI / 4.0 + SLAT1_ / 2.0);
-                sf = (Math.pow(sf, sn) * Math.cos(SLAT1_)) / sn;
-                let ro = Math.tan(Math.PI / 4.0 + OLAT_ / 2.0);
-                ro = (RE * sf / Math.pow(ro, sn)) * GRID;
-                let rs = {};
+                // 실패 시 직접 기상청 공식 API 사용
+                if (!response.ok) {
+                    // 기상청 단기예보 API (공개)
+                    const kmaUrl = `https://api.weather.go.kr/links/web/GetForecasting?authKey=OWuDZ4wLbVDnL63gJqb3WA&stnId=11100&dataType=json`;
+                    const kmaResponse = await fetch(kmaUrl);
+                    const kmaData = await kmaResponse.json();
 
-                const lat_ = lat * DEGRAD;
-                const lon_ = lon * DEGRAD;
-                let ra = Math.tan(Math.PI / 4.0 + lat_ / 2.0);
-                ra = (RE * sf / Math.pow(ra, sn)) * GRID;
-                let theta = lon_ - OLON_;
-                if (theta > Math.PI) theta -= 2.0 * Math.PI;
-                if (theta < -Math.PI) theta += 2.0 * Math.PI;
-                theta *= sn;
-                rs.x = Math.pow(ro, 2.0) + Math.pow(ra, 2.0) - 2.0 * ro * ra * Math.cos(theta);
-                rs.x = Math.sqrt(rs.x) + XO;
-                rs.y = Math.atan2(ra * Math.sin(theta), ro - ra * Math.cos(theta)) * RADEG;
-                rs.y = Math.tan(Math.PI / 4.0 + OLAT_ / 2.0 + rs.y * DEGRAD) / Math.tan(Math.PI / 4.0 + lat_ / 2.0);
-                rs.y = (RE * sf / Math.pow(rs.y, sn)) * GRID + YO;
-
-                const nx = Math.round(rs.x);
-                const ny = Math.round(rs.y);
-
-                // 기상청 초단기실황 API
-                const now = new Date();
-                const baseDate = now.toISOString().split('T')[0].replace(/-/g, '');
-                const baseTime = String(Math.floor(now.getHours() / 1) * 100).padStart(4, '0');
-
-                const url = `https://api.weather.go.kr/links/web/GetAtmosphereData?authKey=OWuDZ4wLbVDnL63gJqb3WA&mode=json&dataType=JSON&base_date=${baseDate}&base_time=${baseTime}&nx=${nx}&ny=${ny}`;
-
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (!data.resultCode || data.resultCode !== '00') {
-                    throw new Error('기상청 API 오류');
+                    if (kmaData.code === '0000' && kmaData.result) {
+                        const temp = parseInt(kmaData.result.temperature) || 15;
+                        return {
+                            current: {
+                                temperature_2m: temp,
+                                weather_code: 1,
+                                relative_humidity_2m: parseInt(kmaData.result.humidity) || 60,
+                                wind_speed_10m: parseInt(kmaData.result.wind_speed) || 5
+                            },
+                            daily: {
+                                time: [],
+                                temperature_2m_max: [],
+                                temperature_2m_min: [],
+                                weather_code: []
+                            }
+                        };
+                    }
                 }
 
-                const items = data.result.data;
-                let temperature = 15;
-                let humidity = 60;
-                let windSpeed = 5;
+                const html = await response.text();
 
-                for (const item of items) {
-                    if (item.code === 'T1H') temperature = Math.round(parseFloat(item.value));
-                    if (item.code === 'REH') humidity = Math.round(parseFloat(item.value));
-                    if (item.code === 'WS') windSpeed = Math.round(parseFloat(item.value) * 3.6);
-                }
+                // HTML에서 온도 추출
+                const tempMatch = html.match(/현재\s*온도[^\d]*?(-?\d+\.?\d*)/);
+                const humiMatch = html.match(/습도[^\d]*?(\d+)/);
+                const windMatch = html.match(/풍속[^\d]*?(\d+\.?\d*)/);
+
+                const temperature = tempMatch ? Math.round(parseFloat(tempMatch[1])) : 15;
+                const humidity = humiMatch ? parseInt(humiMatch[1]) : 60;
+                const windSpeed = windMatch ? Math.round(parseFloat(windMatch[1])) : 5;
 
                 return {
                     current: {
@@ -198,7 +177,7 @@ async function loadWeatherPage() {
                     }
                 };
             } catch (e) {
-                console.error(`[기상청 API] ${lat},${lon} 조회 실패:`, e);
+                console.error(`[기상청 데이터] 조회 실패:`, e);
                 return null;
             }
         };

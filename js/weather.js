@@ -115,7 +115,7 @@ async function loadWeatherPage() {
     try {
         // 실제 날씨 API에서 데이터를 가져오는 함수
         const fetchWeatherForLocation = async (lat, lon) => {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=Asia/Seoul`;
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=time,temperature_2m_max,temperature_2m_min,weather_code&timezone=Asia/Seoul`;
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`API 응답 오류: ${response.status}`);

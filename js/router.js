@@ -28,7 +28,7 @@ function navigate(page, params = {}) {
 
 const BANNED_RESTRICTED   = ['board','board-detail','board-write','dday','logs','boardlog'];
 const TIMEOUT_RESTRICTED  = ['board','board-detail','board-write','dday','notices','notice-detail','notice-write','votes','vote-detail','vote-create','logs','boardlog'];
-const GUEST_ALLOWED       = ['home','login','timetable','lunch','academic'];
+const GUEST_ALLOWED       = ['home','login','timetable','lunch','academic','weather','cleaning','board','board-detail','board-write','votes','vote-detail','vote-create','dday','chat','links'];
 
 function renderLoginRequiredPage() {
     return `
@@ -147,6 +147,8 @@ function render() {
         // case 'seat-draw':    app.innerHTML = renderSeatDraw();          break;
         case 'change-password': app.innerHTML = renderChangePassword(); break;
         case 'lunch':        app.innerHTML = renderLunch(); setTimeout(() => loadLunchPage(), 0); break;
+        case 'weather':      app.innerHTML = renderWeather(); setTimeout(() => loadWeatherPage(), 0); break;
+        case 'cleaning':     app.innerHTML = renderCleaning(); break;
         case 'admin':        app.innerHTML = renderAdmin();             break;
         case 'logs':         app.innerHTML = renderLogs();              break;
         case 'boardlog':     app.innerHTML = renderBoardLog();          break;
@@ -201,8 +203,9 @@ function updateNav() {
         const a = li.querySelector('a');
         if (!a) return;
         const p = a.getAttribute('onclick')?.match(/'(\w+)'/)?.[1];
-        // 비로그인 시 시간표, 급식, 학사일정만 표시
-        li.style.display = (!loggedIn && p !== 'timetable' && p !== 'lunch' && p !== 'academic') ? 'none' : '';
+        // 비로그인 시 공지사항만 숨김, 나머지는 표시
+        const guestHidden = ['notices'];
+        li.style.display = (!loggedIn && guestHidden.includes(p)) ? 'none' : '';
         a.classList.remove('active');
         if (p === currentPage ||
             (p === 'notices'   && currentPage.startsWith('notice')) ||
@@ -212,7 +215,9 @@ function updateNav() {
             (p === 'dday'      && currentPage === 'dday')  ||
             (p === 'lunch'     && currentPage === 'lunch')  ||
             (p === 'academic'  && currentPage === 'academic')  ||
-            (p === 'admin'     && (currentPage === 'admin' || currentPage === 'logs'))) {
+            (p === 'admin'     && (currentPage === 'admin' || currentPage === 'logs')) ||
+            (p === 'weather'   && currentPage === 'weather') ||
+            (p === 'cleaning'  && currentPage === 'cleaning')) {
             a.classList.add('active');
         }
     });

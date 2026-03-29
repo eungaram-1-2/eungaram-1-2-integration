@@ -147,7 +147,7 @@ function initMapPage() {
 
     L.marker([SCHOOL_LAT, SCHOOL_LON], { icon: schoolIcon })
         .addTo(_mapInstance)
-        .bindPopup('<strong>은가람중학교</strong><br>경기 하남시 선동')
+        .bindPopup('<strong>은가람중학교</strong><br>미사강변한강로 9, 경기 하남시')
         .openPopup();
 
     // 현재 위치 버튼

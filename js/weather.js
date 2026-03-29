@@ -115,25 +115,81 @@ async function loadWeatherPage() {
     try {
         // 실제 날씨 API에서 데이터를 가져오는 함수
         const fetchWeatherForLocation = async (lat, lon) => {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=time,temperature_2m_max,temperature_2m_min,weather_code&timezone=Asia/Seoul`;
+            const url = `https://api.weatherapi.com/v1/forecast.json?key=6d8fb5b96d204ef9a84001510242703&q=${lat},${lon}&days=30&aqi=no`;
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`API 응답 오류: ${response.status}`);
                 const data = await response.json();
-                if (!data.current || !data.daily) throw new Error('API 데이터 형식 오류');
+                if (!data.current || !data.forecast) throw new Error('API 데이터 형식 오류');
+
+                // WMO 코드로 변환 (weatherapi code를 WMO에 매핑)
+                const wmoMap = {
+                    1000: 0, // 맑음
+                    1003: 2, // 구름 조금
+                    1006: 3, // 흐림
+                    1009: 3, // 흐림
+                    1012: 3, // 흐림
+                    1030: 45, // 안개
+                    1063: 61, // 약한 비
+                    1066: 71, // 약한 눈
+                    1069: 80, // 비/눈
+                    1072: 80, // 가는 빗방울
+                    1087: 80, // 뇌우
+                    1114: 75, // 눈
+                    1117: 82, // 소나기
+                    1135: 45, // 안개
+                    1147: 45, // 안개
+                    1150: 51, // 이슬비
+                    1153: 51, // 약한 이슬비
+                    1168: 61, // 얼어붙는 이슬비
+                    1171: 63, // 얼어붙는 비
+                    1180: 61, // 약한 비
+                    1183: 61, // 중간 비
+                    1186: 63, // 비
+                    1189: 65, // 강한 비
+                    1192: 65, // 강한 비
+                    1195: 65, // 매우 강한 비
+                    1198: 63, // 얼어붙는 비
+                    1201: 65, // 얼어붙는 강한 비
+                    1204: 80, // 비/눈
+                    1207: 82, // 강한 비/눈
+                    1210: 71, // 약한 눈
+                    1213: 71, // 눈
+                    1216: 71, // 중간 눈
+                    1219: 73, // 강한 눈
+                    1222: 73, // 강한 눈
+                    1225: 73, // 매우 강한 눈
+                    1237: 77, // 진눈깨비
+                    1240: 80, // 소나기
+                    1243: 81, // 중간 소나기
+                    1246: 82, // 강한 소나기
+                    1249: 82, // 빗소나기
+                    1252: 82, // 강한 빗소나기
+                    1255: 82, // 눈소나기
+                    1258: 82, // 강한 눈소나기
+                    1261: 80, // 빛 소나기
+                    1264: 82, // 강한 소나기
+                    1273: 80, // 뇌우
+                    1276: 82, // 강한 뇌우
+                    1279: 82, // 뇌우+눈
+                    1282: 82  // 강한 뇌우+눈
+                };
+
+                const currentWmo = wmoMap[data.current.condition.code] || 3;
+                const dailyData = data.forecast.forecastday;
 
                 return {
                     current: {
-                        temperature_2m: Math.round(data.current.temperature_2m),
-                        weather_code: data.current.weather_code || 0,
-                        relative_humidity_2m: data.current.relative_humidity_2m || 50,
-                        wind_speed_10m: Math.round(data.current.wind_speed_10m || 0)
+                        temperature_2m: Math.round(data.current.temp_c),
+                        weather_code: currentWmo,
+                        relative_humidity_2m: data.current.humidity,
+                        wind_speed_10m: Math.round(data.current.wind_kph)
                     },
                     daily: {
-                        time: data.daily.time || [],
-                        temperature_2m_max: data.daily.temperature_2m_max.map(t => Math.round(t)),
-                        temperature_2m_min: data.daily.temperature_2m_min.map(t => Math.round(t)),
-                        weather_code: data.daily.weather_code || []
+                        time: dailyData.map(d => d.date),
+                        temperature_2m_max: dailyData.map(d => Math.round(d.day.maxtemp_c)),
+                        temperature_2m_min: dailyData.map(d => Math.round(d.day.mintemp_c)),
+                        weather_code: dailyData.map(d => wmoMap[d.day.condition.code] || 3)
                     }
                 };
             } catch (e) {

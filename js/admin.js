@@ -429,7 +429,7 @@ function renderAdmin() {
                 </div>
             </div>
         </div>
-        ` : ''}`
+        ` : ''}
     </div>`;
 }
 

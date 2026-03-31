@@ -189,14 +189,10 @@ function _buildAdminMemberRows() {
     }).join('');
 }
 
-/*
 function _canViewSuggestionData() {
-    const user = currentUser();
-    if (!user) return false;
-    // 10202번 학생(2번) 또는 담임선생님(teacher) 계정만 건의/신고 조회 가능
-    return user.id === '10202' || user.id === 'teacher';
+    // 건의함/신고함 기능 비활성화
+    return false;
 }
-*/
 
 /*
 function _buildSuggestionRows() {

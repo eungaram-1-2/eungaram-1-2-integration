@@ -189,13 +189,16 @@ function _buildAdminMemberRows() {
     }).join('');
 }
 
+/*
 function _canViewSuggestionData() {
     const user = currentUser();
     if (!user) return false;
     // 10202번 학생(2번) 또는 담임선생님(teacher) 계정만 건의/신고 조회 가능
     return user.id === '10202' || user.id === 'teacher';
 }
+*/
 
+/*
 function _buildSuggestionRows() {
     if (!_canViewSuggestionData()) {
         return `<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted)">조회 권한이 없습니다</td></tr>`;
@@ -219,7 +222,9 @@ function _buildSuggestionRows() {
         </tr>`;
     }).join('');
 }
+*/
 
+/*
 function _buildReportRows() {
     if (!_canViewSuggestionData()) {
         return `<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted)">조회 권한이 없습니다</td></tr>`;
@@ -243,6 +248,7 @@ function _buildReportRows() {
         </tr>`;
     }).join('');
 }
+*/
 
 function _updateAdminStats() {
     const bans       = DB.get('bans');
@@ -311,8 +317,8 @@ function renderAdmin() {
                 </div>
             </div>
             <div class="adm-hero-actions">
-                ${_canViewSuggestionData() ? `<button class="btn btn-outline btn-sm" onclick="showSuggestionsModal()">💬 건의함 (${DB.get('suggestions', []).length})</button>` : ''}
-                ${_canViewSuggestionData() ? `<button class="btn btn-outline btn-sm" onclick="showReportsModal()">🚨 신고함 (${DB.get('reports', []).length})</button>` : ''}
+                <!-- ${_canViewSuggestionData() ? `<button class="btn btn-outline btn-sm" onclick="showSuggestionsModal()">💬 건의함 (${DB.get('suggestions', []).length})</button>` : ''} -->
+                <!-- ${_canViewSuggestionData() ? `<button class="btn btn-outline btn-sm" onclick="showReportsModal()">🚨 신고함 (${DB.get('reports', []).length})</button>` : ''} -->
                 <button class="btn btn-outline btn-sm" onclick="navigate('logs')">📋 활동 로그</button>
                 <button class="btn btn-outline btn-sm" onclick="navigate('boardlog')">📋 게시판 로그</button>
                 <button class="btn btn-outline btn-sm" onclick="exportData()">📥 데이터 다운로드</button>
@@ -730,8 +736,9 @@ function updateEmergencyBanner() {
 }
 
 // =============================================
-// 건의함 모달
+// 건의함 모달 (비활성화)
 // =============================================
+/*
 function showSuggestionsModal() {
     if (!_canViewSuggestionData()) { showToast('조회 권한이 없습니다.', 'error'); return; }
 
@@ -771,10 +778,21 @@ function showSuggestionsModal() {
         ${suggestions.length === 0 ? emptyHtml : rows}
     </div>`);
 }
+*/
 
 // =============================================
-// 신고함 모달
+// 건의/신고 데이터 삭제 (초기화)
 // =============================================
+function clearSuggestionAndReportData() {
+    DB.remove('suggestions');
+    DB.remove('reports');
+    showToast('건의함/신고함 데이터가 삭제되었습니다.', 'success');
+}
+
+// =============================================
+// 신고함 모달 (비활성화)
+// =============================================
+/*
 function showReportsModal() {
     if (!_canViewSuggestionData()) { showToast('조회 권한이 없습니다.', 'error'); return; }
 
@@ -821,3 +839,4 @@ function showReportsModal() {
         ${reports.length === 0 ? emptyHtml : rows}
     </div>`);
 }
+*/

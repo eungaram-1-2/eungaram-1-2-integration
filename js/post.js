@@ -31,7 +31,7 @@ function renderPostDetail(type) {
     let actions = `<button class="btn btn-ghost btn-sm" onclick="navigate('${listPage}')">← 목록으로</button>`;
     if (isAdmin()) {
         const pinText = post.pinned ? '📌 고정 해제' : '📌 상단 고정';
-        const editBtn = canEdit(post.createdAt)
+        const editBtn = (type === 'notices' || canEdit(post.createdAt))
             ? `<button class="btn btn-outline btn-sm" onclick="showEditPostModal('${type}','${post.id}')">수정</button>`
             : '';
         actions += `
@@ -278,7 +278,7 @@ function showEditPostModal(type, postId) {
     const posts = DB.get(type);
     const post = posts.find(p => p.id === postId);
     if (!post) return;
-    if (!canEdit(post.createdAt)) {
+    if (type !== 'notices' && !canEdit(post.createdAt)) {
         showToast('작성 후 24시간이 지난 게시글은 수정할 수 없습니다.', 'warning');
         return;
     }

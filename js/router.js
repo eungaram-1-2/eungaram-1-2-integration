@@ -147,7 +147,7 @@ function render() {
         case 'suggestion':   app.innerHTML = renderSuggestion();       break;
         // case 'seat-draw':    app.innerHTML = renderSeatDraw();          break;
         case 'change-password': app.innerHTML = renderChangePassword(); break;
-        case 'lunch':        app.innerHTML = renderLunch(); setTimeout(() => loadLunchPage(), 0); break;
+        case 'lunch':        app.innerHTML = renderLunch(); setTimeout(() => loadLunchPageWithAutoScroll(), 0); break;
         case 'weather':      app.innerHTML = renderWeather(); setTimeout(() => loadWeatherPage(), 0); break;
         case 'cleaning':     app.innerHTML = renderCleaning(); break;
         case 'map':          app.innerHTML = renderMap(); setTimeout(() => initMapPage(), 0); break;

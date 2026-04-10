@@ -1,5 +1,5 @@
 // =============================================
-// 급식 메뉴 (GitHub Actions 크롤링)
+// 급식 메뉴 (Firebase + GitHub Actions 크롤링)
 // =============================================
 const LUNCH_DATA_URL = 'data/lunch.json';
 
@@ -27,22 +27,59 @@ function _lunchTodayStr() {
 }
 
 // =============================================
-// 급식 데이터 JSON 로드
+// 급식 데이터 로드 (Firebase 우선, JSON 폴백)
 // =============================================
 let _lunchDataPromise = null;
+
+async function _fetchLunchDataFromFirebase() {
+    if (!fbReady()) return null;
+
+    try {
+        const today = _lunchTodayStr();
+        const snapshot = await _fbDB.ref(`lunch/${today}`).once('value');
+        const data = snapshot.val();
+
+        if (data && data.items && Array.isArray(data.items)) {
+            console.info('[Firebase] 오늘 급식 데이터 로드 성공');
+            return {
+                updated: data.updated || new Date().toISOString(),
+                menus: { [today]: data }
+            };
+        }
+        return null;
+    } catch (e) {
+        console.warn('[Firebase] 급식 로드 실패:', e.message);
+        return null;
+    }
+}
+
+async function _fetchLunchDataFromJSON() {
+    try {
+        const res = await fetch(LUNCH_DATA_URL);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+    } catch (e) {
+        console.warn('[JSON] 급식 데이터 로드 실패:', e.message);
+        return { updated: '', menus: {} };
+    }
+}
 
 async function _fetchLunchData() {
     if (_lunchDataPromise) return _lunchDataPromise;
 
     _lunchDataPromise = (async () => {
-        try {
-            const res = await fetch(LUNCH_DATA_URL);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            return await res.json();
-        } catch (e) {
-            console.warn('급식 데이터 로드 실패:', e.message);
-            return { updated: '', menus: {} };
+        // Firebase와 JSON을 병렬로 시도
+        const [fbData] = await Promise.all([
+            _fetchLunchDataFromFirebase(),
+            // Firebase가 느리면 JSON에서 가져올 준비
+        ]);
+
+        // Firebase 데이터가 있으면 사용, 없으면 JSON
+        if (fbData && Object.keys(fbData.menus).length > 0) {
+            return fbData;
         }
+
+        return await _fetchLunchDataFromJSON();
     })();
 
     return _lunchDataPromise;
@@ -349,3 +386,65 @@ async function downloadLunch() {
         showToast('급식 저장에 실패했습니다.', 'error');
     }
 }
+
+// =============================================
+// 빠른 자동 스크롤 (선택적)
+// =============================================
+function enableAutoScrollLunchTable() {
+    const wrapper = document.querySelector('.lunch-table-wrapper');
+    if (!wrapper) return;
+
+    let scrollSpeed = 2; // px/ms (빠른 속도)
+    let scrollTimer = null;
+
+    const autoScroll = () => {
+        if (wrapper.scrollLeft < wrapper.scrollWidth - wrapper.clientWidth) {
+            wrapper.scrollLeft += scrollSpeed;
+            scrollTimer = requestAnimationFrame(autoScroll);
+        } else {
+            // 끝에 도달하면 처음으로 리셋
+            setTimeout(() => {
+                wrapper.scrollLeft = 0;
+                scrollTimer = requestAnimationFrame(autoScroll);
+            }, 3000); // 3초 대기
+        }
+    };
+
+    // 마우스/터치 상호작용 시 자동 스크롤 중단
+    wrapper.addEventListener('wheel', () => {
+        if (scrollTimer) cancelAnimationFrame(scrollTimer);
+        scrollTimer = null;
+    });
+
+    wrapper.addEventListener('touchstart', () => {
+        if (scrollTimer) cancelAnimationFrame(scrollTimer);
+        scrollTimer = null;
+    });
+
+    // 스크롤 완료 후 다시 시작 (3초 후)
+    wrapper.addEventListener('scroll', () => {
+        if (scrollTimer) cancelAnimationFrame(scrollTimer);
+        setTimeout(() => {
+            scrollTimer = requestAnimationFrame(autoScroll);
+        }, 3000);
+    }, { once: false });
+
+    // 초기 시작 (1초 지연)
+    setTimeout(() => {
+        scrollTimer = requestAnimationFrame(autoScroll);
+    }, 1000);
+}
+
+// loadLunchPage() 이후 호출
+async function loadLunchPageWithAutoScroll() {
+    await loadLunchPage();
+    // 테이블 렌더링 후 자동 스크롤 활성화
+    setTimeout(() => enableAutoScrollLunchTable(), 100);
+}
+
+// =============================================
+// 초기 프리페치 (빠른 로딩)
+// =============================================
+// 스크립트 로드 시 급식 데이터를 미리 가져옴
+_fetchLunchData();
+fetchLunchMenu();

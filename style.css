@@ -2560,6 +2560,9 @@ button { font-family: inherit; }
     overflow-x: auto;
     margin: 0 -20px;
     padding: 0 20px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
 }
 
 .lunch-table-horizontal {
@@ -2588,6 +2591,8 @@ button { font-family: inherit; }
     min-width: 90px;
     padding: 12px 10px !important;
     font-size: 0.88rem;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
 }
 
 .lunch-table-horizontal tbody tr {

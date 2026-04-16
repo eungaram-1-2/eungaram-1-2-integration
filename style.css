@@ -2287,6 +2287,13 @@ button { font-family: inherit; }
         border-radius: var(--radius-sm);
         font-size: 1rem;
         text-align: center;
+        color: var(--text);
+        transition: var(--transition);
+    }
+
+    .nav-menu a:hover {
+        background: var(--primary-bg);
+        color: var(--primary);
     }
 
     .nav-menu a.active {

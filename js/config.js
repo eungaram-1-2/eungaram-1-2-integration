@@ -113,3 +113,31 @@ const ALLERGEN_MAP = {
     1:'난류', 2:'우유', 3:'메밀', 4:'땅콩', 5:'대두', 6:'밀', 7:'고등어', 8:'게', 9:'새우',
     10:'돼지고기', 11:'복숭아', 12:'토마토', 13:'아황산류', 14:'호두', 15:'닭고기', 16:'쇠고기', 17:'오징어', 18:'조개류', 19:'잣'
 };
+
+// =============================================
+// Firebase에서 시간표 동적 로드
+// =============================================
+function loadTimetableFromFirebase() {
+    if (!fbReady()) {
+        console.log('[시간표] Firebase 미연결 → 기본값 사용');
+        return;
+    }
+
+    _fbDB.ref('config/timetable').on('value', (snapshot) => {
+        if (snapshot.exists()) {
+            try {
+                const data = snapshot.val();
+                TIMETABLE = data;
+                console.log('[시간표] Firebase에서 로드됨');
+                // 현재 페이지가 시간표라면 리렌더
+                if (typeof render === 'function' && document.location.hash.includes('timetable')) {
+                    render();
+                }
+            } catch (e) {
+                console.warn('[시간표] Firebase 파싱 실패:', e);
+            }
+        }
+    }, (error) => {
+        console.warn('[시간표] Firebase 읽기 오류:', error);
+    });
+}

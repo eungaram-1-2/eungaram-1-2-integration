@@ -30,6 +30,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Firebase 백그라운드 동기화 (업데이트가 오면 자동 re-render)
     startFirebaseSync();
 
+    // Firebase에서 시간표 로드 (변경 시 실시간 반영)
+    loadTimetableFromFirebase();
+
     // 채팅 내역 자정 초기화 (렌더 후 지연 실행)
     setTimeout(() => cleanChatMessages(), 0);
 

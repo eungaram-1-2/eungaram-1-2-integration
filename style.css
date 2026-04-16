@@ -2265,8 +2265,8 @@ button { font-family: inherit; }
         position: fixed;
         top: 56px;
         left: 0; right: 0; bottom: 0;
-        height: auto;
-        background: var(--bg-card);
+        height: calc(100vh - 56px);
+        background: var(--bg);
         flex-direction: column;
         align-items: stretch;
         padding: 16px;

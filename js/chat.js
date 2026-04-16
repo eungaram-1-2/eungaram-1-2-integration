@@ -73,19 +73,7 @@ function _refreshChatMessages() {
 }
 
 function renderChat() {
-    // 비로그인 또는 밴/타임아웃은 채팅 접근 불가
-    if (!isLoggedIn()) {
-        return `
-        <div class="page">
-            <div class="empty-state">
-                <div class="empty-icon">🔒</div>
-                <p style="font-weight:700;font-size:1rem">로그인이 필요합니다.</p>
-                <p style="font-size:0.85rem;margin-top:8px;color:var(--text-muted)">채팅을 이용하려면 로그인하세요.</p>
-                <button class="btn btn-primary" style="margin-top:18px" onclick="navigate('login')">로그인하기</button>
-            </div>
-        </div>`;
-    }
-    if (isBanned() || isTimedOut()) {
+    if (isLoggedIn() && (isBanned() || isTimedOut())) {
         return `
         <div class="page">
             <div class="empty-state">
@@ -124,9 +112,6 @@ function renderChat() {
 }
 
 function sendChatMessage() {
-    if (!isLoggedIn()) { showToast('로그인이 필요합니다.', 'error'); return; }
-    if (isBanned()) { showToast('정지된 계정은 채팅할 수 없습니다.', 'error'); return; }
-    if (isTimedOut()) { showToast('타임아웃 상태에서는 채팅할 수 없습니다.', 'error'); return; }
     if (!RateLimit.check('chat')) {
         showToast('너무 빠르게 전송하고 있습니다.', 'warning');
         return;
@@ -138,13 +123,12 @@ function sendChatMessage() {
     const text = Security.sanitize(input.value.trim().slice(0, 500));
     if (!text) return;
 
-    const user = currentUser();
     const msg = {
         id: Date.now().toString(),
         text: text,
-        author: user.nickname,
-        authorId: user.id,
-        authorRole: user.role,
+        author: '익명',
+        authorId: null,
+        authorRole: 'user',
         createdAt: Date.now()
     };
 

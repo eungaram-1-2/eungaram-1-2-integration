@@ -17,21 +17,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 즉시 localStorage 데이터로 렌더 (Firebase를 기다리지 않음)
     render();
-    updateEmergencyBanner();
 
     // Firebase 백그라운드 동기화 (업데이트가 오면 자동 re-render)
     startFirebaseSync();
 
     // 채팅 내역 자정 초기화 (렌더 후 지연 실행)
     setTimeout(() => cleanChatMessages(), 0);
-
-    // 세션 연결 (새로고침 후에도 온라인 유지)
-    if (isLoggedIn()) {
-        const u = currentUser();
-        sessionConnect(u.id);
-    }
-    // localStorage fallback heartbeat
-    setInterval(() => { if (isLoggedIn()) sessionWriteHeartbeat(); }, 30000);
 
     // 방문자 카운터 (Firebase 연결 후 실행)
     setTimeout(() => trackVisit(), 1500);

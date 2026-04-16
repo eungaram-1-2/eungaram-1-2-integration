@@ -18,8 +18,7 @@ function renderLinks() {
             return `<div class="link-card-v" style="cursor:pointer" onclick="openSchoolSongModal('${link.audio}','${link.title}')">${cardBody}</div>`;
         } else if (link.page) {
             // 내부 링크 (채팅 등)
-            const onclick = !isLoggedIn() ? `navigate('login')` : `navigate('${link.page}')`;
-            return `<div class="link-card-v" style="cursor:pointer" onclick="${onclick}">${cardBody}</div>`;
+            return `<div class="link-card-v" style="cursor:pointer" onclick="navigate('${link.page}')">${cardBody}</div>`;
         } else {
             // 외부 링크
             return `<a class="link-card-v" href="${link.url}" target="_blank" rel="noopener noreferrer">${cardBody}</a>`;

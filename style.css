@@ -501,13 +501,14 @@ button { font-family: inherit; }
     color: white;
     position: relative;
     overflow: hidden;
+    z-index: 1;
 }
 
 /* 히어로 두 컬럼 레이아웃 */
 .hero-inner {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px 56px 60px;
+    padding: 20px 56px 40px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -5404,7 +5405,7 @@ button { font-family: inherit; }
 @media (max-width: 480px) {
     .hero h1 { font-size: 2.4rem; letter-spacing: -1px; }
     .hero-clock { font-size: 2.2rem; }
-    .hero-inner { padding: 16px 20px 32px; }
+    .hero-inner { padding: 16px 20px 24px; }
     .hero-stat { padding: 20px 12px; }
     .hero-stat-num { font-size: 1.7rem; }
     .hero-stat-label { font-size: 0.72rem; }

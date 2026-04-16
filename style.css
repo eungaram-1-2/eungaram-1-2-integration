@@ -2330,7 +2330,7 @@ button { font-family: inherit; }
     .hero p { font-size: 0.92rem; }
     .hero-badge { font-size: 0.75rem; padding: 7px 18px; display: inline-flex; }
     .hero-btn { padding: 14px 30px; font-size: 0.9rem; }
-    .hero-clock { display: none; }
+    .hero-clock { font-size: 1.8rem; margin: 16px 0 20px; }
     .hero-btn-primary, .hero-btn-outline { padding: 12px 28px; font-size: 0.9rem; }
 
     .page { padding: 74px 14px 44px; }

@@ -124,7 +124,6 @@ function render() {
         case 'suggestion':   app.innerHTML = renderSuggestion();       break;
         // case 'seat-draw':    app.innerHTML = renderSeatDraw();          break;
         case 'lunch':        app.innerHTML = renderLunch(); setTimeout(() => loadLunchPageWithAutoScroll(), 0); break;
-        case 'weather':      app.innerHTML = renderWeather(); setTimeout(() => loadWeatherPage(), 0); break;
         case 'cleaning':     app.innerHTML = renderCleaning(); break;
         case 'map':          app.innerHTML = renderMap(); setTimeout(() => initMapPage(), 0); break;
         default:             app.innerHTML = renderHome();

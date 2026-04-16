@@ -54,6 +54,7 @@ async function _fetchLunchDataFromFirebase() {
 }
 
 async function _fetchLunchDataFromJSON() {
+    if (window.location.protocol === 'file:') return { updated: '', menus: {} };
     try {
         const res = await fetch(LUNCH_DATA_URL);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);

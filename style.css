@@ -2232,7 +2232,7 @@ button { font-family: inherit; }
 
 /* ===== Mobile ===== */
 @media (max-width: 1200px) {
-    .feature-mosaic { grid-template-columns: repeat(3, 1fr); }
+    .feature-mosaic { grid-template-columns: repeat(4, 1fr); }
 }
 
 @media (max-width: 900px) {
@@ -3191,8 +3191,9 @@ button { font-family: inherit; }
    ============================================= */
 .feature-mosaic {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
+    justify-items: center;
 }
 
 .feature-mosaic .feature-card:first-child {

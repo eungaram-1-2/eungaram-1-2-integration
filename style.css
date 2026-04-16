@@ -498,7 +498,7 @@ button { font-family: inherit; }
 
 /* ===== Hero ===== */
 .hero {
-    background: linear-gradient(135deg, #3d1e8a 0%, #2563eb 100%);
+    background: linear-gradient(135deg, #0f0a2e 0%, #1e1065 30%, #1d4ed8 65%, #0891b2 100%);
     padding: 110px 0 0;
     color: white;
     position: relative;

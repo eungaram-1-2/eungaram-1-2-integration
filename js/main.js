@@ -15,17 +15,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateClock();
     setInterval(updateClock, 1000);
 
-    // 메뉴 초기 상태 보장 + 이벤트 직접 연결
+    // 메뉴 초기 상태 보장
     const navMenu = document.getElementById('navMenu');
     const hamburger = document.getElementById('hamburger');
     if (navMenu) navMenu.classList.remove('active');
     if (hamburger) {
         hamburger.classList.remove('active');
         hamburger.setAttribute('aria-expanded', 'false');
-        // 이벤트 리스너 추가
-        hamburger.removeEventListener('click', toggleMenu);  // 기존 리스너 제거
-        hamburger.addEventListener('click', toggleMenu);    // 새로운 리스너 추가
     }
+
+    // 이벤트 delegation으로 hamburger 클릭 처리
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('#hamburger');
+        if (btn) {
+            toggleMenu();
+        }
+    });
 
     // 즉시 localStorage 데이터로 렌더 (Firebase를 기다리지 않음)
     render();

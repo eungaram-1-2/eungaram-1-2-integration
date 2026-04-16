@@ -498,7 +498,7 @@ button { font-family: inherit; }
 
 /* ===== Hero ===== */
 .hero {
-    background: linear-gradient(135deg, #0f0a2e 0%, #1e1065 30%, #1d4ed8 65%, #0891b2 100%);
+    background: linear-gradient(135deg, #0f0a2e 0%, #1e1065 40%, #2d1b8a 100%);
     padding: 110px 0 0;
     color: white;
     position: relative;
@@ -2328,9 +2328,9 @@ button { font-family: inherit; }
     .hero { padding: 100px 16px 65px; }
     .hero h1 { font-size: 1.85rem; }
     .hero p { font-size: 0.92rem; }
-    .hero-badge { font-size: 0.75rem; padding: 7px 18px; }
+    .hero-badge { font-size: 0.75rem; padding: 7px 18px; display: inline-flex; }
     .hero-btn { padding: 14px 30px; font-size: 0.9rem; }
-    .hero-clock { font-size: 1.35rem; margin: 20px 0 24px; }
+    .hero-clock { display: none; }
     .hero-btn-primary, .hero-btn-outline { padding: 12px 28px; font-size: 0.9rem; }
 
     .page { padding: 74px 14px 44px; }

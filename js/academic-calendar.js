@@ -123,6 +123,18 @@ function renderAcademicCalendar() {
 
     app.innerHTML = html;
     renderMonthCalendar();
+
+    // 화면 회전 시 재렌더링 (debounce 적용)
+    let resizeTimeout;
+    const handleResize = () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            if (document.getElementById('monthCalendar')) {
+                renderMonthCalendar();
+            }
+        }, 300);
+    };
+    window.addEventListener('resize', handleResize);
 }
 
 function renderMonthCalendar() {
@@ -136,6 +148,39 @@ function renderMonthCalendar() {
         monthEventsDiv.innerHTML = '';
         return;
     }
+
+    // 이번 달 이벤트 목록 (달력과 리스트 뷰 모두에 필요)
+    const monthEvents = academicCalendarData.events.filter(event => {
+        const eventDate = new Date(event.date);
+        return eventDate.getFullYear() === currentCalendarYear &&
+               eventDate.getMonth() + 1 === currentCalendarMonth;
+    }).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // 480px 이하: 리스트 뷰
+    if (window.innerWidth <= 480) {
+        let listHTML = '<div class="cal-list">';
+        if (monthEvents.length === 0) {
+            listHTML += '<p class="cal-list-empty">이번 달 일정이 없습니다.</p>';
+        } else {
+            monthEvents.forEach(event => {
+                const d = new Date(event.date);
+                const days = ['일','월','화','수','목','금','토'];
+                listHTML += `
+                    <div class="cal-list-item">
+                        <span class="cal-list-date">${d.getDate()}일 (${days[d.getDay()]})</span>
+                        <span class="cal-list-dot event-${event.category}"></span>
+                        <span class="cal-list-title">${event.title}</span>
+                    </div>`;
+            });
+        }
+        listHTML += '</div>';
+        monthCalendarDiv.innerHTML = listHTML;
+        monthEventsDiv.style.display = 'none';
+        return;
+    }
+
+    // 480px 초과: 달력 뷰
+    monthEventsDiv.style.display = '';
 
     const firstDay = new Date(currentCalendarYear, currentCalendarMonth - 1, 1);
     const lastDay = new Date(currentCalendarYear, currentCalendarMonth, 0);
@@ -207,13 +252,6 @@ function renderMonthCalendar() {
 
     calendarHTML += '</div>';
     monthCalendarDiv.innerHTML = calendarHTML;
-
-    // 이번 달 이벤트 목록
-    const monthEvents = academicCalendarData.events.filter(event => {
-        const eventDate = new Date(event.date);
-        return eventDate.getFullYear() === currentCalendarYear &&
-               eventDate.getMonth() + 1 === currentCalendarMonth;
-    }).sort((a, b) => new Date(a.date) - new Date(b.date));
 
     let eventsListHTML = '<h3>📋 이번 달 일정</h3><div class="events-list">';
     if (monthEvents.length === 0) {

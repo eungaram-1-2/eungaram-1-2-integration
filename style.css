@@ -2420,6 +2420,8 @@ button { font-family: inherit; }
     .timetable td { min-height: 52px; }
     .notice-card { min-height: 60px; }
     .form-input, .form-textarea, .search-input { min-height: 48px; }
+    .reaction-btn { min-height: 40px; min-width: 40px; }
+    .modal-close { min-width: 44px; min-height: 44px; }
 }
 
 /* ===== 관리자 테이블 ===== */
@@ -5404,4 +5406,33 @@ button { font-family: inherit; }
     .hero-stat-label { font-size: 0.72rem; }
     .global-orb-1 { width: 500px; height: 500px; top: -150px; right: -150px; }
     .global-orb-2 { display: none; }
+
+    /* 급식 테이블 480px 이하 최적화 */
+    .lunch-table-horizontal th,
+    .lunch-table-horizontal td { padding: 8px 6px; font-size: 0.78rem; }
+    .lunch-table-header-cell { min-width: 72px; }
+}
+
+/* =============================================
+   학사일정 캘린더 모바일 최적화
+   ============================================= */
+@media (max-width: 480px) {
+    .cal-list { display: flex; flex-direction: column; gap: 0; }
+    .cal-list-item {
+        display: flex; align-items: center; gap: 10px;
+        padding: 12px 16px; border-bottom: 1px solid var(--border);
+        font-size: 0.9rem;
+    }
+    .cal-list-date { min-width: 72px; font-weight: 600; color: var(--text-muted); }
+    .cal-list-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .cal-list-title { flex: 1; }
+    .cal-list-empty { text-align: center; padding: 24px; color: var(--text-muted); }
+}
+
+/* =============================================
+   시간표 360px 이하 극소형 폰 최적화
+   ============================================= */
+@media (max-width: 360px) {
+    .timetable { min-width: 340px; }
+    .timetable td, .timetable th { padding: 8px 3px; font-size: 0.72rem; }
 }

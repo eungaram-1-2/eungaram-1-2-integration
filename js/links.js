@@ -16,6 +16,9 @@ function renderLinks() {
         if (link.audio) {
             // 오디오 플레이어 모달
             return `<div class="link-card-v" style="cursor:pointer" onclick="openSchoolSongModal('${link.audio}','${link.title}')">${cardBody}</div>`;
+        } else if (link.page === 'textbook') {
+            // 교과서 모달
+            return `<div class="link-card-v" style="cursor:pointer" onclick="openTextbookModal()">${cardBody}</div>`;
         } else if (link.page) {
             // 내부 링크 (채팅 등)
             return `<div class="link-card-v" style="cursor:pointer" onclick="navigate('${link.page}')">${cardBody}</div>`;
@@ -335,3 +338,49 @@ closeModal = function() {
     }
     _origCloseModal();
 };
+
+// =============================================
+// 교과서 모달
+// =============================================
+function openTextbookModal() {
+    const bodyHtml = `
+    <div style="
+        background: linear-gradient(135deg, #d946ef 0%, #ec4899 100%);
+        border-radius: 0 0 14px 14px;
+        padding: 32px 24px 28px;
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+        color: #fff;
+        margin: -28px -28px -28px -28px;
+    ">
+        <div style="position:absolute;top:12px;right:16px;font-size:3.5rem;opacity:0.15;line-height:1;pointer-events:none">📚</div>
+
+        <div style="font-size:3rem;margin-bottom:14px;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.2))">📖</div>
+
+        <h3 style="font-size:1.25rem;font-weight:800;margin-bottom:6px;letter-spacing:-0.01em">교과서, 핸드폰으로 한눈에!</h3>
+        <p style="font-size:0.86rem;opacity:0.8;margin-bottom:24px">학습할 과목을 선택하세요</p>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            ${TEXTBOOKS.map(book => `
+            <a href="${book.url}" target="_blank" rel="noopener noreferrer" style="
+                display:flex;flex-direction:column;align-items:center;
+                background:rgba(255,255,255,0.18);
+                backdrop-filter:blur(16px);
+                -webkit-backdrop-filter:blur(16px);
+                border:1px solid rgba(255,255,255,0.25);
+                border-radius:12px;padding:16px 12px;
+                text-decoration:none;color:#fff;
+                transition:all 0.2s;cursor:pointer;
+            " onmouseover="this.style.background='rgba(255,255,255,0.28)';this.style.transform='translateY(-2px)'"
+               onmouseout="this.style.background='rgba(255,255,255,0.18)';this.style.transform='translateY(0)'">
+                <div style="font-size:2rem;margin-bottom:8px">${book.icon}</div>
+                <div style="font-size:0.9rem;font-weight:700">${book.title}</div>
+            </a>
+            `).join('')}
+        </div>
+    </div>`;
+
+    openModal('교과서', bodyHtml);
+}
+

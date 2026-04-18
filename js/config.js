@@ -84,11 +84,26 @@ const SUBJ_COLORS = {
 };
 
 // =============================================
+// 교과서 링크
+// =============================================
+const TEXTBOOKS = [
+    { icon:'🇰🇷', title:'국어', url:'https://view.chunjae.co.kr/streamdocs/view/sd;streamdocsId=Gz6AURCyLqe5Dzf8R7lamKW9LCewt2MZKY7qXtGJebQ;isExternal=eQ;printUse=;enableDapSide=;pageView=' },
+    { icon:'🇬🇧', title:'영어', url:'https://view.chunjae.co.kr/streamdocs/view/sd;streamdocsId=8ga02zZdvlVDKPa_qNevQkJ49Bq1kE-1dmI263cOPiA;isExternal=eQ;printUse=;enableDapSide=;pageView=' },
+    { icon:'🔢', title:'수학', url:'https://view.chunjae.co.kr/streamdocs/view/sd;streamdocsId=KNj_rZK644Q0i2KmCbVI8woQlkDTgqrn7G0cGI_Hy1s;isExternal=eQ;printUse=;enableDapSide=;pageView=' },
+    { icon:'🔬', title:'과학', url:'https://ibook.vivasam.com/CBS_iBook/3776/contents/index.html?skin=basic01' },
+    { icon:'🌍', title:'사회', url:'https://ebook.dongapublishing.com/ebook/ecatalog5.asp?Dir=2288' },
+    { icon:'🗺️', title:'사회과부도', url:'https://ebook.dongapublishing.com/ebook/ecatalog5.asp?Dir=2298' },
+    { icon:'😊', title:'도덕', url:'https://ebook.dongapublishing.com/ebook/ecatalog5.asp?Dir=2300' },
+    { icon:'⚙️', title:'기가', url:'https://s3.ap-northeast-2.amazonaws.com/tsol.jihak.co.kr/tsol/22tp/m/tec/JIHAKSA_%EA%B8%B0%EC%88%A0%EA%B0%80%EC%A0%95%E2%91%A0_%EC%A4%91_%EA%B5%90%EA%B3%BC%EC%84%9C.pdf' }
+];
+
+// =============================================
 // 바로가기 링크
 // =============================================
 const QUICK_LINKS = [
     { icon:'🏫', title:'은가람중학교 공식 사이트', desc:'학교 공식 홈페이지',       url:'https://eungaram-m.goegh.kr/eungaram-m/main.do', color:'#7c3aed' },
     { icon:'📚', title:'전자도서관',               desc:'온라인 전자도서관 이용',   url:'https://eungaram.yes24library.com/', color:'#3b82f6' },
+    { icon:'📖', title:'교과서, 한눈에!',         desc:'핸드폰으로 교과서 보기',   page:'textbook', color:'#d946ef' },
     { icon:'🔍', title:'도서 검색',               desc:'학교 도서 검색 서비스',    url:'https://read365.edunet.net/PureScreen/SchoolSearch?schoolName=%EC%9D%80%EA%B0%80%EB%9E%8C%EC%A4%91%ED%95%99%EA%B5%90&provCode=J10&neisCode=J100007036', color:'#22c55e' },
     { icon:'🍽️', title:'급식 안내',               desc:'이번 주 급식 메뉴 확인',   url:'https://eungaram-m.goegh.kr/eungaram-m/ad/fm/foodmenu/selectFoodMenuView.do?mi=8056', color:'#f59e0b' },
     // { icon:'💭', title:'실시간 채팅',            desc:'친구들과 즉시 소통',       page:'chat', color:'#06b6d4' },

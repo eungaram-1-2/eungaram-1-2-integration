@@ -361,6 +361,41 @@ function openTextbookModal() {
         <h3 style="font-size:1.25rem;font-weight:800;margin-bottom:6px;letter-spacing:-0.01em">교과서, 핸드폰으로 한눈에!</h3>
         <p style="font-size:0.86rem;opacity:0.8;margin-bottom:24px">학습할 과목을 선택하세요</p>
 
+        <!-- 경고 메시지 -->
+        <div style="
+            background:rgba(255,255,255,0.15);
+            backdrop-filter:blur(10px);
+            -webkit-backdrop-filter:blur(10px);
+            border:1px solid rgba(255,255,255,0.25);
+            border-radius:10px;
+            padding:12px 14px;
+            margin-bottom:20px;
+            font-size:0.8rem;
+            line-height:1.4;
+            display:flex;
+            align-items:center;
+            gap:10px;
+        ">
+            <span style="font-size:1rem;flex-shrink:0">⚠️</span>
+            <span style="flex:1;text-align:left">교과서 링크는 항상 변동될 수 있습니다. 만약 로드나 에러 발생 시 Google이나 Naver에 검색해주시기 바랍니다.</span>
+            <button onclick="closeModal()" style="
+                background:rgba(255,255,255,0.25);
+                border:none;
+                color:#fff;
+                cursor:pointer;
+                width:24px;
+                height:24px;
+                border-radius:50%;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                font-size:1.2rem;
+                flex-shrink:0;
+                transition:background 0.2s;
+                padding:0;
+            " onmouseover="this.style.background='rgba(255,255,255,0.35)'" onmouseout="this.style.background='rgba(255,255,255,0.25)'">×</button>
+        </div>
+
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             ${TEXTBOOKS.map(book => `
             <a href="${book.url}" target="_blank" rel="noopener noreferrer" style="

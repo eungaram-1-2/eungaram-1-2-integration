@@ -10,20 +10,21 @@ const NEIS_LUNCH_CONFIG = {
     BASE_URL: 'https://open.neis.go.kr/hub/mealServiceDietInfo'
 };
 
-function _getLunchWeekRange() {
+function _getLunchWeekRange(weekOffset = 0) {
     const today = new Date();
+    today.setDate(today.getDate() + weekOffset * 7);
     const dayOfWeek = today.getDay();
     const monday = new Date(today);
     monday.setDate(today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1));
     const friday = new Date(monday);
     friday.setDate(monday.getDate() + 4);
     const fmt = d => `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
-    return { from: fmt(monday), to: fmt(friday) };
+    return { from: fmt(monday), to: fmt(friday), monday };
 }
 
-async function _fetchLunchDataFromNEIS() {
+async function _fetchLunchDataFromNEIS(weekOffset = 0) {
     try {
-        const { from, to } = _getLunchWeekRange();
+        const { from, to } = _getLunchWeekRange(weekOffset);
         const url = `${NEIS_LUNCH_CONFIG.BASE_URL}?KEY=${NEIS_LUNCH_CONFIG.API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${NEIS_LUNCH_CONFIG.ATPT_CODE}&SD_SCHUL_CODE=${NEIS_LUNCH_CONFIG.SCHOOL_CODE}&MLSV_FROM_YMD=${from}&MLSV_TO_YMD=${to}`;
 
         const resp = await fetch(url);
@@ -81,7 +82,7 @@ function _lunchTodayStr() {
 // =============================================
 // 급식 데이터 로드 (Firebase 우선, JSON 폴백)
 // =============================================
-let _lunchDataPromise = null;
+const _lunchDataCache = {}; // weekOffset -> promise
 
 async function _fetchLunchDataFromFirebase() {
     if (!fbReady()) return null;
@@ -221,38 +222,38 @@ async function _fetchLunchDataFromScrape() {
     }
 }
 
-async function _fetchLunchData() {
-    if (_lunchDataPromise) return _lunchDataPromise;
+async function _fetchLunchData(weekOffset = 0) {
+    if (_lunchDataCache[weekOffset]) return _lunchDataCache[weekOffset];
 
-    _lunchDataPromise = (async () => {
+    _lunchDataCache[weekOffset] = (async () => {
         const today = _lunchTodayStr();
 
-        // Firebase 우선
-        const fbData = await _fetchLunchDataFromFirebase();
-        if (fbData && fbData.menus && fbData.menus[today]) return fbData;
+        if (weekOffset === 0) {
+            // 이번 주: Firebase → NEIS → JSON → 스크래핑
+            const fbData = await _fetchLunchDataFromFirebase();
+            if (fbData && fbData.menus && fbData.menus[today]) return fbData;
 
-        // NEIS API
-        const neisData = await _fetchLunchDataFromNEIS();
-        if (neisData && Object.keys(neisData.menus).length > 0) return neisData;
+            const neisData = await _fetchLunchDataFromNEIS(0);
+            if (neisData && Object.keys(neisData.menus).length > 0) return neisData;
 
-        // JSON 폴백
-        const jsonData = await _fetchLunchDataFromJSON();
-        if (jsonData.menus && jsonData.menus[today]) return jsonData;
+            const jsonData = await _fetchLunchDataFromJSON();
+            if (jsonData.menus && jsonData.menus[today]) return jsonData;
 
-        // 학교 홈페이지 직접 스크래핑 (최후 수단)
-        console.info('[Lunch] JSON에 오늘 데이터 없음, 스크래핑 시도');
-        const scrapeData = await _fetchLunchDataFromScrape();
-        if (scrapeData && Object.keys(scrapeData.menus).length > 0) {
-            return {
-                updated: scrapeData.updated,
-                menus: { ...(jsonData.menus || {}), ...scrapeData.menus }
-            };
+            console.info('[Lunch] JSON에 오늘 데이터 없음, 스크래핑 시도');
+            const scrapeData = await _fetchLunchDataFromScrape();
+            if (scrapeData && Object.keys(scrapeData.menus).length > 0) {
+                return { updated: scrapeData.updated, menus: { ...(jsonData.menus || {}), ...scrapeData.menus } };
+            }
+            return jsonData;
+        } else {
+            // 다른 주: NEIS API만 사용
+            const neisData = await _fetchLunchDataFromNEIS(weekOffset);
+            if (neisData && Object.keys(neisData.menus).length > 0) return neisData;
+            return { updated: '', menus: {} };
         }
-
-        return jsonData;
     })();
 
-    return _lunchDataPromise;
+    return _lunchDataCache[weekOffset];
 }
 
 // =============================================
@@ -271,7 +272,7 @@ async function fetchLunchMenu() {
         return _todayMenuPromise;
     }
 
-    _todayMenuPromise = _fetchLunchData().then(data => {
+    _todayMenuPromise = _fetchLunchData(0).then(data => {
         const menu = data.menus[todayStr];
         if (!menu || !menu.items.length) return null;
 
@@ -292,16 +293,10 @@ async function fetchLunchMenu() {
 // =============================================
 // 주간 급식 (전체보기용)
 // =============================================
-async function fetchWeeklyLunch() {
-    const dayNames  = ['일','월','화','수','목','금','토'];
-    const today     = new Date();
-    const dayOfWeek = today.getDay();
+async function fetchWeeklyLunch(weekOffset = 0) {
+    const dayNames = ['일','월','화','수','목','금','토'];
+    const { monday } = _getLunchWeekRange(weekOffset);
 
-    // 이번 주 월요일
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1));
-
-    // 월~금 날짜 목록
     const p = n => String(n).padStart(2, '0');
     const weekDays = Array.from({ length: 5 }, (_, i) => {
         const d = new Date(monday);
@@ -315,10 +310,8 @@ async function fetchWeeklyLunch() {
         };
     });
 
-    // JSON 데이터 로드
-    const data = await _fetchLunchData();
+    const data = await _fetchLunchData(weekOffset);
 
-    // 각 날짜별로 메뉴 추출
     for (const dayData of weekDays) {
         const menu = data.menus[dayData.date];
         if (menu) {
@@ -389,15 +382,21 @@ async function loadLunchWidget() {
 // =============================================
 // 전용 급식 페이지 (주간 테이블)
 // =============================================
+let _lunchWeekOffset = 0;
+
 function renderLunch() {
     return `
     <div class="page">
         <div class="page-header">
-            <h2>🍱 이번 주 급식</h2>
-            <p>은가람 중학교</p>
+            <h2>🍱 급식</h2>
             <button class="btn btn-primary" onclick="downloadLunch()" style="margin-top:12px">📥 급식 저장</button>
         </div>
         <div class="container" style="max-width:900px;margin:0 auto;padding:0 20px 60px">
+            <div class="week-nav">
+                <button class="week-nav-btn" onclick="changeLunchWeek(-1)">◀ 이전 주</button>
+                <span class="week-nav-label" id="lunchWeekLabel">이번 주</span>
+                <button class="week-nav-btn" onclick="changeLunchWeek(1)">다음 주 ▶</button>
+            </div>
             <div class="allergen-panel" id="allergenPanel">
                 <div class="allergen-panel-toggle" onclick="document.getElementById('allergenPanel').classList.toggle('open')">
                     <span>🚨 알레르기 정보</span>
@@ -438,11 +437,28 @@ function renderLunch() {
     </div>`;
 }
 
-async function loadLunchPage() {
+function _getLunchWeekLabel(offset) {
+    if (offset === 0) return '이번 주';
+    if (offset === 1) return '다음 주';
+    if (offset === -1) return '지난 주';
+    if (offset > 0) return `${offset}주 후`;
+    return `${Math.abs(offset)}주 전`;
+}
+
+function changeLunchWeek(delta) {
+    _lunchWeekOffset += delta;
+    const label = document.getElementById('lunchWeekLabel');
+    if (label) label.textContent = _getLunchWeekLabel(_lunchWeekOffset);
+    loadLunchPage(_lunchWeekOffset);
+}
+
+async function loadLunchPage(weekOffset = 0) {
     const card = document.getElementById('lunchPageCard');
     if (!card) return;
 
-    const weeklyData = await fetchWeeklyLunch();
+    card.innerHTML = `<div class="lunch-loading"><span class="lunch-spinner"></span><span>급식 정보 불러오는 중...</span></div>`;
+
+    const weeklyData = await fetchWeeklyLunch(weekOffset);
     const hasAny = weeklyData.some(d => d.items.length > 0);
 
     if (!hasAny) {
@@ -607,7 +623,8 @@ function enableAutoScrollLunchTable() {
 
 // loadLunchPage() 이후 호출
 async function loadLunchPageWithAutoScroll() {
-    await loadLunchPage();
+    _lunchWeekOffset = 0;
+    await loadLunchPage(0);
     // 테이블 렌더링 후 자동 스크롤 활성화
     setTimeout(() => enableAutoScrollLunchTable(), 100);
 }
@@ -615,6 +632,3 @@ async function loadLunchPageWithAutoScroll() {
 // =============================================
 // 초기 프리페치 (빠른 로딩)
 // =============================================
-// 스크립트 로드 시 급식 데이터를 미리 가져옴
-_fetchLunchData();
-fetchLunchMenu();

@@ -113,7 +113,7 @@ function render() {
         case 'board':        app.innerHTML = renderBoard();             break;
         case 'board-detail': app.innerHTML = renderPostDetail('board'); break;
         case 'board-write':  app.innerHTML = renderPostWrite('board');  break;
-        case 'timetable':    app.innerHTML = renderTimetable();         break;
+        case 'timetable':    app.innerHTML = renderTimetable(); _timetableWeekOffset = 0; setTimeout(() => loadTimetableForWeek(0), 0); break;
         case 'academic':     renderAcademicCalendar();                  break;
         case 'votes':        app.innerHTML = renderVotes();             break;
         case 'vote-detail':  app.innerHTML = renderVoteDetail();        break;

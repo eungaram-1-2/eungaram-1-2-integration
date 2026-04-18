@@ -35,19 +35,19 @@ function normalizeSubjectName(subject) {
 }
 
 /**
- * 주간 날짜 범위 구하기 (현재 주의 월~금)
+ * 주간 날짜 범위 구하기
+ * @param {number} weekOffset 0=이번주, 1=다음주, -1=지난주
  * @returns {Array<string>} YYYYMMDD 형식의 날짜 배열
  */
-function getWeekDateRange() {
+function getWeekDateRange(weekOffset = 0) {
     const today = new Date();
-    const dayOfWeek = today.getDay();  // 0=일, 1=월 ... 5=금, 6=토
+    today.setDate(today.getDate() + weekOffset * 7);
+    const dayOfWeek = today.getDay();
 
-    // 현재 주의 월요일 구하기
     const monday = new Date(today);
-    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);  // 월요일이 1
+    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
     monday.setDate(diff);
 
-    // 월~금 5일간의 날짜 배열 생성
     const dates = [];
     for (let i = 0; i < 5; i++) {
         const d = new Date(monday);
@@ -62,10 +62,11 @@ function getWeekDateRange() {
 
 /**
  * NEIS API에서 시간표 데이터 조회 (주간)
+ * @param {number} weekOffset 0=이번주, 1=다음주, -1=지난주
  * @returns {Promise<Object>} 요일별 정렬된 시간표 데이터
  */
-async function fetchNeisTimeTableData() {
-    const dates = getWeekDateRange();
+async function fetchNeisTimeTableData(weekOffset = 0) {
+    const dates = getWeekDateRange(weekOffset);
     const allData = {};  // { YYYYMMDD: [row1, row2, ...], ... }
 
     try {

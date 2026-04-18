@@ -11,10 +11,25 @@ function _getWeekLabel(offset) {
     return offset > 0 ? `${offset}주 후` : `${Math.abs(offset)}주 전`;
 }
 
+function _getWeekDates(weekOffset) {
+    const base = new Date();
+    base.setDate(base.getDate() + weekOffset * 7);
+    const dow = base.getDay();
+    const monday = new Date(base);
+    monday.setDate(base.getDate() - dow + (dow === 0 ? -6 : 1));
+    const p = n => String(n).padStart(2, '0');
+    return Array.from({ length: 5 }, (_, i) => {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        return `${d.getMonth() + 1}/${p(d.getDate())}`;
+    });
+}
+
 function _buildTimetableHtml(data, weekOffset) {
     const isThisWeek = weekOffset === 0;
     const dow = new Date().getDay();
     const todayIdx = isThisWeek ? (dow - 1) : -1;
+    const weekDates = _getWeekDates(weekOffset);
 
     // ── 오늘 수업 가로 카드 바 (이번 주만) ──
     let todayBarHtml = '';
@@ -59,7 +74,7 @@ function _buildTimetableHtml(data, weekOffset) {
     }).join('');
 
     const headers = data.days.map((d, i) =>
-        `<th${i === todayIdx ? ' class="today-col"' : ''}>${d}요일</th>`
+        `<th${i === todayIdx ? ' class="today-col"' : ''}>${d}요일<br><small style="font-size:0.72rem;font-weight:500;opacity:0.7">${weekDates[i]}</small></th>`
     ).join('');
 
     const mobileCards = data.days.map((day, dayIdx) => {
@@ -75,7 +90,7 @@ function _buildTimetableHtml(data, weekOffset) {
             </div>`;
         }).filter(Boolean).join('');
         return `<div class="tt-mobile-day"${dayClasses}>
-            <h3 style="margin:16px 0 12px;font-size:1.1rem;font-weight:700">${day}요일</h3>
+            <h3 style="margin:16px 0 12px;font-size:1.1rem;font-weight:700">${day}요일 <span style="font-size:0.85rem;font-weight:500;color:var(--text-muted)">${weekDates[dayIdx]}</span></h3>
             <div style="display:flex;flex-direction:column;gap:10px">${cards || '<span style="color:var(--text-muted)">수업 없음</span>'}</div>
         </div>`;
     }).join('');

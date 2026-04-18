@@ -4,11 +4,12 @@
 const RateLimit = {
     _store: {},
     limits: {
-        login:    { max: 5,  window: 60000 },
-        comment:  { max: 10, window: 60000 },
+        login:    { max: 5,  window: 60000  },
+        comment:  { max: 10, window: 60000  },
         post:     { max: 5,  window: 120000 },
-        vote:     { max: 3,  window: 60000 },
-        navigate: { max: 60, window: 10000 },
+        vote:     { max: 3,  window: 60000  },
+        navigate: { max: 60, window: 10000  },
+        chat:     { max: 5,  window: 10000  },  // 10초에 5개
     },
     check(action) {
         const now = Date.now();
@@ -45,10 +46,36 @@ const Security = {
     MAX_INPUT:    50,
     MAX_FILE_SIZE: 100 * 1024 * 1024,
 
+    // HTML 태그 제거 (저장 전 방어층)
+    stripHtml(str) {
+        if (typeof str !== 'string') return '';
+        return str.replace(/<[^>]*>/g, '');
+    },
+
     sanitize(str) {
         if (typeof str !== 'string') return '';
-        return str.trim().slice(0, this.MAX_CONTENT);
+        return this.stripHtml(str).trim().slice(0, this.MAX_CONTENT);
     },
+
+    // javascript:, data: 등 위험 URL 차단
+    sanitizeUrl(url) {
+        if (!url || typeof url !== 'string') return '#';
+        const t = url.trim().toLowerCase().replace(/\s/g, '');
+        const blocked = ['javascript:', 'vbscript:', 'data:text/html', 'data:application'];
+        if (blocked.some(p => t.startsWith(p))) return '#';
+        return url;
+    },
+
+    // 중복 메시지 감지 (windowMs 내 같은 내용 차단)
+    _lastMsg: {},
+    isDuplicate(text, action = 'default', windowMs = 3000) {
+        const now = Date.now();
+        const last = this._lastMsg[action];
+        if (last && last.text === text && (now - last.time) < windowMs) return true;
+        this._lastMsg[action] = { text, time: now };
+        return false;
+    },
+
     validateTitle(str) {
         const s = this.sanitize(str);
         if (!s) return { ok: false, msg: '제목을 입력해주세요.' };

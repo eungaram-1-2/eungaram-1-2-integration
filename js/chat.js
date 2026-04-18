@@ -123,6 +123,11 @@ function sendChatMessage() {
     const text = Security.sanitize(input.value.trim().slice(0, 500));
     if (!text) return;
 
+    if (Security.isDuplicate(text, 'chat', 3000)) {
+        showToast('같은 메시지를 연속으로 보낼 수 없습니다.', 'warning');
+        return;
+    }
+
     const msg = {
         id: Date.now().toString(),
         text: text,

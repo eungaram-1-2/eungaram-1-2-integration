@@ -76,6 +76,8 @@ body {
     line-height: 1.7;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+    overscroll-behavior-y: none;
     transition: background 0.3s, color 0.3s;
 }
 
@@ -98,6 +100,7 @@ button { font-family: inherit; }
     top: 0; left: 0; right: 0;
     z-index: 1001;
     height: 64px;
+    padding-top: env(safe-area-inset-top, 0px);
     transition: var(--transition);
 }
 
@@ -1168,6 +1171,14 @@ button { font-family: inherit; }
     font-family: inherit;
     background: var(--bg-subtle);
     color: var(--text);
+    -webkit-appearance: none;
+}
+@media (max-width: 768px) {
+    .form-input,
+    .form-textarea,
+    .form-select {
+        font-size: 16px;
+    }
 }
 
 .form-input:focus,
@@ -2149,6 +2160,7 @@ button { font-family: inherit; }
     background: var(--bg-card);
     border-top: 1px solid var(--border-light);
     padding: 28px 20px;
+    padding-bottom: max(28px, env(safe-area-inset-bottom));
     text-align: center;
     color: var(--text-muted);
     font-size: 0.8rem;
@@ -2279,13 +2291,16 @@ button { font-family: inherit; }
         left: 0; right: 0; bottom: 0;
         width: 100vw;
         height: calc(100vh - 56px);
+        height: calc(100dvh - 56px);
         background: var(--bg-card);
         flex-direction: column;
         align-items: stretch;
         padding: 16px;
+        padding-bottom: max(16px, env(safe-area-inset-bottom));
         z-index: 1001;
         gap: 4px;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         border-top: 1px solid var(--border);
         pointer-events: auto;
         margin: 0;
@@ -2775,6 +2790,9 @@ button { font-family: inherit; }
     font-size: 0.95rem;
     font-family: inherit;
     transition: var(--transition);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
 }
 
 .week-nav-btn:hover {
@@ -2796,6 +2814,33 @@ button { font-family: inherit; }
     min-width: 120px;
     text-align: center;
     letter-spacing: -0.01em;
+}
+
+@media (max-width: 600px) {
+    .week-nav {
+        gap: 0;
+        width: 100%;
+        flex-wrap: nowrap;
+    }
+    .week-nav-btn {
+        flex: 1;
+        min-height: 52px;
+        font-size: 0.88rem;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        padding: 12px 8px;
+        white-space: nowrap;
+    }
+    .week-nav-label {
+        flex: 0 0 auto;
+        font-size: 1rem;
+        min-width: 72px;
+        text-align: center;
+        padding: 0 8px;
+    }
 }
 
 .lunch-page-card {
@@ -2870,6 +2915,19 @@ button { font-family: inherit; }
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     scroll-snap-type: x mandatory;
+    position: relative;
+}
+
+/* 모바일 스크롤 힌트: 우측 페이드 */
+@media (max-width: 768px) {
+    .lunch-table-wrapper {
+        mask-image: linear-gradient(to right, black calc(100% - 32px), transparent 100%);
+        -webkit-mask-image: linear-gradient(to right, black calc(100% - 32px), transparent 100%);
+    }
+    .lunch-table-wrapper.scrolled-end {
+        mask-image: none;
+        -webkit-mask-image: none;
+    }
 }
 
 .lunch-table-horizontal {

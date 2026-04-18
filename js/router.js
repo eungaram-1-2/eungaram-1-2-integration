@@ -22,9 +22,9 @@ function navigate(page, params = {}) {
     if (backdrop) backdrop.classList.remove('active');
 }
 
-const BANNED_RESTRICTED   = ['board','board-detail','board-write','dday'];
-const TIMEOUT_RESTRICTED  = ['board','board-detail','board-write','dday','votes','vote-detail','vote-create'];
-const GUEST_ALLOWED       = ['home','timetable','lunch','academic','weather','cleaning','map','board','board-detail','board-write','votes','vote-detail','vote-create','dday','chat','links','suggestion'];
+const BANNED_RESTRICTED   = ['dday'];
+const TIMEOUT_RESTRICTED  = ['dday','votes','vote-detail','vote-create'];
+const GUEST_ALLOWED       = ['home','timetable','lunch','academic','weather','cleaning','map','votes','vote-detail','vote-create','dday','chat','links','suggestion'];
 
 // 로그인 기능 삭제로 인해 더 이상 사용되지 않음
 // function renderLoginRequiredPage() { ... }
@@ -110,9 +110,6 @@ function render() {
 
     switch (currentPage) {
         case 'home':         app.innerHTML = renderHome();              break;
-        case 'board':        app.innerHTML = renderBoard();             break;
-        case 'board-detail': app.innerHTML = renderPostDetail('board'); break;
-        case 'board-write':  app.innerHTML = renderPostWrite('board');  break;
         case 'timetable':    app.innerHTML = renderTimetable(); _timetableWeekOffset = 0; setTimeout(() => loadTimetableForWeek(0), 0); break;
         case 'academic':     renderAcademicCalendar();                  break;
         case 'votes':        app.innerHTML = renderVotes();             break;

@@ -501,12 +501,22 @@ async function loadLunchPage(weekOffset = 0) {
         </tr>`;
 
     card.innerHTML = `
-        <div class="lunch-table-wrapper">
+        <div class="lunch-table-wrapper" id="lunchTableWrapper">
             <table class="lunch-table-horizontal">
                 <thead>${headerHtml}</thead>
                 <tbody>${menuRows}${kcalRow}</tbody>
             </table>
         </div>`;
+
+    const wrapper = document.getElementById('lunchTableWrapper');
+    if (wrapper) {
+        const updateFade = () => {
+            const atEnd = wrapper.scrollLeft + wrapper.clientWidth >= wrapper.scrollWidth - 4;
+            wrapper.classList.toggle('scrolled-end', atEnd);
+        };
+        wrapper.addEventListener('scroll', updateFade, { passive: true });
+        updateFade();
+    }
 }
 
 // 급식 저장

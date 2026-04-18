@@ -34,7 +34,7 @@ function renderTimetable() {
         </div>`;
     }
 
-    // ── 전체 시간표 테이블 ──
+    // ── 전체 시간표 테이블 (PC) ──
     const rows = TIMETABLE.periods.map((p, pi) => {
         const cells = TIMETABLE.days.map((d, di) => {
             const c = TIMETABLE.schedule[pi][di];
@@ -51,6 +51,26 @@ function renderTimetable() {
         `<th${i === todayIdx ? ' class="today-col"' : ''}>${d}요일</th>`
     ).join('');
 
+    // ── 모바일 카드 형식 ──
+    const mobileCards = TIMETABLE.days.map((day, dayIdx) => {
+        const dayClasses = dayIdx === todayIdx ? ' style="border-left: 4px solid var(--primary)"' : '';
+        const cards = TIMETABLE.periods.map((p, pi) => {
+            const c = TIMETABLE.schedule[pi][dayIdx];
+            if (!c || !c.s) return '';
+            const color = SUBJ_COLORS[c.s] || '#64748b';
+            return `<div class="tt-mobile-card" style="border-left: 4px solid ${color}; background: var(--surface)">
+                <div style="font-size:0.75rem;color:var(--text-muted);font-weight:600">${p.num}교시 ${p.time}</div>
+                <div style="font-size:1.1rem;font-weight:700;color:${color};margin:8px 0">${c.s}</div>
+                ${c.t ? `<div style="font-size:0.85rem;color:var(--text-muted)">${c.t}</div>` : ''}
+            </div>`;
+        }).filter(Boolean).join('');
+
+        return `<div class="tt-mobile-day"${dayClasses}>
+            <h3 style="margin:16px 0 12px;font-size:1.1rem;font-weight:700">${day}요일</h3>
+            <div style="display:flex;flex-direction:column;gap:10px">${cards || '<span style="color:var(--text-muted)">수업 없음</span>'}</div>
+        </div>`;
+    }).join('');
+
     return `
     <div class="page">
         <div class="page-header">
@@ -60,11 +80,16 @@ function renderTimetable() {
         </div>
         ${todayBarHtml}
         <div class="card card-body">
+            <!-- PC 테이블 형식 -->
             <div class="timetable-container">
                 <table class="timetable">
                     <thead><tr><th>교시</th>${headers}</tr></thead>
                     <tbody>${rows}</tbody>
                 </table>
+            </div>
+            <!-- 모바일 카드 형식 -->
+            <div class="timetable-mobile">
+                ${mobileCards}
             </div>
         </div>
     </div>`;

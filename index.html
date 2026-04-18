@@ -6,9 +6,8 @@
     <title>은가람 중학교 1학년 2반 | 함께 배우고 성장하는 우리 반</title>
     <meta name="description" content="우리 반의 모든 것이 한 곳에. 공지사항, 시간표, 급식, 학사일정, 커뮤니티까지 한눈에 보고 함께 배우고 성장하는 공동체입니다.">
     <!-- 보안: CSP -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https://*.tile.openstreetmap.org; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebasedatabase.app; connect-src 'self' https://www.gstatic.com https://api.allorigins.win https://cors-anywhere.herokuapp.com https://api.ipify.org https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://firebasestorage.googleapis.com https://*.firebasedatabase.app wss://*.firebasedatabase.app https://cdn.jsdelivr.net https://api.open-meteo.com https://nominatim.openstreetmap.org https://router.project-osrm.org https://api.weather.go.kr; media-src 'self'; form-action 'self' https://docs.google.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https://*.tile.openstreetmap.org; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebasedatabase.app; frame-src 'self' https://*.firebasedatabase.app; connect-src 'self' https://www.gstatic.com https://api.allorigins.win https://api.codetabs.com https://thingproxy.freeboard.io https://cors-anywhere.herokuapp.com https://api.ipify.org https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://firebasestorage.googleapis.com https://*.firebasedatabase.app wss://*.firebasedatabase.app https://cdn.jsdelivr.net https://api.open-meteo.com https://nominatim.openstreetmap.org https://router.project-osrm.org https://api.weather.go.kr https://eungaram-m.goegh.kr https://open.neis.go.kr; media-src 'self'; form-action 'self' https://docs.google.com;">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-Frame-Options" content="DENY">
     <meta name="referrer" content="no-referrer">
     <!-- 폰트 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,14 +15,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css">
-    <link rel="stylesheet" href="style.min.css?v=2">
+    <link rel="stylesheet" href="style.min.css?v=5">
     <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-    <link rel="prefetch" href="data/lunch.json" as="fetch" crossorigin="anonymous">
     <!-- 다크모드 깜빡임 방지 -->
     <script>
         (function(){
-            var t = localStorage.getItem('theme');
-            if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            var t = localStorage.getItem('theme') || 'dark';
+            if (t === 'dark') {
                 document.documentElement.setAttribute('data-theme','dark');
             }
         })();
@@ -42,13 +40,11 @@
                 </div>
             </a>
             <ul class="nav-menu" id="navMenu">
-                <li><a href="#" onclick="navigate('notices')">📢 공지사항</a></li>
                 <li><a href="#" onclick="navigate('timetable')">📅 시간표</a></li>
                 <li><a href="#" onclick="navigate('lunch')">🍱 급식</a></li>
                 <li><a href="#" onclick="navigate('academic')">🗓️ 학사일정</a></li>
                 <!-- <li><a href="#" onclick="navigate('board')">💬 자유게시판</a></li>
                 <li><a href="#" onclick="navigate('votes')">🗳️ 투표</a></li> -->
-                <li><a href="#" onclick="navigate('weather')">🌤️ 날씨</a></li>
                 <li><a href="#" onclick="navigate('links')">🔗 바로가기</a></li>
                 <!-- 모바일 전용: 로그인 상태 메뉴 -->
                 <li class="nav-menu-user-section" id="navMenuUserSection" style="display:none"></li>
@@ -57,23 +53,17 @@
                 <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="다크/라이트 모드 전환" aria-label="테마 전환">
                     <span class="theme-icon" id="themeIcon">🌙</span>
                 </button>
-                <div class="nav-auth" id="navAuth">
-                    <button class="btn btn-primary btn-sm" onclick="navigate('login')">로그인</button>
-                </div>
-                <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="메뉴 열기">
+                <div class="nav-auth" id="navAuth"></div>
+                <button class="hamburger" id="hamburger" aria-label="메뉴 열기" onclick="toggleMenu();">
                     <span></span><span></span><span></span>
                 </button>
             </div>
         </div>
     </nav>
 
-    <!-- 긴급 공지 배너 -->
-    <div id="emergencyBanner" class="emergency-banner" style="display:none" role="alert" aria-live="assertive">
-        <div class="emergency-banner-inner">
-            <span class="emergency-banner-label">🚨 긴급 공지</span>
-            <span class="emergency-banner-text" id="emergencyBannerText"></span>
-        </div>
-    </div>
+    <!-- 전역 배경 orb (다크 모드) -->
+    <div class="global-orb global-orb-1" aria-hidden="true"></div>
+    <div class="global-orb global-orb-2" aria-hidden="true"></div>
 
     <!-- 메인 컨텐츠 -->
     <main id="app"></main>
@@ -102,44 +92,37 @@
     <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
     <!-- 기반 스크립트 -->
-    <script defer src="js/firebase-config.js"></script>
-    <script defer src="js/config.js"></script>
-    <script defer src="js/security.js"></script>
-    <script defer src="js/db.js"></script>
-    <script defer src="js/utils.js"></script>
-    <script defer src="js/theme.js"></script>
-    <script defer src="js/modal.js"></script>
+    <script defer src="js/firebase-config.js?v=5"></script>
+    <script defer src="js/config.js?v=5"></script>
+    <script defer src="js/security.js?v=5"></script>
+    <script defer src="js/db.js?v=5"></script>
+    <script defer src="js/utils.js?v=5"></script>
+    <script defer src="js/theme.js?v=5"></script>
+    <script defer src="js/modal.js?v=5"></script>
 
     <!-- 페이지 렌더러 -->
-    <script defer src="js/auth.js"></script>
-    <script defer src="js/admin.js"></script>
-    <script defer src="js/home.js"></script>
-    <script defer src="js/notices.js"></script>
-    <script defer src="js/post.js"></script>
-    <script defer src="js/comments.js"></script>
-    <script defer src="js/timetable.js"></script>
-    <script defer src="js/votes.js"></script>
-    <script defer src="js/dday.js"></script>
-    <script defer src="js/links.js"></script>
-    <script defer src="js/suggestion.js"></script>
-    <script defer src="js/lunch.js"></script>
-    <script defer src="js/logs.js"></script>
-    <script defer src="js/boardlog.js"></script>
-    <script defer src="js/notifications.js"></script>
-    <script defer src="js/chat.js"></script>
-    <script defer src="js/reactions.js"></script>
-    <script defer src="js/academic-calendar.js"></script>
-    <script defer src="js/weather.js"></script>
-    <script defer src="js/cleaning.js"></script>
+    <script defer src="js/home.js?v=5"></script>
+    <script defer src="js/neis-timetable.js?v=5"></script>
+    <script defer src="js/timetable.js?v=5"></script>
+    <script defer src="js/votes.js?v=5"></script>
+    <script defer src="js/dday.js?v=5"></script>
+    <script defer src="js/links.js?v=5"></script>
+    <script defer src="js/suggestion.js?v=5"></script>
+    <script defer src="js/lunch.js?v=5"></script>
+    <script defer src="js/notifications.js?v=5"></script>
+    <script defer src="js/chat.js?v=5"></script>
+    <script defer src="js/reactions.js?v=5"></script>
+    <script defer src="js/academic-calendar.js?v=5"></script>
+    <script defer src="js/cleaning.js?v=5"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
-    <script defer src="js/map.js"></script>
+    <script defer src="js/map.js?v=5"></script>
 
     <!-- <script defer src="js/seat-draw.js"></script> -->
-    <script defer src="js/visitors.js"></script>
+    <script defer src="js/visitors.js?v=5"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
     <!-- 라우터 & 초기화 (마지막에 로드) -->
-    <script defer src="js/router.js"></script>
-    <script defer src="js/main.js"></script>
+    <script defer src="js/router.js?v=5"></script>
+    <script defer src="js/main.js?v=5"></script>
 </body>
 </html>

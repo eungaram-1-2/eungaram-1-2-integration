@@ -6,10 +6,6 @@ let pageParams  = {};
 
 function navigate(page, params = {}) {
     if (!RateLimit.check('navigate')) return;
-    if (typeof _adminUnlisten === 'function') {
-        _adminUnlisten();
-        _adminUnlisten = null;
-    }
     currentPage = page;
     pageParams  = params;
     render();
@@ -26,21 +22,12 @@ function navigate(page, params = {}) {
     if (backdrop) backdrop.classList.remove('active');
 }
 
-const BANNED_RESTRICTED   = ['board','board-detail','board-write','dday','logs','boardlog'];
-const TIMEOUT_RESTRICTED  = ['board','board-detail','board-write','dday','notices','notice-detail','notice-write','votes','vote-detail','vote-create','logs','boardlog'];
-const GUEST_ALLOWED       = ['home','login','timetable','lunch','academic','weather','cleaning','map','board','board-detail','board-write','votes','vote-detail','vote-create','dday','chat','links','suggestion'];
+const BANNED_RESTRICTED   = ['board','board-detail','board-write','dday'];
+const TIMEOUT_RESTRICTED  = ['board','board-detail','board-write','dday','votes','vote-detail','vote-create'];
+const GUEST_ALLOWED       = ['home','timetable','lunch','academic','weather','cleaning','map','board','board-detail','board-write','votes','vote-detail','vote-create','dday','chat','links','suggestion'];
 
-function renderLoginRequiredPage() {
-    return `
-    <div class="page">
-        <div class="empty-state">
-            <div class="empty-icon">🔒</div>
-            <p style="font-weight:700;font-size:1rem">로그인이 필요합니다.</p>
-            <p style="font-size:0.85rem;margin-top:8px;color:var(--text-muted)">시간표는 로그인 없이 볼 수 있습니다.</p>
-            <button class="btn btn-primary" style="margin-top:18px" onclick="navigate('login')">로그인하기</button>
-        </div>
-    </div>`;
-}
+// 로그인 기능 삭제로 인해 더 이상 사용되지 않음
+// function renderLoginRequiredPage() { ... }
 
 function renderBannedPage() {
     return `
@@ -110,12 +97,6 @@ function render() {
     const app = document.getElementById('app');
     updateNav();
     applyTheme(getTheme());
-    updateEmergencyBanner();
-
-    if (!isLoggedIn() && !GUEST_ALLOWED.includes(currentPage)) {
-        app.innerHTML = renderLoginRequiredPage();
-        return;
-    }
 
     if (isLoggedIn() && isBanned() && BANNED_RESTRICTED.includes(currentPage)) {
         app.innerHTML = renderBannedPage();
@@ -129,10 +110,6 @@ function render() {
 
     switch (currentPage) {
         case 'home':         app.innerHTML = renderHome();              break;
-        case 'login':        app.innerHTML = renderLogin();             break;
-        case 'notices':      app.innerHTML = renderNotices();           break;
-        case 'notice-detail':app.innerHTML = renderPostDetail('notices'); break;
-        case 'notice-write': app.innerHTML = renderPostWrite('notices'); break;
         case 'board':        app.innerHTML = renderBoard();             break;
         case 'board-detail': app.innerHTML = renderPostDetail('board'); break;
         case 'board-write':  app.innerHTML = renderPostWrite('board');  break;
@@ -146,56 +123,18 @@ function render() {
         case 'links':        app.innerHTML = renderLinks();             break;
         case 'suggestion':   app.innerHTML = renderSuggestion();       break;
         // case 'seat-draw':    app.innerHTML = renderSeatDraw();          break;
-        case 'change-password': app.innerHTML = renderChangePassword(); break;
         case 'lunch':        app.innerHTML = renderLunch(); setTimeout(() => loadLunchPageWithAutoScroll(), 0); break;
-        case 'weather':      app.innerHTML = renderWeather(); setTimeout(() => loadWeatherPage(), 0); break;
         case 'cleaning':     app.innerHTML = renderCleaning(); break;
         case 'map':          app.innerHTML = renderMap(); setTimeout(() => initMapPage(), 0); break;
-        case 'admin':        app.innerHTML = renderAdmin();             break;
-        case 'logs':         app.innerHTML = renderLogs();              break;
-        case 'boardlog':     app.innerHTML = renderBoardLog();          break;
         default:             app.innerHTML = renderHome();
     }
 }
 
 function updateNav() {
     const authDiv = document.getElementById('navAuth');
-    const user    = currentUser();
-
-    if (user) {
-        const bc = user.role === 'admin' ? 'badge-admin' : 'badge-user';
-        const bt = user.role === 'admin' ? '관리자' : '학생';
-        const banBadge = isBanned() ? `<span class="badge-banned" style="font-size:0.68rem">정지됨</span>` : '';
-        const adminBtn = user.role === 'admin'
-            ? `<button class="btn btn-outline btn-sm" onclick="navigate('admin')" style="border-color:var(--primary);color:var(--primary);font-size:0.78rem">⚙️ 관리자</button>`
-            : '';
-        // 데스크탑: 배지 + 닉네임 + 관리자버튼 + 로그아웃 모두 표시
-        authDiv.innerHTML = `
-            <div class="user-info">
-                <span class="user-badge ${bc}">${bt}</span>
-                ${banBadge}
-                <span class="nav-user-nick">${escapeHtml(user.nickname)}</span>
-                <span class="nav-auth-desktop">${adminBtn}
-                    <button class="btn btn-ghost btn-sm" onclick="navigate('change-password')">🔑 비번변경</button>
-                    <button class="btn btn-ghost btn-sm" onclick="logout()">로그아웃</button>
-                </span>
-            </div>`;
-        // 모바일 햄버거 메뉴: 구분선 + 관리자 + 로그아웃
-        const mobileSection = document.getElementById('navMenuUserSection');
-        if (mobileSection) {
-            mobileSection.style.display = '';
-            mobileSection.innerHTML = `
-                <div class="nav-menu-divider"></div>
-                <span class="nav-menu-user-label">${escapeHtml(user.nickname)} (${bt})</span>
-                ${user.role === 'admin' ? `<a href="#" onclick="navigate('admin')">⚙️ 관리자 대시보드</a>` : ''}
-                <a href="#" onclick="navigate('change-password')">🔑 비밀번호 변경</a>
-                <a href="#" onclick="logout()">🚪 로그아웃</a>`;
-        }
-    } else {
-        authDiv.innerHTML = `<button class="btn btn-primary btn-sm" onclick="navigate('login')">로그인</button>`;
-        const mobileSection = document.getElementById('navMenuUserSection');
-        if (mobileSection) mobileSection.style.display = 'none';
-    }
+    authDiv.innerHTML = '';
+    const mobileSection = document.getElementById('navMenuUserSection');
+    if (mobileSection) mobileSection.style.display = 'none';
 
     const loggedIn = isLoggedIn();
     const navMenu = document.getElementById('navMenu');
@@ -205,19 +144,16 @@ function updateNav() {
         const a = li.querySelector('a');
         if (!a) return;
         const p = a.getAttribute('onclick')?.match(/'(\w+)'/)?.[1];
-        // 비로그인 시 공지사항만 숨김, 나머지는 표시
-        const guestHidden = ['notices'];
+        const guestHidden = [];
         li.style.display = (!loggedIn && guestHidden.includes(p)) ? 'none' : '';
         a.classList.remove('active');
         if (p === currentPage ||
-            (p === 'notices'   && currentPage.startsWith('notice')) ||
-            (p === 'board'     && (currentPage.startsWith('board') || currentPage === 'boardlog'))  ||
+            (p === 'board'     && currentPage.startsWith('board'))  ||
             (p === 'votes'     && currentPage.startsWith('vote'))   ||
             (p === 'links'     && currentPage === 'links')          ||
             (p === 'dday'      && currentPage === 'dday')  ||
             (p === 'lunch'     && currentPage === 'lunch')  ||
             (p === 'academic'  && currentPage === 'academic')  ||
-            (p === 'admin'     && (currentPage === 'admin' || currentPage === 'logs')) ||
             (p === 'weather'   && currentPage === 'weather') ||
             (p === 'cleaning'  && currentPage === 'cleaning')) {
             a.classList.add('active');

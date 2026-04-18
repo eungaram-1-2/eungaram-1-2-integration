@@ -30,7 +30,7 @@ OpenWeather AP
 GitHub Pages: https://eungaram-1-2.github.io/eungaram-1-2-integration/
 
 7. 라이센스 및 기여자
-1. kangjuhyuk
-2. claude code
-3. codex
-4. gemini
+kangjuhyuk
+claude code
+codex
+gemini

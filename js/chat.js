@@ -128,6 +128,11 @@ function sendChatMessage() {
         return;
     }
 
+    if (Security.containsBadWord(text)) {
+        showToast('부적절한 단어가 포함되어 있습니다.', 'error');
+        return;
+    }
+
     const msg = {
         id: Date.now().toString(),
         text: text,

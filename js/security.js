@@ -76,6 +76,14 @@ const Security = {
         return false;
     },
 
+    // 욕설/부적절한 단어 필터 (중학교 사이트)
+    _badWords: ['씨발','시발','씨팔','시팔','ㅅㅂ','개새끼','개새','새끼','놈','년','미친놈','미친년','병신','ㅂㅅ','지랄','존나','ㅈㄴ','fuck','shit','bitch','asshole','bastard'],
+    containsBadWord(text) {
+        if (!text) return false;
+        const t = text.toLowerCase().replace(/\s/g, '');
+        return this._badWords.some(w => t.includes(w.toLowerCase()));
+    },
+
     validateTitle(str) {
         const s = this.sanitize(str);
         if (!s) return { ok: false, msg: '제목을 입력해주세요.' };

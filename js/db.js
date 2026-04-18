@@ -10,8 +10,13 @@ function _shouldSyncToFb(key) {
 
 const DB = {
     get(key, def = []) {
-        try { return JSON.parse(localStorage.getItem(key)) || def; }
-        catch (e) {
+        try {
+            const val = JSON.parse(localStorage.getItem(key));
+            if (val === null || val === undefined) return def;
+            if (Array.isArray(def) !== Array.isArray(val)) return def;
+            if (typeof def !== typeof val) return def;
+            return val;
+        } catch (e) {
             console.error(`[DB.get] 에러 (${key}):`, e);
             return def;
         }

@@ -24,7 +24,7 @@ function renderLinks() {
             return `<div class="link-card-v" style="cursor:pointer" onclick="navigate('${link.page}')">${cardBody}</div>`;
         } else {
             // 외부 링크
-            return `<a class="link-card-v" href="${link.url}" target="_blank" rel="noopener noreferrer">${cardBody}</a>`;
+            return `<a class="link-card-v" href="${Security.sanitizeUrl(link.url)}" target="_blank" rel="noopener noreferrer">${cardBody}</a>`;
         }
     }).join('');
 
@@ -398,7 +398,7 @@ function openTextbookModal() {
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             ${TEXTBOOKS.map(book => `
-            <a href="${book.url}" target="_blank" rel="noopener noreferrer" style="
+            <a href="${Security.sanitizeUrl(book.url)}" target="_blank" rel="noopener noreferrer" style="
                 display:flex;flex-direction:column;align-items:center;
                 background:rgba(255,255,255,0.18);
                 backdrop-filter:blur(16px);

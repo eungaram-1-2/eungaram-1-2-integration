@@ -1,7 +1,59 @@
 // =============================================
-// 급식 메뉴 (Firebase + GitHub Actions 크롤링)
+// 급식 메뉴 (NEIS API + Firebase + JSON 폴백)
 // =============================================
 const LUNCH_DATA_URL = 'data/lunch.json';
+
+const NEIS_LUNCH_CONFIG = {
+    API_KEY: 'ed50e755df5d42d4b94db728feab7952',
+    ATPT_CODE: 'J10',
+    SCHOOL_CODE: '7692130',
+    BASE_URL: 'https://open.neis.go.kr/hub/mealServiceDietInfo'
+};
+
+function _getLunchWeekRange() {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1));
+    const friday = new Date(monday);
+    friday.setDate(monday.getDate() + 4);
+    const fmt = d => `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+    return { from: fmt(monday), to: fmt(friday) };
+}
+
+async function _fetchLunchDataFromNEIS() {
+    try {
+        const { from, to } = _getLunchWeekRange();
+        const url = `${NEIS_LUNCH_CONFIG.BASE_URL}?KEY=${NEIS_LUNCH_CONFIG.API_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${NEIS_LUNCH_CONFIG.ATPT_CODE}&SD_SCHUL_CODE=${NEIS_LUNCH_CONFIG.SCHOOL_CODE}&MLSV_FROM_YMD=${from}&MLSV_TO_YMD=${to}`;
+
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+
+        if (!data.mealServiceDietInfo || data.mealServiceDietInfo.length < 2) return null;
+
+        const rows = data.mealServiceDietInfo[1].row || [];
+        if (!rows.length) return null;
+
+        const menus = {};
+        rows.forEach(row => {
+            const ymd = row.MLSV_YMD;
+            const dateStr = `${ymd.slice(0,4)}-${ymd.slice(4,6)}-${ymd.slice(6,8)}`;
+            const rawItems = (row.DDISH_NM || '').split('<br/>').map(s => s.trim()).filter(s => s);
+            const kcalMatch = (row.CAL_INFO || '').match(/([\d.]+)\s*Kcal/i);
+            menus[dateStr] = {
+                items: rawItems,
+                kcal: kcalMatch ? kcalMatch[1] : null
+            };
+        });
+
+        console.info('[NEIS] 급식 데이터 로드 성공:', Object.keys(menus).length, '일');
+        return { updated: new Date().toISOString(), menus };
+    } catch (e) {
+        console.warn('[NEIS] 급식 로드 실패:', e.message);
+        return null;
+    }
+}
 
 // 음식명에서 알레르기 정보 파싱 및 포맷팅
 function cleanMenuItem(text) {
@@ -173,24 +225,24 @@ async function _fetchLunchData() {
     if (_lunchDataPromise) return _lunchDataPromise;
 
     _lunchDataPromise = (async () => {
+        const today = _lunchTodayStr();
+
         // Firebase 우선
         const fbData = await _fetchLunchDataFromFirebase();
-        if (fbData && Object.keys(fbData.menus).length > 0) {
-            // Firebase 데이터에 오늘 데이터가 있는지 확인
-            const today = _lunchTodayStr();
-            if (fbData.menus[today]) return fbData;
-        }
+        if (fbData && fbData.menus && fbData.menus[today]) return fbData;
+
+        // NEIS API
+        const neisData = await _fetchLunchDataFromNEIS();
+        if (neisData && Object.keys(neisData.menus).length > 0) return neisData;
 
         // JSON 폴백
         const jsonData = await _fetchLunchDataFromJSON();
-        const today = _lunchTodayStr();
         if (jsonData.menus && jsonData.menus[today]) return jsonData;
 
-        // JSON에도 없으면 학교 홈페이지 직접 스크래핑
+        // 학교 홈페이지 직접 스크래핑 (최후 수단)
         console.info('[Lunch] JSON에 오늘 데이터 없음, 스크래핑 시도');
         const scrapeData = await _fetchLunchDataFromScrape();
         if (scrapeData && Object.keys(scrapeData.menus).length > 0) {
-            // JSON 데이터와 병합하여 반환
             return {
                 updated: scrapeData.updated,
                 menus: { ...(jsonData.menus || {}), ...scrapeData.menus }
@@ -380,7 +432,7 @@ function renderLunch() {
                 </div>
             </div>
             <p style="text-align:center;font-size:0.8rem;color:var(--text-muted);margin-top:20px">
-                출처: <a href="https://eungaram-m.goegh.kr/eungaram-m/ad/fm/foodmenu/selectFoodMenuView.do?mi=8056" target="_blank" rel="noopener noreferrer" style="color:var(--primary)">은가람 중학교 공식 홈페이지</a>
+                출처: <a href="https://open.neis.go.kr" target="_blank" rel="noopener noreferrer" style="color:var(--primary)">NEIS 교육정보 개방 포털</a>
             </p>
         </div>
     </div>`;

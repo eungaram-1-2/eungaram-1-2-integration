@@ -186,7 +186,7 @@ async function loadTimetableForWeek(weekOffset = 0) {
             const mobile = content.querySelector('#ttMobileScroll');
             const todayCard = mobile && mobile.querySelector('.tt-mobile-day[data-today="true"]');
             if (mobile && todayCard) {
-                mobile.scrollTo({ left: todayCard.offsetLeft - 20, behavior: 'instant' });
+                mobile.scrollTo({ left: todayCard.offsetLeft - 16, behavior: 'instant' });
             }
 
             // 스크롤 시 dots 활성화 업데이트

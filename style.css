@@ -5612,11 +5612,8 @@ button { font-family: inherit; }
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
         overscroll-behavior-x: contain;
-        scroll-behavior: smooth;
         gap: 16px;
-        padding: 4px 20px 20px;
-        margin: 0 -20px;
-        /* 스크롤바 숨기기 */
+        padding: 4px 16px 20px;
         scrollbar-width: none;
     }
     .timetable-mobile::-webkit-scrollbar { display: none; }
@@ -5628,9 +5625,6 @@ button { font-family: inherit; }
         border-radius: var(--radius);
         padding: 20px;
         box-shadow: var(--shadow-sm);
-        border: 1px solid var(--border-light);
-        margin-bottom: 0;
-        border-bottom: none;
         min-height: 300px;
     }
 
@@ -5646,11 +5640,6 @@ button { font-family: inherit; }
 
     .tt-mobile-card:last-child { margin-bottom: 0; }
 
-    /* 스와이프 힌트 화살표 */
-    .timetable-mobile::after {
-        content: '';
-        flex: 0 0 4px;
-    }
 }
 
 /* 시간표 모바일 힌트 & 도트 */
@@ -5671,14 +5660,17 @@ button { font-family: inherit; }
 }
 
 .tt-day-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     font-size: 0.65rem;
     font-weight: 600;
-    color: var(--text-muted);
-    padding: 3px 8px;
-    border-radius: 999px;
     background: var(--bg-subtle);
+    color: var(--text-muted);
     transition: background 0.2s, color 0.2s;
-    cursor: pointer;
 }
 
 .tt-day-dot-active {

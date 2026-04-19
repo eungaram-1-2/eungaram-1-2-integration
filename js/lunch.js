@@ -500,13 +500,43 @@ async function loadLunchPage(weekOffset = 0) {
                 </td>`).join('')}
         </tr>`;
 
+    const todayStr = _lunchTodayStr();
+    const todayIdx = weekOffset === 0 ? weeklyData.findIndex(d => d.date === todayStr) : -1;
+
+    const mobileCards = weeklyData.map((day, dayIdx) => {
+        const isToday = dayIdx === todayIdx;
+        const todayAttr = isToday ? ' data-today="true"' : '';
+        const todayStyle = isToday ? ' style="border-top:3px solid var(--primary);"' : '';
+        const todayBadge = isToday
+            ? `<span style="font-size:0.65rem;font-weight:700;color:white;background:var(--primary);padding:2px 8px;border-radius:999px;margin-left:8px;vertical-align:middle">오늘</span>`
+            : '';
+        const menuHtml = day.items.length > 0
+            ? day.items.map(item => `<div class="lunch-mobile-item">${cleanMenuItem(item)}</div>`).join('')
+            : `<span style="font-size:0.85rem;color:var(--text-muted)">급식 정보 없음</span>`;
+        const kcalHtml = day.kcal
+            ? `<div style="margin-top:12px;font-size:0.82rem;font-weight:700;color:var(--text-muted)">🔥 ${day.kcal} kcal</div>`
+            : '';
+        return `<div class="lunch-mobile-day"${todayStyle}${todayAttr}>
+            <h3 style="margin:0 0 14px;font-size:1rem;font-weight:700">${day.day}요일${todayBadge} <span style="font-size:0.82rem;font-weight:400;color:var(--text-muted)">${day.displayDate}</span></h3>
+            <div>${menuHtml}</div>
+            ${kcalHtml}
+        </div>`;
+    }).join('');
+
+    const dayDots = weeklyData.map((day, i) =>
+        `<span class="lunch-day-dot${i === todayIdx ? ' lunch-day-dot-active' : ''}">${day.day}</span>`
+    ).join('');
+
     card.innerHTML = `
         <div class="lunch-table-wrapper" id="lunchTableWrapper">
             <table class="lunch-table-horizontal">
                 <thead>${headerHtml}</thead>
                 <tbody>${menuRows}${kcalRow}</tbody>
             </table>
-        </div>`;
+        </div>
+        <div class="lunch-mobile-hint">← 좌우로 밀어서 요일 이동</div>
+        <div class="lunch-mobile-scroll" id="lunchMobileScroll">${mobileCards}</div>
+        <div class="lunch-day-dots" id="lunchDayDots">${dayDots}</div>`;
 
     const wrapper = document.getElementById('lunchTableWrapper');
     if (wrapper) {
@@ -516,6 +546,26 @@ async function loadLunchPage(weekOffset = 0) {
         };
         wrapper.addEventListener('scroll', updateFade, { passive: true });
         updateFade();
+    }
+
+    if (window.innerWidth <= 768) {
+        requestAnimationFrame(() => {
+            const mobileScroll = card.querySelector('#lunchMobileScroll');
+            const todayCard = mobileScroll && mobileScroll.querySelector('.lunch-mobile-day[data-today="true"]');
+            if (mobileScroll && todayCard) {
+                mobileScroll.scrollTo({ left: todayCard.offsetLeft - 16, behavior: 'instant' });
+            }
+            if (mobileScroll) {
+                mobileScroll.addEventListener('scroll', () => {
+                    const cards = Array.from(mobileScroll.querySelectorAll('.lunch-mobile-day'));
+                    const dots = Array.from(document.querySelectorAll('.lunch-day-dot'));
+                    const scrollMid = mobileScroll.scrollLeft + mobileScroll.clientWidth / 2;
+                    let activeIdx = 0;
+                    cards.forEach((c, i) => { if (c.offsetLeft <= scrollMid) activeIdx = i; });
+                    dots.forEach((dot, i) => dot.classList.toggle('lunch-day-dot-active', i === activeIdx));
+                }, { passive: true });
+            }
+        });
     }
 }
 
@@ -590,45 +640,47 @@ function enableAutoScrollLunchTable() {
     const wrapper = document.querySelector('.lunch-table-wrapper');
     if (!wrapper) return;
 
-    let scrollSpeed = 2; // px/ms (빠른 속도)
+    // 터치 기기(모바일)에서는 자동 스크롤 비활성화 — 터치 모멘텀을 방해함
+    const isTouchDevice = navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches;
+    if (isTouchDevice) return;
+
+    let scrollSpeed = 1.5;
     let scrollTimer = null;
+    let isPaused = false;
+    let resumeTimer = null;
 
     const autoScroll = () => {
+        if (isPaused) return;
         if (wrapper.scrollLeft < wrapper.scrollWidth - wrapper.clientWidth) {
             wrapper.scrollLeft += scrollSpeed;
             scrollTimer = requestAnimationFrame(autoScroll);
         } else {
-            // 끝에 도달하면 처음으로 리셋
             setTimeout(() => {
-                wrapper.scrollLeft = 0;
-                scrollTimer = requestAnimationFrame(autoScroll);
-            }, 3000); // 3초 대기
+                if (!isPaused) { wrapper.scrollLeft = 0; scrollTimer = requestAnimationFrame(autoScroll); }
+            }, 3000);
         }
     };
 
-    // 마우스/터치 상호작용 시 자동 스크롤 중단
-    wrapper.addEventListener('wheel', () => {
+    const pause = () => {
+        isPaused = true;
         if (scrollTimer) cancelAnimationFrame(scrollTimer);
         scrollTimer = null;
-    });
+        clearTimeout(resumeTimer);
+    };
 
-    wrapper.addEventListener('touchstart', () => {
-        if (scrollTimer) cancelAnimationFrame(scrollTimer);
-        scrollTimer = null;
-    });
-
-    // 스크롤 완료 후 다시 시작 (3초 후)
-    wrapper.addEventListener('scroll', () => {
-        if (scrollTimer) cancelAnimationFrame(scrollTimer);
-        setTimeout(() => {
+    const resume = () => {
+        clearTimeout(resumeTimer);
+        resumeTimer = setTimeout(() => {
+            isPaused = false;
             scrollTimer = requestAnimationFrame(autoScroll);
         }, 3000);
-    }, { once: false });
+    };
 
-    // 초기 시작 (1초 지연)
-    setTimeout(() => {
-        scrollTimer = requestAnimationFrame(autoScroll);
-    }, 1000);
+    wrapper.addEventListener('mouseenter', pause);
+    wrapper.addEventListener('mouseleave', resume);
+    wrapper.addEventListener('wheel', pause, { passive: true });
+
+    setTimeout(() => { scrollTimer = requestAnimationFrame(autoScroll); }, 1500);
 }
 
 // loadLunchPage() 이후 호출

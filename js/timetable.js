@@ -78,22 +78,33 @@ function _buildTimetableHtml(data, weekOffset) {
     ).join('');
 
     const mobileCards = data.days.map((day, dayIdx) => {
-        const dayClasses = dayIdx === todayIdx ? ' style="border-left: 4px solid var(--primary)"' : '';
+        const isToday = dayIdx === todayIdx;
+        const todayAttr = isToday ? ' data-today="true"' : '';
+        const todayStyle = isToday
+            ? ' style="border-top: 3px solid var(--primary);"'
+            : '';
+        const todayBadge = isToday
+            ? `<span style="font-size:0.65rem;font-weight:700;color:white;background:var(--primary);padding:2px 8px;border-radius:999px;margin-left:8px;vertical-align:middle">오늘</span>`
+            : '';
         const cards = data.periods.map((p, pi) => {
             const c = data.schedule[pi][dayIdx];
             if (!c || !c.s) return '';
             const color = SUBJ_COLORS[c.s] || '#64748b';
-            return `<div class="tt-mobile-card" style="border-left: 4px solid ${color}; background: var(--surface)">
-                <div style="font-size:0.75rem;color:var(--text-muted);font-weight:600">${p.num}교시 ${p.time}</div>
-                <div style="font-size:1.1rem;font-weight:700;color:${color};margin:8px 0">${c.s}</div>
-                ${c.t ? `<div style="font-size:0.85rem;color:var(--text-muted)">${c.t}</div>` : ''}
+            return `<div class="tt-mobile-card" style="border-left: 3px solid ${color}">
+                <div style="font-size:0.72rem;color:var(--text-muted);font-weight:600;margin-bottom:4px">${p.num}교시 · ${p.time}</div>
+                <div style="font-size:1rem;font-weight:700;color:${color}">${c.s}</div>
+                ${c.t ? `<div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px">${c.t}</div>` : ''}
             </div>`;
         }).filter(Boolean).join('');
-        return `<div class="tt-mobile-day"${dayClasses}>
-            <h3 style="margin:16px 0 12px;font-size:1.1rem;font-weight:700">${day}요일 <span style="font-size:0.85rem;font-weight:500;color:var(--text-muted)">${weekDates[dayIdx]}</span></h3>
-            <div style="display:flex;flex-direction:column;gap:10px">${cards || '<span style="color:var(--text-muted)">수업 없음</span>'}</div>
+        return `<div class="tt-mobile-day"${todayStyle}${todayAttr}>
+            <h3 style="margin:0 0 16px;font-size:1rem;font-weight:700">${day}요일${todayBadge} <span style="font-size:0.82rem;font-weight:400;color:var(--text-muted)">${weekDates[dayIdx]}</span></h3>
+            <div style="display:flex;flex-direction:column;gap:8px">${cards || '<span style="font-size:0.85rem;color:var(--text-muted)">수업 없음</span>'}</div>
         </div>`;
     }).join('');
+
+    const dayDots = data.days.map((d, i) =>
+        `<span class="tt-day-dot${i === todayIdx ? ' tt-day-dot-active' : ''}">${d}</span>`
+    ).join('');
 
     return `
     ${todayBarHtml}
@@ -104,7 +115,9 @@ function _buildTimetableHtml(data, weekOffset) {
                 <tbody>${rows}</tbody>
             </table>
         </div>
-        <div class="timetable-mobile">${mobileCards}</div>
+        <div class="tt-mobile-hint">← 좌우로 밀어서 요일 이동</div>
+        <div class="timetable-mobile" id="ttMobileScroll">${mobileCards}</div>
+        <div class="tt-day-dots" id="ttDayDots">${dayDots}</div>
     </div>`;
 }
 
@@ -166,6 +179,31 @@ async function loadTimetableForWeek(weekOffset = 0) {
     }
 
     content.innerHTML = _buildTimetableHtml(data, weekOffset);
+
+    // 모바일: 오늘 요일 카드로 자동 스크롤 + dots 연동
+    if (window.innerWidth <= 768) {
+        requestAnimationFrame(() => {
+            const mobile = content.querySelector('#ttMobileScroll');
+            const todayCard = mobile && mobile.querySelector('.tt-mobile-day[data-today="true"]');
+            if (mobile && todayCard) {
+                mobile.scrollTo({ left: todayCard.offsetLeft - 20, behavior: 'instant' });
+            }
+
+            // 스크롤 시 dots 활성화 업데이트
+            if (mobile) {
+                mobile.addEventListener('scroll', () => {
+                    const cards = Array.from(mobile.querySelectorAll('.tt-mobile-day'));
+                    const dots = Array.from(document.querySelectorAll('.tt-day-dot'));
+                    const scrollMid = mobile.scrollLeft + mobile.clientWidth / 2;
+                    let activeIdx = 0;
+                    cards.forEach((card, i) => {
+                        if (card.offsetLeft <= scrollMid) activeIdx = i;
+                    });
+                    dots.forEach((dot, i) => dot.classList.toggle('tt-day-dot-active', i === activeIdx));
+                }, { passive: true });
+            }
+        });
+    }
 }
 
 async function changeTimetableWeek(delta) {

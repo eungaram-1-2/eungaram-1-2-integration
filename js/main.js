@@ -24,7 +24,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         hamburger.setAttribute('aria-expanded', 'false');
     }
 
-    // 즉시 localStorage 데이터로 렌더 (Firebase를 기다리지 않음)
+    // IP 차단 체크 후 렌더
+    await checkIPBlock();
     render();
 
     // Firebase 백그라운드 동기화 (업데이트가 오면 자동 re-render)

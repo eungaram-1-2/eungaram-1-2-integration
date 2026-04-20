@@ -111,3 +111,32 @@ const Security = {
         return { ok: true, value: file };
     }
 };
+
+// =============================================
+// IP 차단 체크
+// =============================================
+async function checkIPBlock() {
+    try {
+        const res = await fetch('https://api.ipify.org?format=json');
+        const { ip } = await res.json();
+        if (!ip) return;
+
+        const blockData = DB.get('ip_blocklist', { blocklist: [] });
+        const blocklist = blockData.blocklist || [];
+
+        if (blocklist.includes(ip)) {
+            document.body.innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0f172a;color:#f1f5f9;font-family:sans-serif">
+                    <div style="text-align:center;padding:40px">
+                        <div style="font-size:4rem;margin-bottom:20px">🚫</div>
+                        <h2 style="margin:0 0 12px;font-size:1.5rem">접근이 차단되었습니다</h2>
+                        <p style="color:#94a3b8;font-size:0.9rem">이 IP 주소(${ip})는 차단되었습니다.</p>
+                    </div>
+                </div>`;
+            throw new Error('IP blocked');
+        }
+    } catch (e) {
+        if (e.message === 'IP blocked') throw e;
+        // API 실패 시 차단하지 않음 (네트워크 오류 등)
+    }
+}

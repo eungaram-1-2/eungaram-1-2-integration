@@ -40,7 +40,7 @@ function adminLogout() {
 
 function renderAdmin() {
     const tab = localStorage.getItem('adminTab') || 'system';
-    const subTab = localStorage.getItem('adminSubTab') || '';
+    let subTab = localStorage.getItem('adminSubTab') || '';
     let content = '';
 
     const tabDefs = [

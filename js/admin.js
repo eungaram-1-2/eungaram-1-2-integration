@@ -568,7 +568,13 @@ function saveEmergencyNotice() {
     const color = document.getElementById('enColor').value;
     const data = { active, title, message, color };
     DB.set('emergency_notice', data);
-    if (fbReady()) _fbDB.ref('data/emergency_notice').set(data).catch(e => console.error('Firebase 저장 오류:', e));
+    if (fbReady()) {
+        _fbDB.ref('data/emergency_notice').set(data)
+            .then(() => console.log('[Firebase] ✅ 긴급 공지 저장 완료'))
+            .catch(e => console.error('[Firebase] ❌ 긴급 공지 저장 실패:', e.message));
+    } else {
+        console.warn('[Firebase] 연결 안 됨 - LocalStorage만 사용');
+    }
     render();
 }
 

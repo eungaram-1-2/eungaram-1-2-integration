@@ -24,15 +24,35 @@ let _fbApp = null;
 let _fbDB  = null;
 
 (function initFirebase() {
-    if (!FIREBASE_CONFIG.databaseURL) return;
+    if (!FIREBASE_CONFIG.databaseURL) {
+        console.warn('[Firebase] databaseURL 없음');
+        return;
+    }
+
+    // Firebase SDK 로드 확인
+    if (typeof firebase === 'undefined') {
+        console.error('[Firebase] SDK 미로드');
+        setTimeout(initFirebase, 1000);
+        return;
+    }
+
     try {
         _fbApp = firebase.initializeApp(FIREBASE_CONFIG);
         _fbDB  = firebase.database();
-        console.info('[Firebase] Realtime Database 연결됨');
+        console.info('[Firebase] ✅ Realtime Database 연결 완료');
+        console.info('[Firebase] URL:', FIREBASE_CONFIG.databaseURL);
     } catch (e) {
-        console.warn('[Firebase] 초기화 실패:', e);
+        console.error('[Firebase] ❌ 초기화 실패:', e.message);
         _fbDB = null;
     }
 })();
+
+// 초기화 확인용
+setTimeout(() => {
+    console.log('[Firebase] fbReady():', fbReady());
+    if (!fbReady()) {
+        console.warn('[Firebase] 연결되지 않았습니다. 관리 기능이 제한될 수 있습니다.');
+    }
+}, 2000);
 
 function fbReady() { return !!_fbDB; }

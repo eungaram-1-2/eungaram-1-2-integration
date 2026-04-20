@@ -3,7 +3,7 @@
 // =============================================
 
 // Firebase에 동기화할 키 목록
-const _FB_SYNC_KEYS = ['board', 'votes', 'ddays', 'bans', 'timeouts', 'admin_logs', 'board_logs', 'chat', 'emergency_notice', 'suggestions', 'reports', 'cleaning_schedule', 'cleaning_history'];
+const _FB_SYNC_KEYS = ['board', 'votes', 'ddays', 'bans', 'timeouts', 'admin_logs', 'board_logs', 'chat', 'emergency_notice', 'suggestions', 'reports', 'cleaning_schedule', 'cleaning_history', 'access_logs', 'maintenance_mode', 'ip_blocklist', 'lunch_override', 'calendar_override', 'site_settings'];
 function _shouldSyncToFb(key) {
     return _FB_SYNC_KEYS.includes(key);
 }
@@ -83,7 +83,7 @@ function startFirebaseSync(onFirstLoad) {
 }
 
 function currentUser() { return null; }  // 로그인 기능 삭제
-function isAdmin()     { return false; }  // 관리자 기능 삭제
+function isAdmin()     { return localStorage.getItem('adminAuth') === 'true'; }
 function isLoggedIn()  { return false; }  // 로그인 기능 삭제
 function isBanned(userId) {
     const bans = DB.get('bans');

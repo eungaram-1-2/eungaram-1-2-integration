@@ -8,6 +8,7 @@ function navigate(page, params = {}) {
     if (!RateLimit.check('navigate')) return;
     currentPage = page;
     pageParams  = params;
+    if (isAdmin()) logAccess();
     render();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -24,7 +25,7 @@ function navigate(page, params = {}) {
 
 const BANNED_RESTRICTED   = ['dday'];
 const TIMEOUT_RESTRICTED  = ['dday','votes','vote-detail','vote-create'];
-const GUEST_ALLOWED       = ['home','timetable','lunch','academic','weather','cleaning','map','votes','vote-detail','vote-create','dday','chat','links','suggestion'];
+const GUEST_ALLOWED       = ['home','timetable','lunch','academic','weather','cleaning','votes','vote-detail','vote-create','dday','chat','links','suggestion','games','admin'];
 
 // 로그인 기능 삭제로 인해 더 이상 사용되지 않음
 // function renderLoginRequiredPage() { ... }
@@ -98,6 +99,18 @@ function render() {
     updateNav();
     applyTheme(getTheme());
 
+    const MAINTENANCE_BLOCKED = ['timetable','lunch','academic','links'];
+    try {
+        const _mmRaw = localStorage.getItem('maintenance_mode');
+        if (_mmRaw) {
+            const _mm = JSON.parse(_mmRaw);
+            if (_mm && _mm.active === true && !isAdmin() && MAINTENANCE_BLOCKED.includes(currentPage)) {
+                app.innerHTML = renderMaintenancePage(_mm.message);
+                return;
+            }
+        }
+    } catch(e) { console.warn('[점검모드] 파싱 오류:', e); }
+
     if (isLoggedIn() && isBanned() && BANNED_RESTRICTED.includes(currentPage)) {
         app.innerHTML = renderBannedPage();
         return;
@@ -119,12 +132,36 @@ function render() {
         case 'chat':         app.innerHTML = renderChat();              break;
         case 'links':        app.innerHTML = renderLinks();             break;
         case 'suggestion':   app.innerHTML = renderSuggestion();       break;
+        case 'admin':        app.innerHTML = isAdmin() ? renderAdmin() : renderHome(); break;
+        case 'games':        app.innerHTML = renderGames(); break;
         // case 'seat-draw':    app.innerHTML = renderSeatDraw();          break;
         case 'lunch':        app.innerHTML = renderLunch(); setTimeout(() => loadLunchPageWithAutoScroll(), 0); break;
         case 'cleaning':     app.innerHTML = renderCleaning(); break;
-        case 'map':          app.innerHTML = renderMap(); setTimeout(() => initMapPage(), 0); break;
+        // case 'map':          app.innerHTML = renderMap(); setTimeout(() => initMapPage(), 0); break;
         default:             app.innerHTML = renderHome();
     }
+
+    document.getElementById('emergencyBanner')?.remove();
+    try {
+        const enRaw = localStorage.getItem('emergency_notice');
+        if (enRaw) {
+            const en = JSON.parse(enRaw);
+            if (en && en.active === true) {
+                const banner = document.createElement('div');
+                banner.id = 'emergencyBanner';
+                banner.style.cssText = `background:${en.color};color:white;position:fixed;top:64px;left:0;right:0;z-index:1000;box-shadow:0 3px 12px rgba(0,0,0,0.3)`;
+                banner.innerHTML = `
+                <div style="display:flex;justify-content:center;align-items:center;padding:8px 48px;gap:12px;position:relative;text-align:center">
+                    <div>
+                        <div style="font-weight:bold;font-size:0.9rem;margin-bottom:2px">${escapeHtml(en.title)}</div>
+                        <div style="font-size:0.8rem;opacity:0.9">${escapeHtml(en.message)}</div>
+                    </div>
+                    <button onclick="document.getElementById('emergencyBanner').remove()" style="background:rgba(255,255,255,0.2);border:none;color:white;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:0.9rem;line-height:1;position:absolute;right:12px;top:50%;transform:translateY(-50%)">&times;</button>
+                </div>`;
+                document.body.appendChild(banner);
+            }
+        }
+    } catch(e) {}
 }
 
 function updateNav() {

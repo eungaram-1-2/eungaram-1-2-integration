@@ -77,7 +77,7 @@ function renderHome() {
                     <button class="hero-btn hero-btn-outline" onclick="navigate('timetable')">📅 시간표</button>
                 </div>
             </div>
-            <div class="hero-orb-visual" aria-hidden="true">
+            <div class="hero-orb-visual" onclick="adminOrbClick()" style="cursor:pointer" aria-hidden="true">
                 <div class="hero-orb-glow"></div>
             </div>
         </div>

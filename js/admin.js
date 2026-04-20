@@ -73,7 +73,7 @@ function renderAdmin() {
 
     const tabBar = tabDefs.map(t => `
         <button onclick="localStorage.setItem('adminTab','${t.id}');${t.subtabs.length>0?`localStorage.setItem('adminSubTab','${t.subtabs[0]}');`:''} render()"
-            style="padding:10px 18px;background:${tab===t.id?'var(--primary)':'var(--card)'};color:${tab===t.id?'white':'var(--text)'};border:${tab===t.id?'none':'1px solid var(--border)'};border-radius:8px;cursor:pointer;font-weight:${tab===t.id?'bold':'normal'};transition:all 0.15s;white-space:nowrap">
+            style="padding:10px 18px;background:${tab===t.id?'var(--primary)':'var(--card)'};color:${tab===t.id?'white':'var(--text)'};border:${tab===t.id?'none':'1px solid var(--border)'};border-radius:8px;cursor:pointer;font-weight:${tab===t.id?'bold':'normal'};transition:all 0.15s;white-space:nowrap;flex-shrink:0">
             ${t.label}
         </button>`).join('');
 
@@ -81,10 +81,10 @@ function renderAdmin() {
     const currentTabDef = tabDefs.find(t => t.id === tab);
     if (currentTabDef && currentTabDef.subtabs.length > 0) {
         const effectiveSubTab = subTab && currentTabDef.subtabs.includes(subTab) ? subTab : currentTabDef.subtabs[0];
-        subTabBar = `<div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:2px solid var(--border);padding-bottom:8px">
+        subTabBar = `<div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:2px solid var(--border);padding-bottom:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none">
             ${currentTabDef.subtabs.map(st => `
                 <button onclick="localStorage.setItem('adminSubTab','${st}');render()"
-                    style="padding:8px 14px;background:${effectiveSubTab===st?'var(--primary)':'transparent'};color:${effectiveSubTab===st?'white':'var(--text)'};border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;font-weight:${effectiveSubTab===st?'bold':'normal'};transition:all 0.15s">
+                    style="padding:8px 14px;background:${effectiveSubTab===st?'var(--primary)':'transparent'};color:${effectiveSubTab===st?'white':'var(--text)'};border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;font-weight:${effectiveSubTab===st?'bold':'normal'};transition:all 0.15s;flex-shrink:0;white-space:nowrap">
                     ${subTabLabels[st]}
                 </button>
             `).join('')}
@@ -553,7 +553,7 @@ function renderAdmin() {
                 로그아웃
             </button>
         </div>
-        <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap">
+        <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none">
             ${tabBar}
         </div>
         ${subTabBar}

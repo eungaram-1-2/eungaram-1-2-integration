@@ -47,12 +47,5 @@ let _fbDB  = null;
     }
 })();
 
-// 초기화 확인용
-setTimeout(() => {
-    console.log('[Firebase] fbReady():', fbReady());
-    if (!fbReady()) {
-        console.warn('[Firebase] 연결되지 않았습니다. 관리 기능이 제한될 수 있습니다.');
-    }
-}, 2000);
 
 function fbReady() { return !!_fbDB; }

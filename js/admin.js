@@ -39,31 +39,56 @@ function adminLogout() {
 }
 
 function renderAdmin() {
-    const tab = localStorage.getItem('adminTab') || 'notice';
+    const tab = localStorage.getItem('adminTab') || 'system';
+    const subTab = localStorage.getItem('adminSubTab') || '';
     let content = '';
 
     const tabDefs = [
-        { id:'notice',      label:'🚨 긴급 공지' },
-        { id:'timetable',   label:'📅 시간표 편집' },
-        { id:'logs',        label:'📊 접속 로그' },
-        { id:'logsearch',   label:'🔍 로그 검색' },
-        { id:'stats',       label:'📈 통계 대시보드' },
-        { id:'session',     label:'👥 사용자 세션' },
-        { id:'data',        label:'🍱 데이터 관리' },
-        { id:'access',      label:'🛡️ 접근 제어' },
-        { id:'settings',    label:'⚙️ 사이트 설정' },
-        { id:'backup',      label:'💾 백업/복구' },
-        { id:'maintenance', label:'🔧 점검 모드' },
+        { id:'system',      label:'🚨 시스템 설정',      subtabs:['notice','maintenance'] },
+        { id:'logs',        label:'📊 로그 관리',       subtabs:['logs','logsearch','session'] },
+        { id:'data',        label:'🍱 데이터 관리',      subtabs:['data','timetable','backup'] },
+        { id:'access',      label:'🛡️ 접근 제어',       subtabs:['access','settings'] },
+        { id:'stats',       label:'📈 통계 대시보드',     subtabs:[] },
     ];
 
+    const subTabLabels = {
+        'notice': '긴급 공지',
+        'maintenance': '점검 모드',
+        'logs': '접속 로그',
+        'logsearch': '로그 검색',
+        'session': '사용자 세션',
+        'data': '급식/학사일정',
+        'timetable': '시간표 편집',
+        'backup': '백업/복구',
+        'access': '접근 제어',
+        'settings': '사이트 설정',
+    };
+
     const tabBar = tabDefs.map(t => `
-        <button onclick="localStorage.setItem('adminTab','${t.id}');render()"
+        <button onclick="localStorage.setItem('adminTab','${t.id}');${t.subtabs.length>0?`localStorage.setItem('adminSubTab','${t.subtabs[0]}');`:''} render()"
             style="padding:10px 18px;background:${tab===t.id?'var(--primary)':'var(--card)'};color:${tab===t.id?'white':'var(--text)'};border:${tab===t.id?'none':'1px solid var(--border)'};border-radius:8px;cursor:pointer;font-weight:${tab===t.id?'bold':'normal'};transition:all 0.15s;white-space:nowrap">
             ${t.label}
         </button>`).join('');
 
+    let subTabBar = '';
+    const currentTabDef = tabDefs.find(t => t.id === tab);
+    if (currentTabDef && currentTabDef.subtabs.length > 0) {
+        const effectiveSubTab = subTab && currentTabDef.subtabs.includes(subTab) ? subTab : currentTabDef.subtabs[0];
+        subTabBar = `<div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:2px solid var(--border);padding-bottom:8px">
+            ${currentTabDef.subtabs.map(st => `
+                <button onclick="localStorage.setItem('adminSubTab','${st}');render()"
+                    style="padding:8px 14px;background:${effectiveSubTab===st?'var(--primary)':'transparent'};color:${effectiveSubTab===st?'white':'var(--text)'};border:none;border-radius:6px;cursor:pointer;font-size:0.9rem;font-weight:${effectiveSubTab===st?'bold':'normal'};transition:all 0.15s">
+                    ${subTabLabels[st]}
+                </button>
+            `).join('')}
+        </div>`;
+        subTab = effectiveSubTab;
+    } else {
+        subTab = '';
+    }
+
     // ── 긴급 공지 ──
-    if (tab === 'notice') {
+    if (tab === 'system' && subTab === 'notice') {
         let en = { active: false, title: '', message: '', color: '#ef4444' };
         try { const r = localStorage.getItem('emergency_notice'); if(r) en = JSON.parse(r); } catch(e){}
 
@@ -100,7 +125,7 @@ function renderAdmin() {
         </div>`;
 
     // ── 시간표 편집 ──
-    } else if (tab === 'timetable') {
+    } else if (tab === 'data' && subTab === 'timetable') {
         const tt = TIMETABLE;
         let rows = '';
         tt.periods?.forEach((period, periIdx) => {
@@ -131,7 +156,7 @@ function renderAdmin() {
         </div>`;
 
     // ── 접속 로그 ──
-    } else if (tab === 'logs') {
+    } else if (tab === 'logs' && subTab === 'logs') {
         const logs = DB.get('access_logs', []);
         const recent = logs.slice(-100).reverse();
 
@@ -240,7 +265,7 @@ function renderAdmin() {
         </div>`;
 
     // ── 로그 검색 ──
-    } else if (tab === 'logsearch') {
+    } else if (tab === 'logs' && subTab === 'logsearch') {
         const logs = DB.get('access_logs', []);
         const filterIP = document.getElementById('filterIP')?.value || '';
         const filterPage = document.getElementById('filterPage')?.value || '';
@@ -301,7 +326,7 @@ function renderAdmin() {
         </div>`;
 
     // ── 사용자 세션 ──
-    } else if (tab === 'session') {
+    } else if (tab === 'logs' && subTab === 'session') {
         const logs = DB.get('access_logs', []);
         const sessionMap = new Map();
 
@@ -348,7 +373,7 @@ function renderAdmin() {
         </div>`;
 
     // ── 사이트 설정 ──
-    } else if (tab === 'settings') {
+    } else if (tab === 'access' && subTab === 'settings') {
         const settings = DB.get('site_settings', {pushNotify: true, defaultTheme: 'dark', maintenanceMsg: ''});
 
         content = `
@@ -396,8 +421,8 @@ function renderAdmin() {
             </div>
         </div>`;
 
-    // ── 데이터 관리 ──
-    } else if (tab === 'data') {
+    // ── 데이터 관리 (급식/학사일정) ──
+    } else if (tab === 'data' && subTab === 'data') {
         const lunchOverride = DB.get('lunch_override', {});
         const calendarOverride = DB.get('calendar_override', {});
 
@@ -435,7 +460,7 @@ function renderAdmin() {
         </div>`;
 
     // ── 접근 제어 ──
-    } else if (tab === 'access') {
+    } else if (tab === 'access' && subTab === 'access') {
         const blockData = DB.get('ip_blocklist', {blocklist: [], allowlist: []});
         const blocklist = blockData.blocklist || [];
 
@@ -460,7 +485,7 @@ function renderAdmin() {
         </div>`;
 
     // ── 백업/복구 ──
-    } else if (tab === 'backup') {
+    } else if (tab === 'data' && subTab === 'backup') {
         content = `
         <div style="background:var(--card);border-radius:12px;padding:24px;border:1px solid var(--border)">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
@@ -484,7 +509,7 @@ function renderAdmin() {
         </div>`;
 
     // ── 점검 모드 ──
-    } else if (tab === 'maintenance') {
+    } else if (tab === 'system' && subTab === 'maintenance') {
         let mm = { active: false, message: '현재 시스템 점검 중입니다.\n잠시 후 이용해주세요.' };
         try { const r = localStorage.getItem('maintenance_mode'); if(r) mm = JSON.parse(r); } catch(e){}
 
@@ -524,6 +549,7 @@ function renderAdmin() {
         <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap">
             ${tabBar}
         </div>
+        ${subTabBar}
         ${content}
     </div>`;
 }

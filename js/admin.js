@@ -17,8 +17,11 @@ function openAdminLogin() {
 }
 
 function checkAdminPassword(pw) {
-    if (pw === '1234') {
+    const ADMIN_PASSWORD = 'wngur!123';
+    if (pw === ADMIN_PASSWORD) {
         localStorage.setItem('adminAuth', 'true');
+        localStorage.setItem('adminLoginTime', Date.now());
+        logAdminAction('login', { ip: 'local', time: new Date().toLocaleString('ko-KR') });
         closeModal();
         navigate('admin');
     } else {
@@ -33,7 +36,11 @@ function checkAdminPassword(pw) {
 
 function adminLogout() {
     if (confirm('로그아웃하시겠습니까?')) {
+        const loginTime = localStorage.getItem('adminLoginTime');
+        const sessionDuration = loginTime ? Math.round((Date.now() - parseInt(loginTime)) / 60000) : 0;
+        logAdminAction('logout', { duration: `${sessionDuration}분`, time: new Date().toLocaleString('ko-KR') });
         localStorage.removeItem('adminAuth');
+        localStorage.removeItem('adminLoginTime');
         navigate('home');
     }
 }
@@ -782,4 +789,15 @@ function logAccess() {
     fetch('https://api.ipify.org?format=json')
         .then(r => r.json()).then(d => { logs[logs.length-1].ip = d.ip; DB.set('access_logs', logs); })
         .catch(() => {});
+}
+
+function logAdminAction(action, details = {}) {
+    const logs = DB.get('admin_login_logs', []);
+    logs.unshift({
+        timestamp: Date.now(),
+        action,
+        ...details
+    });
+    DB.set('admin_login_logs', logs.slice(0, 100));
+    if (fbReady()) _fbDB.ref('data/admin_login_logs').set(JSON.stringify(logs.slice(0, 100)));
 }

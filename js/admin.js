@@ -568,7 +568,7 @@ function saveEmergencyNotice() {
     const color = document.getElementById('enColor').value;
     const data = { active, title, message, color };
     DB.set('emergency_notice', data);
-    if (fbReady()) _fbDB.ref('data/emergency_notice').set(data);
+    if (fbReady()) _fbDB.ref('data/emergency_notice').set(data).catch(e => console.error('Firebase 저장 오류:', e));
     render();
 }
 
@@ -582,9 +582,14 @@ function saveTimetableEdit() {
     );
     TIMETABLE.schedule = newSchedule;
     DB.set('timetable', TIMETABLE);
-    if (fbReady()) _fbDB.ref('config/timetable').set(TIMETABLE);
-    alert('저장되었습니다');
-    render();
+    if (fbReady()) {
+        _fbDB.ref('config/timetable').set(TIMETABLE)
+            .then(() => { alert('저장되었습니다'); render(); })
+            .catch(e => { console.error(e); alert('Firebase 저장 오류: ' + e.message); });
+    } else {
+        alert('저장되었습니다');
+        render();
+    }
 }
 
 function saveMaintenanceMode() {
@@ -592,7 +597,10 @@ function saveMaintenanceMode() {
     const message = document.getElementById('mmMessage').value.trim();
     const data = { active, message };
     DB.set('maintenance_mode', data);
-    if (fbReady()) _fbDB.ref('data/maintenance_mode').set(data);
+    if (fbReady()) {
+        _fbDB.ref('data/maintenance_mode').set(data)
+            .catch(e => console.error('Firebase 저장 오류:', e));
+    }
     alert('저장되었습니다');
     render();
 }
@@ -616,7 +624,7 @@ function saveLunchEdit() {
     const lunchOverride = DB.get('lunch_override', {});
     lunchOverride[date] = menu.split('\n').filter(m => m.trim());
     DB.set('lunch_override', lunchOverride);
-    if (fbReady()) _fbDB.ref('data/lunch_override').set(lunchOverride);
+    if (fbReady()) _fbDB.ref('data/lunch_override').set(lunchOverride).catch(e => console.error('Firebase 저장 오류:', e));
     alert('저장되었습니다');
     document.getElementById('lunchDate').value = '';
     document.getElementById('lunchMenu').value = '';
@@ -632,7 +640,7 @@ function deleteLunchEdit() {
     const lunchOverride = DB.get('lunch_override', {});
     delete lunchOverride[date];
     DB.set('lunch_override', lunchOverride);
-    if (fbReady()) _fbDB.ref('data/lunch_override').set(lunchOverride);
+    if (fbReady()) _fbDB.ref('data/lunch_override').set(lunchOverride).catch(e => console.error('Firebase 삭제 오류:', e));
     alert('삭제되었습니다');
     document.getElementById('lunchDate').value = '';
     document.getElementById('lunchMenu').value = '';
@@ -650,7 +658,7 @@ function addCalendarItem() {
     const calendarOverride = DB.get('calendar_override', {});
     calendarOverride[date] = title;
     DB.set('calendar_override', calendarOverride);
-    if (fbReady()) _fbDB.ref('data/calendar_override').set(calendarOverride);
+    if (fbReady()) _fbDB.ref('data/calendar_override').set(calendarOverride).catch(e => console.error('Firebase 저장 오류:', e));
     alert('추가되었습니다');
     document.getElementById('calendarDate').value = '';
     document.getElementById('calendarTitle').value = '';
@@ -661,7 +669,7 @@ function deleteCalendarItem(date) {
     const calendarOverride = DB.get('calendar_override', {});
     delete calendarOverride[date];
     DB.set('calendar_override', calendarOverride);
-    if (fbReady()) _fbDB.ref('data/calendar_override').set(calendarOverride);
+    if (fbReady()) _fbDB.ref('data/calendar_override').set(calendarOverride).catch(e => console.error('Firebase 삭제 오류:', e));
     render();
 }
 
@@ -680,7 +688,7 @@ function addBlockIP() {
     }
     blockData.blocklist.push(ip);
     DB.set('ip_blocklist', blockData);
-    if (fbReady()) _fbDB.ref('data/ip_blocklist').set(blockData);
+    if (fbReady()) _fbDB.ref('data/ip_blocklist').set(blockData).catch(e => console.error('Firebase 저장 오류:', e));
     alert('차단되었습니다');
     document.getElementById('blockIP').value = '';
     render();
@@ -690,7 +698,7 @@ function removeBlockIP(ip) {
     const blockData = DB.get('ip_blocklist', {blocklist: [], allowlist: []});
     blockData.blocklist = (blockData.blocklist || []).filter(item => item !== ip);
     DB.set('ip_blocklist', blockData);
-    if (fbReady()) _fbDB.ref('data/ip_blocklist').set(blockData);
+    if (fbReady()) _fbDB.ref('data/ip_blocklist').set(blockData).catch(e => console.error('Firebase 삭제 오류:', e));
     render();
 }
 
@@ -743,7 +751,10 @@ function saveSiteSettings() {
         footerText: document.getElementById('footerText').value.trim()
     };
     DB.set('site_settings', settings);
-    if (fbReady()) _fbDB.ref('data/site_settings').set(settings);
+    if (fbReady()) {
+        _fbDB.ref('data/site_settings').set(settings)
+            .catch(e => console.error('Firebase 저장 오류:', e));
+    }
     alert('저장되었습니다');
     render();
 }

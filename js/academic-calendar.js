@@ -149,8 +149,13 @@ function renderMonthCalendar() {
         return;
     }
 
+    // calendar_override 병합
+    const calendarOverride = DB.get('calendar_override', {});
+    const overrideEvents = Object.entries(calendarOverride).map(([date, title]) => ({ date, title, category: 'event' }));
+    const allEvents = [...academicCalendarData.events, ...overrideEvents];
+
     // 이번 달 이벤트 목록 (달력과 리스트 뷰 모두에 필요)
-    const monthEvents = academicCalendarData.events.filter(event => {
+    const monthEvents = allEvents.filter(event => {
         const eventDate = new Date(event.date);
         return eventDate.getFullYear() === currentCalendarYear &&
                eventDate.getMonth() + 1 === currentCalendarMonth;
@@ -189,7 +194,7 @@ function renderMonthCalendar() {
 
     // 이벤트 맵 생성
     const eventMap = {};
-    academicCalendarData.events.forEach(event => {
+    allEvents.forEach(event => {
         const eventDate = new Date(event.date);
         if (eventDate.getFullYear() === currentCalendarYear &&
             eventDate.getMonth() + 1 === currentCalendarMonth) {

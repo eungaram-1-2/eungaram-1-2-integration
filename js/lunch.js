@@ -312,11 +312,18 @@ async function fetchWeeklyLunch(weekOffset = 0) {
 
     const data = await _fetchLunchData(weekOffset);
 
+    const lunchOverride = DB.get('lunch_override', {});
+
     for (const dayData of weekDays) {
-        const menu = data.menus[dayData.date];
-        if (menu) {
-            dayData.items = menu.items;
-            dayData.kcal  = menu.kcal || null;
+        if (lunchOverride[dayData.date]) {
+            dayData.items = lunchOverride[dayData.date];
+            dayData.kcal  = null;
+        } else {
+            const menu = data.menus[dayData.date];
+            if (menu) {
+                dayData.items = menu.items;
+                dayData.kcal  = menu.kcal || null;
+            }
         }
     }
 

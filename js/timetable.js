@@ -152,7 +152,8 @@ async function loadTimetableForWeek(weekOffset = 0) {
     if (_timetableCache[weekOffset]) {
         data = _timetableCache[weekOffset];
     } else if (weekOffset === 0) {
-        data = TIMETABLE;
+        const saved = DB.get('timetable', null);
+        data = (saved && saved.schedule) ? saved : TIMETABLE;
         _timetableCache[0] = data;
     } else {
         try {

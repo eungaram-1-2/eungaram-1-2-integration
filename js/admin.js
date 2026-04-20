@@ -568,7 +568,7 @@ function saveEmergencyNotice() {
     const color = document.getElementById('enColor').value;
     const data = { active, title, message, color };
     DB.set('emergency_notice', data);
-    if (fbReady()) _fbDB.ref('data/emergency_notice').set(JSON.stringify(data));
+    if (fbReady()) _fbDB.ref('data/emergency_notice').set(data);
     render();
 }
 
@@ -581,13 +581,10 @@ function saveTimetableEdit() {
         })
     );
     TIMETABLE.schedule = newSchedule;
-    if (fbReady()) {
-        _fbDB.ref('config/timetable').set(TIMETABLE)
-            .then(() => { alert('저장되었습니다'); render(); })
-            .catch(e => { console.warn(e); alert('Firebase 저장 실패'); });
-    } else {
-        alert('Firebase 미연결');
-    }
+    DB.set('timetable', TIMETABLE);
+    if (fbReady()) _fbDB.ref('config/timetable').set(TIMETABLE);
+    alert('저장되었습니다');
+    render();
 }
 
 function saveMaintenanceMode() {
@@ -595,7 +592,7 @@ function saveMaintenanceMode() {
     const message = document.getElementById('mmMessage').value.trim();
     const data = { active, message };
     DB.set('maintenance_mode', data);
-    if (fbReady()) _fbDB.ref('data/maintenance_mode').set(JSON.stringify(data));
+    if (fbReady()) _fbDB.ref('data/maintenance_mode').set(data);
     alert('저장되었습니다');
     render();
 }
@@ -619,7 +616,7 @@ function saveLunchEdit() {
     const lunchOverride = DB.get('lunch_override', {});
     lunchOverride[date] = menu.split('\n').filter(m => m.trim());
     DB.set('lunch_override', lunchOverride);
-    if (fbReady()) _fbDB.ref('data/lunch_override').set(JSON.stringify(lunchOverride));
+    if (fbReady()) _fbDB.ref('data/lunch_override').set(lunchOverride);
     alert('저장되었습니다');
     document.getElementById('lunchDate').value = '';
     document.getElementById('lunchMenu').value = '';
@@ -635,7 +632,7 @@ function deleteLunchEdit() {
     const lunchOverride = DB.get('lunch_override', {});
     delete lunchOverride[date];
     DB.set('lunch_override', lunchOverride);
-    if (fbReady()) _fbDB.ref('data/lunch_override').set(JSON.stringify(lunchOverride));
+    if (fbReady()) _fbDB.ref('data/lunch_override').set(lunchOverride);
     alert('삭제되었습니다');
     document.getElementById('lunchDate').value = '';
     document.getElementById('lunchMenu').value = '';
@@ -653,7 +650,7 @@ function addCalendarItem() {
     const calendarOverride = DB.get('calendar_override', {});
     calendarOverride[date] = title;
     DB.set('calendar_override', calendarOverride);
-    if (fbReady()) _fbDB.ref('data/calendar_override').set(JSON.stringify(calendarOverride));
+    if (fbReady()) _fbDB.ref('data/calendar_override').set(calendarOverride);
     alert('추가되었습니다');
     document.getElementById('calendarDate').value = '';
     document.getElementById('calendarTitle').value = '';
@@ -664,7 +661,7 @@ function deleteCalendarItem(date) {
     const calendarOverride = DB.get('calendar_override', {});
     delete calendarOverride[date];
     DB.set('calendar_override', calendarOverride);
-    if (fbReady()) _fbDB.ref('data/calendar_override').set(JSON.stringify(calendarOverride));
+    if (fbReady()) _fbDB.ref('data/calendar_override').set(calendarOverride);
     render();
 }
 
@@ -683,7 +680,7 @@ function addBlockIP() {
     }
     blockData.blocklist.push(ip);
     DB.set('ip_blocklist', blockData);
-    if (fbReady()) _fbDB.ref('data/ip_blocklist').set(JSON.stringify(blockData));
+    if (fbReady()) _fbDB.ref('data/ip_blocklist').set(blockData);
     alert('차단되었습니다');
     document.getElementById('blockIP').value = '';
     render();
@@ -693,7 +690,7 @@ function removeBlockIP(ip) {
     const blockData = DB.get('ip_blocklist', {blocklist: [], allowlist: []});
     blockData.blocklist = (blockData.blocklist || []).filter(item => item !== ip);
     DB.set('ip_blocklist', blockData);
-    if (fbReady()) _fbDB.ref('data/ip_blocklist').set(JSON.stringify(blockData));
+    if (fbReady()) _fbDB.ref('data/ip_blocklist').set(blockData);
     render();
 }
 
@@ -746,7 +743,7 @@ function saveSiteSettings() {
         footerText: document.getElementById('footerText').value.trim()
     };
     DB.set('site_settings', settings);
-    if (fbReady()) _fbDB.ref('data/site_settings').set(JSON.stringify(settings));
+    if (fbReady()) _fbDB.ref('data/site_settings').set(settings);
     alert('저장되었습니다');
     render();
 }

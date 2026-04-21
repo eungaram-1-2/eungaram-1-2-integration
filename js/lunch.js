@@ -394,7 +394,7 @@ let _lunchWeekOffset = 0;
 function renderLunch() {
     return `
     <div class="page">
-        <div class="page-header">
+        <div class="page-header header-white">
             <h2>🍱 급식</h2>
             <button class="btn btn-primary" onclick="downloadLunch()" style="margin-top:12px">📥 급식 저장</button>
         </div>

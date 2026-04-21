@@ -1144,6 +1144,23 @@ button { font-family: inherit; }
     letter-spacing: -0.3px;
 }
 
+/* Header variant with white text (used for 급식, 시간표, 학사일정) */
+.header-white .page-header h2,
+.header-white h2,
+.header-white .month-display {
+    color: white !important;
+}
+
+.header-white .btn-nav {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+.header-white .btn-nav:hover {
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
 /* ===== Search ===== */
 .search-box {
     display: flex;

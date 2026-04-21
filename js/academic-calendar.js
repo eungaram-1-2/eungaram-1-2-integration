@@ -78,7 +78,7 @@ function renderAcademicCalendar() {
 
     const html = `
         <div class="academic-calendar-container">
-            <div class="calendar-header">
+            <div class="calendar-header header-white">
                 <h1>📚 학사일정</h1>
                 <div class="calendar-nav">
                     <button class="btn-nav btn-prev" onclick="prevMonth()">◀ 이전</button>

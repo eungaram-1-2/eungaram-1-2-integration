@@ -124,7 +124,7 @@ function _buildTimetableHtml(data, weekOffset) {
 function renderTimetable() {
     return `
     <div class="page">
-        <div class="page-header">
+        <div class="page-header header-white">
             <h2>📅 1학년 2반 시간표</h2>
             <button class="btn btn-primary" onclick="downloadTimetable()" style="margin-top:12px">📥 시간표 저장</button>
         </div>

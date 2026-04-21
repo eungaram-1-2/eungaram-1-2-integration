@@ -28,10 +28,11 @@
     <!-- 다크모드 깜빡임 방지 -->
     <script>
         (function(){
-            var t = localStorage.getItem('theme') || 'dark';
-            if (t === 'dark') {
-                document.documentElement.setAttribute('data-theme','dark');
-            }
+            var t = 'light';
+            try {
+                localStorage.setItem('theme', t);
+            } catch (e) {}
+            document.documentElement.removeAttribute('data-theme');
         })();
     </script>
 </head>

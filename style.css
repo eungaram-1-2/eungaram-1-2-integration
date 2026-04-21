@@ -505,7 +505,11 @@ button { font-family: inherit; }
 
 /* ===== Hero — Samsung Galaxy Launch ===== */
 .hero {
-    background: var(--bg-page);
+    background:
+        radial-gradient(ellipse 70% 80% at 75% 45%, rgba(20,40,160,0.55) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 60% at 95% 10%, rgba(0,119,200,0.3) 0%, transparent 55%),
+        radial-gradient(ellipse 30% 40% at 60% 90%, rgba(77,127,255,0.15) 0%, transparent 60%),
+        #000000;
     padding: 120px 0 0;
     color: var(--text);
     position: relative;
@@ -3332,6 +3336,7 @@ button { font-family: inherit; }
     letter-spacing: 0.02em;
 }
 
+
 /* =============================================
    NEW UI — Home Two-Column Layout
    ============================================= */
@@ -5914,4 +5919,175 @@ button { font-family: inherit; }
 
     .tt-mobile-day h3 { font-size: 1rem; }
     .tt-mobile-card { padding: 10px 12px; font-size: 0.9rem; }
+}
+
+/* ===== Text Color Override ===== */
+:root,
+[data-theme="dark"] {
+    --text: #000000;
+    --text-secondary: #000000;
+    --text-muted: #000000;
+}
+
+body,
+body *,
+body *::before,
+body *::after {
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+    opacity: 1;
+}
+
+.hero,
+.hero *,
+.hero *::before,
+.hero *::after {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+.hero h1 .highlight {
+    background: linear-gradient(135deg, #80BBFF 0%, #4D7FFF 40%, #ffffff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text;
+}
+
+.logo-subtitle {
+    color: #6b7280 !important;
+    -webkit-text-fill-color: #6b7280 !important;
+}
+
+.logo-clock {
+    color: #3D52C4 !important;
+    -webkit-text-fill-color: #3D52C4 !important;
+}
+
+.page-header.header-white h2,
+.calendar-header.header-white .month-display {
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+}
+
+.page-header.header-white .btn,
+.page-header.header-white .btn * {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+.timetable th,
+.timetable th *,
+.timetable td .subject-chip,
+.timetable td .subject-chip *,
+.tt-today-chip,
+.tt-today-chip *,
+.tt-day-dot-active {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+.timetable th small {
+    color: rgba(255, 255, 255, 0.7) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.tt-today-chip .period-num,
+.tt-today-bar > div:first-child,
+.tt-today-bar > span {
+    color: rgba(255, 255, 255, 0.78) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.78) !important;
+}
+
+.timetable .period-cell,
+.timetable .period-cell *,
+.week-nav-label {
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+}
+
+.timetable .period-cell,
+.timetable .period-cell * {
+    color: var(--primary) !important;
+    -webkit-text-fill-color: var(--primary) !important;
+}
+
+.timetable td .teacher,
+.timetable .period-cell small,
+.tt-mobile-hint,
+.tt-day-dot,
+.tt-mobile-card > div:first-child,
+.tt-mobile-card > div:nth-child(3),
+.tt-mobile-day > h3 > span:last-child,
+.timetable td > span:not(.subject-chip):only-child {
+    color: var(--text-muted) !important;
+    -webkit-text-fill-color: var(--text-muted) !important;
+}
+
+.tt-mobile-card > div:nth-child(2) {
+    -webkit-text-fill-color: currentColor !important;
+}
+
+.tt-mobile-day > h3,
+.tt-mobile-empty {
+    color: var(--text) !important;
+    -webkit-text-fill-color: var(--text) !important;
+}
+
+.tt-mobile-day > h3 > span:first-of-type:not(:last-child),
+.tt-today-badge {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background: var(--primary);
+}
+
+#timetableContent > div[style*="linear-gradient"] > div:first-child {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+.lunch-table-horizontal th strong,
+.lunch-table-num,
+.allergen-list,
+.allergen-panel-item strong,
+.page-source,
+.page-source a {
+    color: var(--primary) !important;
+    -webkit-text-fill-color: var(--primary) !important;
+}
+
+.lunch-table-horizontal th span,
+.lunch-mobile-day > h3,
+.lunch-mobile-day > h3 > span:last-child {
+    color: #6b7280 !important;
+    -webkit-text-fill-color: #6b7280 !important;
+}
+
+.nav-menu a.active,
+.nav-menu a.active * {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+.calendar-header.header-white .btn-nav,
+.calendar-header.header-white .btn-nav * {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+.link-card-v-body p,
+.page-header p,
+.footer p {
+    color: #6b7280 !important;
+    -webkit-text-fill-color: #6b7280 !important;
+}
+
+.link-card-v-body span[style*="margin-top:10px"] {
+    color: var(--primary) !important;
+    -webkit-text-fill-color: var(--primary) !important;
 }

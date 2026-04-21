@@ -2,7 +2,7 @@
 // 다크 / 라이트 모드
 // =============================================
 function getTheme() {
-    return localStorage.getItem('theme') || 'dark';
+    return 'light';
 }
 
 function applyTheme(theme) {

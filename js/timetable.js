@@ -139,6 +139,9 @@ function renderTimetable() {
                 <span>시간표 불러오는 중...</span>
             </div>
         </div>
+        <p class="page-source">
+            출처: <a href="https://open.neis.go.kr" target="_blank" rel="noopener noreferrer">NEIS 교육정보 개방 포털</a>
+        </p>
     </div>`;
 }
 

@@ -437,7 +437,7 @@ function renderLunch() {
                     <span>급식 정보 불러오는 중...</span>
                 </div>
             </div>
-            <p style="text-align:center;font-size:0.8rem;color:var(--text-muted);margin-top:20px">
+            <p class="page-source" style="text-align:center;font-size:0.8rem;color:var(--text-muted);margin-top:20px">
                 출처: <a href="https://open.neis.go.kr" target="_blank" rel="noopener noreferrer" style="color:var(--primary)">NEIS 교육정보 개방 포털</a>
             </p>
         </div>

@@ -381,7 +381,7 @@ function renderAdmin() {
 
     // ── 사이트 설정 ──
     } else if (tab === 'access' && subTab === 'settings') {
-        const settings = DB.get('site_settings', {pushNotify: true, defaultTheme: 'dark', maintenanceMsg: ''});
+        const settings = DB.get('site_settings', {pushNotify: true, defaultTheme: 'light', maintenanceMsg: ''});
 
         content = `
         <div style="background:var(--card);border-radius:12px;padding:24px;border:1px solid var(--border)">

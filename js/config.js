@@ -47,25 +47,25 @@ const TEXTBOOKS = [
 // 바로가기 링크
 // =============================================
 const QUICK_LINKS = [
-    { icon:'🏫', title:'은가람중학교 공식 사이트', desc:'학교 공식 홈페이지',       url:'https://eungaram-m.goegh.kr/eungaram-m/main.do', color:'#7c3aed' },
-    { icon:'📚', title:'전자도서관',               desc:'온라인 전자도서관 이용',   url:'https://eungaram.yes24library.com/', color:'#3b82f6' },
+    // { icon:'🏫', title:'은가람중학교 공식 사이트', desc:'학교 공식 홈페이지',       url:'https://eungaram-m.goegh.kr/eungaram-m/main.do', color:'#7c3aed' },
+    // { icon:'📚', title:'전자도서관',               desc:'온라인 전자도서관 이용',   url:'https://eungaram.yes24library.com/', color:'#3b82f6' },
     // { icon:'📖', title:'교과서, 한눈에!',         desc:'핸드폰으로 교과서 보기',   page:'textbook', color:'#d946ef' },
-    { icon:'🔍', title:'도서 검색',               desc:'학교 도서 검색 서비스',    url:'https://read365.edunet.net/PureScreen/SchoolSearch?schoolName=%EC%9D%80%EA%B0%80%EB%9E%8C%EC%A4%91%ED%95%99%EA%B5%90&provCode=J10&neisCode=J100007036', color:'#22c55e' },
-    { icon:'🍽️', title:'급식 안내',               desc:'이번 주 급식 메뉴 확인',   url:'https://eungaram-m.goegh.kr/eungaram-m/ad/fm/foodmenu/selectFoodMenuView.do?mi=8056', color:'#f59e0b' },
+    // { icon:'🔍', title:'도서 검색',               desc:'학교 도서 검색 서비스',    url:'https://read365.edunet.net/PureScreen/SchoolSearch?schoolName=%EC%9D%80%EA%B0%80%EB%9E%8C%EC%A4%91%ED%95%99%EA%B5%90&provCode=J10&neisCode=J100007036', color:'#22c55e' },
+    // { icon:'🍽️', title:'급식 안내',               desc:'이번 주 급식 메뉴 확인',   url:'https://eungaram-m.goegh.kr/eungaram-m/ad/fm/foodmenu/selectFoodMenuView.do?mi=8056', color:'#f59e0b' },
     // { icon:'💭', title:'실시간 채팅',            desc:'친구들과 즉시 소통',       page:'chat', color:'#06b6d4' },
     // { icon:'⏰', title:'D-Day',                   desc:'주요 일정 카운트다운',     page:'dday', color:'#f97316' },
-    { icon:'📋', title:'학교 정보',               desc:'학교 알리미 정보 공개',    url:'https://www.schoolinfo.go.kr/ei/ss/Pneiss_b01_s0.do?SHL_IDF_CD=5279faf7-723c-4be3-985f-fb64171392e7', color:'#ec4899' },
+    // { icon:'📋', title:'학교 정보',               desc:'학교 알리미 정보 공개',    url:'https://www.schoolinfo.go.kr/ei/ss/Pneiss_b01_s0.do?SHL_IDF_CD=5279faf7-723c-4be3-985f-fb64171392e7', color:'#ec4899' },
     // { icon:'📮', title:'건의함',                  desc:'의견 및 건의사항 제출',    url:'https://docs.google.com/forms/u/0/d/e/1FAIpQLSc1s4oIvfvoT_GbvdFU95ZglDqYvsfngXrwZOaiaeDDC2NsiA/formResponse', color:'#14b8a6' },
     // { icon:'💬', title:'1-2반 건의함',         desc:'웹사이트 피드백 및 건의',   url:'https://docs.google.com/forms/d/e/1FAIpQLScUFM4zrlhQRJrgg0bXX33IiNY2nynXp4STqQsypHCHFb7byQ/viewform', color:'#ef4444' },
     { icon:'🎵', title:'교가',                 desc:'은가람중학교 교가 감상',     audio:'assets/교가.mp3', color:'#6366f1' },
     // { icon:'📮', title:'건의함/신고함',         desc:'건의사항 및 신고 제출',       page:'suggestion', color:'#14b8a6' },
-    { icon:'💬', title:'웹사이트 건의',         desc:'웹사이트 피드백 및 건의',     url:'https://open.kakao.com/o/sQsGreji', color:'#ef4444' },
+    // { icon:'💬', title:'웹사이트 건의',         desc:'웹사이트 피드백 및 건의',     url:'https://open.kakao.com/o/sQsGreji', color:'#ef4444' },
     // { icon:'🎲', title:'자리 뽑기',             desc:'랜덤 좌석 배정 (관리자)',   page:'seat-draw', color:'#8b5cf6' }
-    { icon:'🎮', title:'미니게임',               desc:'다양한 미니게임을 즐겨보세요',   page:'games', color:'#f43f5e' },
+    // { icon:'🎮', title:'미니게임',               desc:'다양한 미니게임을 즐겨보세요',   page:'games', color:'#f43f5e' },
     { icon:'🤖', title:'중학교 AI 선생님',       desc:'어려운 개념도 쉽게 설명해요', url:'https://eungaram-1-2.github.io/eungaram_chat_ai/', color:'#667eea' },
-    { icon:'🧹', title:'청소 당번표',             desc:'우리 반 청소 구역 배정표',     page:'cleaning', color:'#10b981' },
+    // { icon:'🧹', title:'청소 당번표',             desc:'우리 반 청소 구역 배정표',     page:'cleaning', color:'#10b981' },
     // { icon:'🗺️', title:'지도',                   desc:'장소 검색 · 현재 위치 · 길찾기', page:'map', color:'#0ea5e9' },
-    { icon:'📆', title:'예전 시간표/급식 사이트 바로가기', desc:'이전 버전의 시간표/급식 사이트 접속', url:'https://eungaram-1-2.github.io/eungaram-1-2-tt-lunch', color:'#a78bfa' }
+    // { icon:'📆', title:'예전 시간표/급식 사이트 바로가기', desc:'이전 버전의 시간표/급식 사이트 접속', url:'https://eungaram-1-2.github.io/eungaram-1-2-tt-lunch', color:'#a78bfa' }
 ];
 
 // =============================================

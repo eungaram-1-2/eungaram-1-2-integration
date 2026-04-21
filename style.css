@@ -321,15 +321,13 @@ button { font-family: inherit; }
     background: var(--bg-page);
 }
 
-[data-theme="dark"] .quick-pill {
+[data-theme="dark"] .icon-shortcut-box {
     background: var(--bg-card);
     border-color: var(--border);
-    backdrop-filter: none;
 }
-[data-theme="dark"] .quick-pill:hover {
+[data-theme="dark"] .icon-shortcut-item:hover .icon-shortcut-box {
     border-color: var(--primary-light);
     box-shadow: var(--shadow-sm);
-    color: var(--primary-light);
 }
 
 [data-theme="dark"] .dday-chip-normal {
@@ -342,9 +340,6 @@ button { font-family: inherit; }
     border-top: 1px solid var(--border);
 }
 
-[data-theme="dark"] .home-quick-bar {
-    background: transparent;
-}
 
 [data-theme="dark"] .section-header h2 {
     color: var(--text);
@@ -371,6 +366,26 @@ button { font-family: inherit; }
 }
 
 .theme-icon { font-size: 1.1rem; line-height: 1; }
+
+/* ===== Nav Home Button (모바일 전용) ===== */
+.nav-home-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: none;
+    color: var(--text);
+    cursor: pointer;
+    transition: var(--transition);
+    flex-shrink: 0;
+}
+.nav-home-btn:hover { background: var(--primary-bg); color: var(--primary); }
+
+@media (max-width: 768px) {
+    .nav-home-btn { display: flex; }
+}
 
 /* ===== Hamburger ===== */
 .hamburger {
@@ -735,6 +750,13 @@ button { font-family: inherit; }
     letter-spacing: 0.14em;
     color: rgba(255,255,255,0.6);
     text-transform: uppercase;
+    margin-bottom: 0;
+}
+
+.hero-badge #heroClock {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.05em;
+    opacity: 0.9;
 }
 
 .hero h1 {
@@ -875,17 +897,8 @@ button { font-family: inherit; }
     border-color: rgba(255,255,255,0.4);
 }
 
-/* 히어로 하단 웨이브 */
-.hero::after {
-    content: '';
-    position: absolute;
-    bottom: -2px; left: 0; right: 0;
-    height: 60px;
-    background: var(--bg);
-    clip-path: ellipse(55% 100% at 50% 100%);
-    pointer-events: none;
-    z-index: 4;
-}
+/* 히어로 하단 웨이브 — 비활성화 */
+.hero::after { display: none; }
 
 /* ===== Recent Notices (Home) ===== */
 .recent-notices {
@@ -2307,7 +2320,10 @@ button { font-family: inherit; }
         -webkit-backdrop-filter: none;
     }
 
-    .nav-container { padding: 0 14px; }
+    .nav-container {
+        padding: 0 14px;
+        flex-direction: row-reverse;
+    }
 
     .nav-menu {
         display: none;
@@ -2490,7 +2506,7 @@ button { font-family: inherit; }
     .nav-menu a { min-height: 52px; display: flex; align-items: center; justify-content: center; }
     .theme-toggle { min-width: 44px; min-height: 44px; }
     .hamburger { min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
-    .quick-pill { min-height: 48px; }
+    .icon-shortcut-box { min-height: 60px; min-width: 60px; }
     .cat-tab { min-height: 44px; padding: 10px 18px; }
     .timetable td { min-height: 52px; }
     .notice-card { min-height: 60px; }
@@ -3153,45 +3169,150 @@ button { font-family: inherit; }
 }
 
 /* =============================================
-   NEW UI — Home Quick Bar
+   NEW UI — Home Icon Shortcuts (네모 바로가기)
    ============================================= */
-.home-quick-bar {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 28px 20px 0;
+.home-icon-shortcuts {
     display: flex;
-    gap: 12px;
-    justify-content: center;
-    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 20px;
+    padding: 28px 0 0;
+    background: transparent;
+    flex-wrap: nowrap;
 }
 
-.quick-pill {
+.icon-shortcut-item {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 12px 24px;
-    border-radius: var(--radius-full);
+    gap: 9px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.icon-shortcut-box {
+    width: 72px;
+    height: 72px;
     background: var(--bg-card);
     border: 1.5px solid var(--border);
-    cursor: pointer;
-    transition: var(--transition);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    line-height: 1;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
     box-shadow: var(--shadow-xs);
-    font-weight: 700;
-    font-size: 0.88rem;
-    color: var(--text-secondary);
-    user-select: none;
+    position: relative;
+    overflow: hidden;
 }
 
-.quick-pill:hover {
-    transform: translateY(-3px);
+.icon-shortcut-box::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 32%;
+    background: var(--primary-bg);
+    border-radius: 0 0 18px 18px;
+    pointer-events: none;
+}
+
+.icon-shortcut-item:hover .icon-shortcut-box,
+.icon-shortcut-item:active .icon-shortcut-box {
+    transform: scale(0.93);
     box-shadow: var(--shadow-sm);
     border-color: var(--primary-lighter);
-    color: var(--primary);
 }
 
-.quick-pill-icon {
-    font-size: 1.3rem;
+.icon-shortcut-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+    .home-icon-shortcuts {
+        gap: 14px;
+        padding: 24px 0 0;
+    }
+    .icon-shortcut-box {
+        width: 62px;
+        height: 62px;
+        border-radius: 16px;
+        font-size: 1.75rem;
+    }
+    .icon-shortcut-label {
+        font-size: 0.73rem;
+    }
+}
+
+/* =============================================
+   Hero top row (badge + clock)
+   ============================================= */
+.hero-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    gap: 12px;
+}
+
+.hero-clock-badge {
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+}
+
+/* =============================================
+   Home Icon Grid (2×2)
+   ============================================= */
+.home-icon-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.icon-grid-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 28px 16px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 20px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s, transform 0.15s, border-color 0.15s;
+}
+
+.icon-grid-btn:hover,
+.icon-grid-btn:active {
+    background: rgba(255,255,255,0.13);
+    border-color: rgba(255,255,255,0.3);
+    transform: scale(0.97);
+}
+
+.icon-grid-emoji {
+    font-size: 2rem;
     line-height: 1;
+}
+
+.icon-grid-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: 0.02em;
 }
 
 /* =============================================
@@ -5540,6 +5661,14 @@ button { font-family: inherit; }
 }
 
 @media (max-width: 768px) {
+    body {
+        background: #000000;
+    }
+    .footer {
+        background: transparent !important;
+        border-top: none !important;
+    }
+
     .hero { padding: 90px 0 0; }
     .hero-inner {
         flex-direction: column;

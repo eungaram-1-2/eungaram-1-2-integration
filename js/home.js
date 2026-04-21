@@ -51,9 +51,8 @@ function renderHome() {
         sideDdayItems = `<p style="font-size:0.82rem;color:var(--text-muted);padding:8px 0">등록된 D-Day가 없습니다.</p>`;
     }
 
-    // ── 급식 위젯 ──
-    const lunchHtml = renderLunchWidget();
-    setTimeout(() => loadLunchWidget(), 0);
+    const lunchHtml = ''; // renderLunchWidget();
+    // setTimeout(() => loadLunchWidget(), 0);
 
     setTimeout(() => { _initHeroCanvas(); _initHeroClock(); }, 0);
 
@@ -68,51 +67,41 @@ function renderHome() {
 
         <div class="hero-inner">
             <div class="hero-content">
-                <div class="hero-badge">🏫 은가람 중학교 1학년 2반</div>
-                <h1>서로 배우고<br><span class="highlight">함께 성장하는</span><br>공동체</h1>
-                <p>급식·시간표·학사일정을 한 곳에서 확인하세요</p>
-                <div class="hero-clock" id="heroClock"></div>
-                <div class="hero-btn-row">
-                    <button class="hero-btn hero-btn-primary" onclick="navigate('lunch')">🍴 오늘 급식</button>
-                    <button class="hero-btn hero-btn-outline" onclick="navigate('timetable')">📅 시간표</button>
+                <div class="hero-top-row">
+                    <div class="hero-badge">🏫 은가람 중학교 1학년 2반</div>
+                    <span class="hero-clock-badge" id="heroClock"></span>
+                </div>
+                <!-- <h1>서로 배우고<br><span class="highlight">함께 성장하는</span><br>공동체</h1>
+                <p>급식·시간표·학사일정을 한 곳에서 확인하세요</p> -->
+                <div class="home-icon-grid">
+                    <div class="icon-grid-btn" onclick="navigate('timetable')">
+                        <span class="icon-grid-emoji">📅</span>
+                        <span class="icon-grid-label">시간표</span>
+                    </div>
+                    <div class="icon-grid-btn" onclick="navigate('lunch')">
+                        <span class="icon-grid-emoji">🍱</span>
+                        <span class="icon-grid-label">급식</span>
+                    </div>
+                    <div class="icon-grid-btn" onclick="navigate('academic')">
+                        <span class="icon-grid-emoji">🗓️</span>
+                        <span class="icon-grid-label">학사일정</span>
+                    </div>
+                    <div class="icon-grid-btn" onclick="navigate('links')">
+                        <span class="icon-grid-emoji">🔗</span>
+                        <span class="icon-grid-label">바로가기</span>
+                    </div>
                 </div>
             </div>
-            <div class="hero-orb-visual" onclick="adminOrbClick()" style="cursor:pointer" aria-hidden="true">
+            <!-- <div class="hero-orb-visual" onclick="adminOrbClick()" style="cursor:pointer" aria-hidden="true">
                 <div class="hero-orb-glow"></div>
-            </div>
+            </div> -->
         </div>
 
     </div>
 
-    ${ddayStrip}
+    <!-- ${ddayStrip} -->
 
-    <div class="home-quick-bar">
-        <div class="quick-pill" onclick="navigate('timetable')">
-            <span class="quick-pill-icon">📅</span><span>시간표</span>
-        </div>
-        <div class="quick-pill" onclick="navigate('academic')">
-            <span class="quick-pill-icon">🗓️</span><span>학사일정</span>
-        </div>
-        <div class="quick-pill" onclick="navigate('lunch')">
-            <span class="quick-pill-icon">🍱</span><span>급식</span>
-        </div>
-        <!-- <div class="quick-pill" onclick="navigate('suggestion')">
-            <span class="quick-pill-icon">📮</span><span>건의함/신고함</span>
-        </div> -->
-        <!-- <div class="quick-pill" onclick="navigate('board')">
-            <span class="quick-pill-icon">💬</span><span>게시판</span>
-        </div>
-        <div class="quick-pill" onclick="navigate('dday')">
-            <span class="quick-pill-icon">⏰</span><span>D-Day</span>
-        </div>
-        <div class="quick-pill" onclick="navigate('votes')">
-            <span class="quick-pill-icon">🗳️</span><span>투표</span>
-        </div> -->
-        <div class="quick-pill" onclick="navigate('links')">
-            <span class="quick-pill-icon">🔗</span><span>바로가기</span>
-        </div>
-    </div>
-
+    <!--
     <div style="max-width:1160px;margin:0 auto;padding:0 20px">
         ${lunchHtml}
     </div>
@@ -151,36 +140,9 @@ function renderHome() {
                     <p>자주 쓰는 링크를<br>한 곳에서.</p>
                 </div>
             </div>
-            <!-- <div class="feature-card" onclick="navigate('board')">
-                <div class="feature-card-inner">
-                    <div class="feature-icon">💬</div>
-                    <h3>자유게시판</h3>
-                    <p>친구들과<br>자유롭게 소통.</p>
-                </div>
-            </div>
-            <div class="feature-card" onclick="navigate('votes')">
-                <div class="feature-card-inner">
-                    <div class="feature-icon">🗳️</div>
-                    <h3>투표 &amp; 설문</h3>
-                    <p>공정한<br>학급 의사결정.</p>
-                </div>
-            </div>
-            <div class="feature-card" onclick="isLoggedIn() ? navigate('chat') : navigate('login')">
-                <div class="feature-card-inner">
-                    <div class="feature-icon">💭</div>
-                    <h3>실시간 채팅</h3>
-                    <p>친구들과<br>즉시 소통.</p>
-                </div>
-            </div>
-            <div class="feature-card" onclick="window.open('https://docs.google.com/forms/u/0/d/e/1FAIpQLSc1s4oIvfvoT_GbvdFU95ZglDqYvsfngXrwZOaiaeDDC2NsiA/formResponse','_blank')">
-                <div class="feature-card-inner">
-                    <div class="feature-icon">📮</div>
-                    <h3>건의함</h3>
-                    <p>의견을<br>자유롭게 제출.</p>
-                </div>
-            </div> -->
         </div>
     </div>
+    -->
 
     <!-- <div class="school-info-section">
         <div class="section-header">
@@ -341,28 +303,13 @@ function _initHeroCanvas() {
 let _heroClockTimer = null;
 
 function _initHeroClock() {
-    if (_heroClockTimer) { clearInterval(_heroClockTimer); _heroClockTimer = null; }
     const el = document.getElementById('heroClock');
     if (!el) return;
-
     const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-    function tick() {
-        const now = new Date();
-        const y = now.getFullYear();
-        const m = String(now.getMonth() + 1).padStart(2, '0');
-        const d = String(now.getDate()).padStart(2, '0');
-        const dow = dayNames[now.getDay()];
-        const hh = String(now.getHours()).padStart(2, '0');
-        const mm = String(now.getMinutes()).padStart(2, '0');
-        const ss = String(now.getSeconds()).padStart(2, '0');
-        const clockEl = document.getElementById('heroClock');
-        if (clockEl) {
-            clockEl.textContent = `${y}.${m}.${d} (${dow}) ${hh}:${mm}:${ss}`;
-        } else {
-            clearInterval(_heroClockTimer);
-            _heroClockTimer = null;
-        }
-    }
-    tick();
-    _heroClockTimer = setInterval(tick, 1000);
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    const dow = dayNames[now.getDay()];
+    el.textContent = `${y}.${m}.${d} (${dow})`;
 }

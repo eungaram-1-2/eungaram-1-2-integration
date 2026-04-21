@@ -58,13 +58,19 @@
                 <li class="nav-menu-user-section" id="navMenuUserSection" style="display:none"></li>
             </ul>
             <div class="nav-right">
-                <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="다크/라이트 모드 전환" aria-label="테마 전환">
+                <button class="nav-home-btn" onclick="navigate('home')" aria-label="홈으로">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
+                        <polyline points="9 21 9 12 15 12 15 21"/>
+                    </svg>
+                </button>
+                <!-- <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="다크/라이트 모드 전환" aria-label="테마 전환">
                     <span class="theme-icon" id="themeIcon">🌙</span>
-                </button>
+                </button> -->
                 <div class="nav-auth" id="navAuth"></div>
-                <button class="hamburger" id="hamburger" aria-label="메뉴 열기" onclick="toggleMenu();">
+                <!-- <button class="hamburger" id="hamburger" aria-label="메뉴 열기" onclick="toggleMenu();">
                     <span></span><span></span><span></span>
-                </button>
+                </button> -->
             </div>
         </div>
     </nav>
@@ -79,7 +85,7 @@
     <!-- 푸터 -->
     <footer class="footer">
         <div class="container">
-            <div id="visitorStats"></div>
+            <!-- <div id="visitorStats"></div> -->
             <p style="margin-top:12px">&copy; 2026 Eungaram Middle School 1st Grade Class 2. ALL RIGHTS RESERVED.</p>
         </div>
     </footer>
@@ -130,7 +136,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" crossorigin="anonymous"></script>
 
     <!-- 관리자 및 게임 -->
-    <script defer src="js/admin.js?v=15"></script>
+    <!-- <script defer src="js/admin.js?v=15"></script> -->
     <script defer src="js/games.js?v=15"></script>
 
     <!-- 라우터 & 초기화 (마지막에 로드) -->

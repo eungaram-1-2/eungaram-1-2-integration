@@ -505,9 +505,9 @@ button { font-family: inherit; }
 
 /* ===== Hero — Samsung Galaxy Launch ===== */
 .hero {
-    background: #000000;
+    background: var(--bg-page);
     padding: 120px 0 0;
-    color: white;
+    color: var(--text);
     position: relative;
     overflow: hidden;
     z-index: 1;
@@ -5679,7 +5679,8 @@ button { font-family: inherit; }
 
 @media (max-width: 768px) {
     body {
-        background: #000000;
+        background: var(--bg-page);
+        color: var(--text);
     }
     .footer {
         background: transparent !important;

@@ -135,7 +135,7 @@ background:transparent;color:var(--text-muted);padding:6px 12px;box-shadow:none;
 .btn-ghost:hover{ background:var(--primary-bg);color:var(--primary);}
 .global-orb{ display:none;}
 .hero{
-background:#000000;padding:120px 0 0;color:white;position:relative;overflow:hidden;z-index:1;display:flex;flex-direction:column;}
+background:var(--bg-page);padding:120px 0 0;color:var(--text);position:relative;overflow:hidden;z-index:1;display:flex;flex-direction:column;}
 @media (min-width:769px){
 .hero{ min-height:100svh;}}
 .hero-inner{
@@ -1673,9 +1673,8 @@ background:#673ab7;color:white;border:none;border-radius:4px;padding:12px 28px;f
 .hero-inner{ padding:20px 40px 60px;gap:24px;}
 .hero-orb-visual{ flex:0 0 300px;width:300px;height:300px;}
 .hero h1{ font-size:3.8rem;}}
-@media (max-width:768px){
-body{
-background:#000000;}
+.@media (max-width:768px){
+body{background:var(--bg-page);color:var(--text);} 
 .footer{
 background:transparent !important;border-top:none !important;}
 .hero{ padding:90px 0 0;}

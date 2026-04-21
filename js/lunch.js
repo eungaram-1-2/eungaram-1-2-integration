@@ -515,7 +515,7 @@ async function loadLunchPage(weekOffset = 0) {
         const todayAttr = isToday ? ' data-today="true"' : '';
         const todayStyle = isToday ? ' style="border-top:3px solid var(--primary);"' : '';
         const todayBadge = isToday
-            ? `<span style="font-size:0.65rem;font-weight:700;color:white;background:var(--primary);padding:2px 8px;border-radius:999px;margin-left:8px;vertical-align:middle">오늘</span>`
+            ? `<span style="font-size:0.65rem;font-weight:700;color:#fff!important;-webkit-text-fill-color:#fff!important;background:var(--primary);padding:2px 8px;border-radius:999px;margin-left:8px;vertical-align:middle">오늘</span>`
             : '';
         const menuHtml = day.items.length > 0
             ? day.items.map(item => `<div class="lunch-mobile-item">${cleanMenuItem(item)}</div>`).join('')

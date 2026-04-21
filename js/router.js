@@ -8,7 +8,7 @@ function navigate(page, params = {}) {
     if (!RateLimit.check('navigate')) return;
     currentPage = page;
     pageParams  = params;
-    if (isAdmin()) logAccess();
+    if (isAdmin() && typeof logAccess === 'function') logAccess();
     render();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 

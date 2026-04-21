@@ -63,8 +63,8 @@ function openSchoolSongModal(src, title) {
         <div style="font-size:3rem;margin-bottom:14px;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.2))">🎵</div>
 
         <!-- 제목 -->
-        <h3 style="font-size:1.25rem;font-weight:800;margin-bottom:6px;letter-spacing:-0.01em">은가람 중학교 교가</h3>
-        <p style="font-size:0.86rem;opacity:0.8;margin-bottom:22px">우리 학교 교가를 감상해보세요</p>
+        <h3 style="font-size:1.25rem;font-weight:800;margin-bottom:6px;letter-spacing:-0.01em;color:#fff!important">은가람 중학교 교가</h3>
+        <p style="font-size:0.86rem;opacity:0.8;margin-bottom:22px;color:#fff!important">우리 학교 교가를 감상해보세요</p>
 
         <!-- 플레이어 패널 -->
         <div style="
@@ -93,8 +93,8 @@ function openSchoolSongModal(src, title) {
 
                 <!-- 제목/상태 -->
                 <div style="flex:1;text-align:left;min-width:0">
-                    <div style="font-size:0.9rem;font-weight:700;color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">은가람 중학교 교가</div>
-                    <div id="ssp_status" style="font-size:0.72rem;opacity:0.75;color:#fff">재생 대기 중</div>
+                    <div style="font-size:0.9rem;font-weight:700;color:#fff!important;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">은가람 중학교 교가</div>
+                    <div id="ssp_status" style="font-size:0.72rem;opacity:0.75;color:#fff!important">재생 대기 중</div>
                 </div>
             </div>
 
@@ -125,8 +125,8 @@ function openSchoolSongModal(src, title) {
 
             <!-- 시간 -->
             <div style="display:flex;justify-content:space-between;font-size:0.72rem;opacity:0.8;margin-bottom:12px">
-                <span id="ssp_cur">0:00</span>
-                <span id="ssp_dur">0:00</span>
+                <span id="ssp_cur" style="color:#fff!important">0:00</span>
+                <span id="ssp_dur" style="color:#fff!important">0:00</span>
             </div>
 
             <!-- 볼륨 -->
@@ -170,11 +170,11 @@ function openSchoolSongModal(src, title) {
 
             <!-- 가사 섹션 -->
             <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.2)">
-                <div style="font-size:0.95rem;font-weight:700;opacity:0.9;margin-bottom:14px">📝 교가 가사</div>
+                <div style="font-size:0.95rem;font-weight:700;opacity:0.9;margin-bottom:14px;color:#fff!important">📝 교가 가사</div>
                 <div style="display:flex;gap:24px">
                     <div style="flex:1">
                         <div style="font-size:0.9rem;font-weight:700;color:#fff;opacity:0.8;margin-bottom:10px">1절</div>
-                        <div style="font-size:0.9rem;line-height:1.8;opacity:0.9">
+                        <div style="font-size:0.9rem;line-height:1.8;opacity:0.9;color:#fff!important">
                             <div>검단산 정기 담아</div>
                             <div>흐르는 은빛물결</div>
                             <div style="margin-top:6px">한강물 굽이 굽이</div>
@@ -187,7 +187,7 @@ function openSchoolSongModal(src, title) {
                     </div>
                     <div style="flex:1">
                         <div style="font-size:0.9rem;font-weight:700;color:#fff;opacity:0.8;margin-bottom:10px">2절</div>
-                        <div style="font-size:0.9rem;line-height:1.8;opacity:0.9">
+                        <div style="font-size:0.9rem;line-height:1.8;opacity:0.9;color:#fff!important">
                             <div>소나무 푸른기상</div>
                             <div>라일락 진한 향기</div>
                             <div style="margin-top:6px">우리들 가슴속에</div>

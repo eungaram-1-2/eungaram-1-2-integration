@@ -104,23 +104,23 @@ function renderAdmin() {
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
                 <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
                     <input type="checkbox" id="enActive" ${en.active?'checked':''} style="width:18px;height:18px;cursor:pointer">
-                    <span style="font-weight:bold">배너 활성화</span>
+                    <span style="font-weight:bold;color:#fff!important">배너 활성화</span>
                 </label>
-                <span style="font-size:0.85rem;color:var(--text-muted)">(활성화 시 모든 페이지 상단에 표시)</span>
+                <span style="font-size:0.85rem;color:#fff!important">(활성화 시 모든 페이지 상단에 표시)</span>
             </div>
             <div style="display:grid;gap:12px">
                 <div>
-                    <label style="display:block;font-size:0.85rem;color:var(--text-muted);margin-bottom:6px">제목</label>
+                    <label style="display:block;font-size:0.85rem;color:#fff!important;margin-bottom:6px">제목</label>
                     <input type="text" id="enTitle" placeholder="예: 긴급 공지" value="${escapeHtml(en.title)}"
                         style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;box-sizing:border-box;font-size:0.95rem">
                 </div>
                 <div>
-                    <label style="display:block;font-size:0.85rem;color:var(--text-muted);margin-bottom:6px">내용</label>
+                    <label style="display:block;font-size:0.85rem;color:#fff!important;margin-bottom:6px">내용</label>
                     <textarea id="enMessage" placeholder="공지 내용을 입력하세요"
                         style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;min-height:90px;box-sizing:border-box;font-family:inherit;font-size:0.95rem;resize:vertical">${escapeHtml(en.message)}</textarea>
                 </div>
                 <div style="display:flex;align-items:center;gap:12px">
-                    <label style="font-size:0.85rem;color:var(--text-muted)">배너 색상:</label>
+                    <label style="font-size:0.85rem;color:#fff!important">배너 색상:</label>
                     <input type="color" id="enColor" value="${en.color}"
                         style="width:48px;height:36px;border:1px solid var(--border);border-radius:6px;cursor:pointer;padding:2px">
                 </div>

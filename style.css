@@ -1896,16 +1896,17 @@ button { font-family: inherit; }
     align-items: center;
     padding: 22px 28px;
     border-bottom: 1px solid var(--border-light);
+    background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
 }
 
-.modal-header h3 { font-size: 1.05rem; font-weight: 700; }
+.modal-header h3 { font-size: 1.05rem; font-weight: 700; color: #fff; }
 
 .modal-close {
     background: var(--bg-subtle);
     border: 1px solid var(--border);
     font-size: 1.1rem;
     cursor: pointer;
-    color: var(--text-muted);
+    color: #fff;
     width: 32px; height: 32px;
     border-radius: 10px;
     display: flex;

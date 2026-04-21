@@ -47,5 +47,5 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Self-XSS 경고
     console.warn('%c⚠ 경고!', 'color:red;font-size:2rem;font-weight:bold');
-    console.warn('이 콘솔에 코드를 붙여넣지 마세요. 계정이 탈취될 수 있습니다.');
+    console.warn('이 콘솔에 코드를 붙여넣지 마세요. 당신의 정보가 탈취될 수 있습니다.');
 });

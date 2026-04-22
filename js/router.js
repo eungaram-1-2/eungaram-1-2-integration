@@ -6,6 +6,7 @@ let pageParams  = {};
 
 function navigate(page, params = {}) {
     if (!RateLimit.check('navigate')) return;
+    if (currentPage === page && JSON.stringify(pageParams) === JSON.stringify(params)) return;
     currentPage = page;
     pageParams  = params;
     history.pushState({ page, params }, '', location.pathname + '#' + page);
@@ -32,6 +33,7 @@ window.addEventListener('popstate', e => {
     } else {
         currentPage = 'home';
         pageParams  = {};
+        history.replaceState({ page: 'home', params: {} }, '', location.pathname + '#home');
     }
     render();
     window.scrollTo({ top: 0, behavior: 'smooth' });

@@ -101,10 +101,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // IP 차단 체크 후 렌더 (URL 해시로 초기 페이지 결정)
     await checkIPBlock();
     const _initHash = location.hash.replace('#', '');
-    if (_initHash && GUEST_ALLOWED.includes(_initHash)) {
+    history.replaceState({ page: 'home', params: {} }, '', location.pathname + '#home');
+    if (_initHash && GUEST_ALLOWED.includes(_initHash) && _initHash !== 'home') {
         currentPage = _initHash;
+        history.pushState({ page: currentPage, params: {} }, '', location.pathname + '#' + currentPage);
+    } else {
+        currentPage = 'home';
     }
-    history.replaceState({ page: currentPage, params: {} }, '', location.pathname + '#' + currentPage);
     render();
 
     // Firebase 백그라운드 동기화 (업데이트가 오면 자동 re-render)

@@ -1,4 +1,4 @@
-const CACHE = 'eg-1-2-v1';
+const CACHE = 'eg-1-2-v2';
 const PRECACHE = [
     './',
     './style.min.css',

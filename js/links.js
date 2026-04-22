@@ -28,15 +28,16 @@ function renderLinks() {
         }
     }).join('');
 
+    const ua = navigator.userAgent || '';
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    const isKakao = /KAKAOTALK/i.test(navigator.userAgent);
+    const isIOS = /iphone|ipad|ipod/i.test(ua);
+    const isAndroid = /android/i.test(ua);
+    const isKakao = /KAKAOTALK/i.test(ua);
 
     let pwaCard = '';
     if (!isStandalone) {
         if (isKakao) {
             const siteUrl = 'https://eungaram-1-2.github.io/eungaram-1-2-integration/';
-            const encodedUrl = encodeURIComponent(siteUrl);
             const chromeIntent = `intent://${siteUrl.replace('https://', '')}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent('https://play.google.com/store/apps/details?id=com.android.chrome')};end`;
             const samsungIntent = `intent://${siteUrl.replace('https://', '')}#Intent;scheme=https;package=com.sec.android.app.sbrowser;S.browser_fallback_url=${encodeURIComponent('https://play.google.com/store/apps/details?id=com.sec.android.app.sbrowser')};end`;
             pwaCard = `
@@ -44,18 +45,19 @@ function renderLinks() {
                 <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
                     <span style="font-size:2rem;flex-shrink:0">📲</span>
                     <div>
-                        <div style="font-weight:800;font-size:0.95rem;margin-bottom:4px">앱으로 설치하기</div>
+                        <div style="font-weight:800;font-size:0.95rem;margin-bottom:4px">앱 설치가 막히면</div>
                         <div style="font-size:0.8rem;opacity:0.85">다른 브라우저로 열어서 설치하세요</div>
                     </div>
                 </div>
-                <div style="display:flex;gap:10px;margin-bottom:12px">
-                    <a href="${chromeIntent}" style="flex:1;background:#fff;color:#1428A0;border-radius:var(--radius-full);padding:10px 0;font-size:0.85rem;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;display:block;font-family:inherit">🌐 크롬으로 열기</a>
-                    <a href="${samsungIntent}" style="flex:1;background:rgba(255,255,255,0.2);color:#fff;border-radius:var(--radius-full);padding:10px 0;font-size:0.85rem;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;display:block;border:1px solid rgba(255,255,255,0.4);font-family:inherit">🌐 삼성인터넷</a>
+                <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+                    ${isAndroid ? `<a href="${chromeIntent}" style="flex:1;background:#fff;color:#1428A0;border-radius:var(--radius-full);padding:10px 0;font-size:0.85rem;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;display:block;font-family:inherit">🌐 크롬으로 열기</a>
+                    <a href="${samsungIntent}" style="flex:1;background:rgba(255,255,255,0.2);color:#fff;border-radius:var(--radius-full);padding:10px 0;font-size:0.85rem;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;display:block;border:1px solid rgba(255,255,255,0.4);font-family:inherit">🌐 삼성인터넷</a>` : `<a href="${siteUrl}" target="_blank" rel="noopener noreferrer" style="flex:1;background:#fff;color:#1428A0;border-radius:var(--radius-full);padding:10px 0;font-size:0.85rem;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;display:block;font-family:inherit">🌐 브라우저로 열기</a>`}
                 </div>
-                <div style="background:rgba(255,255,255,0.12);border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;gap:10px">
+                <div style="background:rgba(255,255,255,0.12);border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:10px">
                     <span style="font-size:0.75rem;flex:1;word-break:break-all;opacity:0.8">${siteUrl}</span>
-                    <button onclick="navigator.clipboard.writeText('${siteUrl}').then(()=>{this.textContent='복사됨✓';setTimeout(()=>{this.textContent='URL 복사'},2000)}).catch(()=>{this.textContent='복사 실패'})" style="background:#fff;color:#1428A0;border:none;border-radius:var(--radius-full);padding:6px 12px;font-size:0.75rem;font-weight:800;cursor:pointer;flex-shrink:0;font-family:inherit">URL 복사</button>
+                    <button onclick="navigator.clipboard.writeText('${siteUrl}').then(()=>{this.textContent='복사 완료';setTimeout(()=>{this.textContent='URL 복사'},2000)}).catch(()=>{this.textContent='복사 실패'})" style="background:#fff;color:#1428A0;border:none;border-radius:var(--radius-full);padding:6px 12px;font-size:0.75rem;font-weight:800;cursor:pointer;flex-shrink:0;font-family:inherit">URL 복사</button>
                 </div>
+                <div style="font-size:0.75rem;opacity:0.82;line-height:1.5">버튼이 안 뜨면 URL을 복사해서 크롬이나 삼성인터넷에 붙여 넣어도 됩니다.</div>
             </div>`;
         } else if (isIOS) {
             pwaCard = `
@@ -63,7 +65,7 @@ function renderLinks() {
                 <span style="font-size:2rem;flex-shrink:0">📲</span>
                 <div style="flex:1">
                     <div style="font-weight:800;font-size:0.95rem;margin-bottom:4px">홈 화면에 추가하기</div>
-                    <div style="font-size:0.8rem;opacity:0.85">Safari 하단 <strong>공유 버튼(↑)</strong> → <strong>홈 화면에 추가</strong> 탭하세요</div>
+                    <div style="font-size:0.8rem;opacity:0.85">Safari 하단 <strong>공유 버튼(□↑)</strong> 후 <strong>홈 화면에 추가</strong>를 누르세요</div>
                 </div>
             </div>`;
         } else {
@@ -72,7 +74,7 @@ function renderLinks() {
                 <span style="font-size:2rem;flex-shrink:0">📲</span>
                 <div style="flex:1">
                     <div style="font-weight:800;font-size:0.95rem;margin-bottom:4px">앱으로 설치하기</div>
-                    <div style="font-size:0.8rem;opacity:0.85">홈 화면에 추가하면 앱처럼 바로 열 수 있어요</div>
+                    <div style="font-size:0.8rem;opacity:0.85">홈 화면에 추가하면 앱처럼 바로 열려요</div>
                 </div>
                 <button id="pwaInstallBtn" onclick="pwaInstall()" style="display:${_pwaPrompt ? 'flex' : 'none'};align-items:center;gap:6px;background:#fff;color:#1428A0;border:none;border-radius:var(--radius-full);padding:10px 18px;font-size:0.85rem;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:inherit">
                     설치
@@ -91,7 +93,6 @@ function renderLinks() {
         <div class="links-grid-v">${cards}</div>
     </div>`;
 }
-
 function openSchoolSongModal(src, title) {
     // 기존에 재생 중인 오디오 정리
     if (window._schoolSongAudio) {

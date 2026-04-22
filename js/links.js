@@ -30,10 +30,27 @@ function renderLinks() {
 
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isKakao = /KAKAOTALK/i.test(navigator.userAgent);
 
     let pwaCard = '';
     if (!isStandalone) {
-        if (isIOS) {
+        if (isKakao) {
+            pwaCard = `
+            <div id="pwaInstallCard" style="background:linear-gradient(135deg,#1428A0 0%,#0077C8 100%);border-radius:var(--radius);padding:20px 22px;margin-bottom:20px;color:#fff">
+                <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
+                    <span style="font-size:2rem;flex-shrink:0">📲</span>
+                    <div>
+                        <div style="font-weight:800;font-size:0.95rem;margin-bottom:4px">앱으로 설치하기</div>
+                        <div style="font-size:0.8rem;opacity:0.85">카카오톡에서는 외부 브라우저로 열어야 설치할 수 있어요</div>
+                    </div>
+                </div>
+                <div style="background:rgba(255,255,255,0.15);border-radius:var(--radius-sm);padding:14px 16px;font-size:0.82rem;line-height:2">
+                    <div>① 우측 상단 <strong>···</strong> 버튼 탭</div>
+                    <div>② <strong>다른 브라우저로 열기</strong> 탭</div>
+                    <div>③ 바로가기 메뉴에서 <strong>설치</strong> 버튼 탭</div>
+                </div>
+            </div>`;
+        } else if (isIOS) {
             pwaCard = `
             <div id="pwaInstallCard" style="background:linear-gradient(135deg,#1428A0 0%,#0077C8 100%);border-radius:var(--radius);padding:20px 22px;margin-bottom:20px;color:#fff;display:flex;align-items:center;gap:16px">
                 <span style="font-size:2rem;flex-shrink:0">📲</span>

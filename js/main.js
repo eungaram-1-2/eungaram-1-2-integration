@@ -32,6 +32,58 @@ async function pwaInstall() {
     if (outcome === 'accepted') _pwaPrompt = null;
 }
 
+function isKakaoAndroidInApp() {
+    const ua = navigator.userAgent || '';
+    return /KAKAOTALK/i.test(ua) && /android/i.test(ua);
+}
+
+function tryOpenExternalBrowserFromKakao() {
+    if (!isKakaoAndroidInApp()) return false;
+
+    const attemptKey = 'kakao_external_browser_attempted';
+    if (sessionStorage.getItem(attemptKey)) return false;
+    sessionStorage.setItem(attemptKey, String(Date.now()));
+
+    const targetUrl = location.href;
+    const intentPath = targetUrl.replace(/^https?:\/\//i, '');
+    const chromeIntent = `intent://${intentPath}#Intent;scheme=https;package=com.android.chrome;end`;
+    const samsungIntent = `intent://${intentPath}#Intent;scheme=https;package=com.sec.android.app.sbrowser;end`;
+
+    let handedOff = false;
+    const markHandedOff = () => { handedOff = true; };
+    const onVisibilityChange = () => {
+        if (document.visibilityState === 'hidden') markHandedOff();
+    };
+    const cleanup = () => {
+        window.removeEventListener('pagehide', markHandedOff);
+        document.removeEventListener('visibilitychange', onVisibilityChange);
+        window.removeEventListener('blur', markHandedOff);
+    };
+
+    window.addEventListener('pagehide', markHandedOff, { once: true });
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('blur', markHandedOff, { once: true });
+
+    setTimeout(() => {
+        location.href = chromeIntent;
+
+        setTimeout(() => {
+            if (handedOff) {
+                cleanup();
+                return;
+            }
+
+            location.href = samsungIntent;
+
+            setTimeout(() => {
+                cleanup();
+            }, 1500);
+        }, 1200);
+    }, 250);
+
+    return true;
+}
+
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').catch(() => {});
@@ -109,6 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentPage = 'home';
     }
     render();
+    tryOpenExternalBrowserFromKakao();
 
     // Firebase 백그라운드 동기화 (업데이트가 오면 자동 re-render)
     startFirebaseSync();

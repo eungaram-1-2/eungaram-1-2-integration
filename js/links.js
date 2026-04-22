@@ -35,20 +35,21 @@ function renderLinks() {
     let pwaCard = '';
     if (!isStandalone) {
         if (isKakao) {
+            const siteUrl = 'https://eungaram-1-2.github.io/eungaram-1-2-integration/';
             pwaCard = `
             <div id="pwaInstallCard" style="background:linear-gradient(135deg,#1428A0 0%,#0077C8 100%);border-radius:var(--radius);padding:20px 22px;margin-bottom:20px;color:#fff">
                 <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
                     <span style="font-size:2rem;flex-shrink:0">📲</span>
                     <div>
                         <div style="font-weight:800;font-size:0.95rem;margin-bottom:4px">앱으로 설치하기</div>
-                        <div style="font-size:0.8rem;opacity:0.85">카카오톡에서는 외부 브라우저로 열어야 설치할 수 있어요</div>
+                        <div style="font-size:0.8rem;opacity:0.85">카카오톡에서는 크롬/삼성인터넷으로 열어야 설치할 수 있어요</div>
                     </div>
                 </div>
-                <div style="background:rgba(255,255,255,0.15);border-radius:var(--radius-sm);padding:14px 16px;font-size:0.82rem;line-height:2">
-                    <div>① 우측 상단 <strong>···</strong> 버튼 탭</div>
-                    <div>② <strong>다른 브라우저로 열기</strong> 탭</div>
-                    <div>③ 바로가기 메뉴에서 <strong>설치</strong> 버튼 탭</div>
+                <div style="background:rgba(255,255,255,0.15);border-radius:var(--radius-sm);padding:12px 14px;display:flex;align-items:center;gap:12px">
+                    <span style="font-size:0.8rem;flex:1;word-break:break-all;opacity:0.9">${siteUrl}</span>
+                    <button onclick="navigator.clipboard.writeText('${siteUrl}').then(()=>{this.textContent='복사됨✓';setTimeout(()=>{this.textContent='URL 복사'},2000)}).catch(()=>{this.textContent='복사 실패'})" style="background:#fff;color:#1428A0;border:none;border-radius:var(--radius-full);padding:8px 14px;font-size:0.8rem;font-weight:800;cursor:pointer;flex-shrink:0;font-family:inherit">URL 복사</button>
                 </div>
+                <div style="font-size:0.75rem;opacity:0.75;margin-top:10px">복사 후 크롬/삼성인터넷에 붙여넣기 → 바로가기 메뉴에서 설치</div>
             </div>`;
         } else if (isIOS) {
             pwaCard = `

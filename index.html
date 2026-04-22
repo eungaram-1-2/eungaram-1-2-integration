@@ -20,10 +20,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
     <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"> -->
-    <link rel="stylesheet" href="style.min.css?v=32">
-    <link rel="preload" href="style.min.css?v=32" as="style">
-    <link rel="preload" href="js/main.js?v=32" as="script">
-    <link rel="preload" href="js/router.js?v=32" as="script">
+    <link rel="stylesheet" href="style.min.css?v=33">
+    <link rel="preload" href="style.min.css?v=33" as="style">
+    <link rel="preload" href="js/main.js?v=33" as="script">
+    <link rel="preload" href="js/router.js?v=33" as="script">
     <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="assets/logo.svg">
@@ -46,7 +46,7 @@
     <!-- 네비게이션 -->
     <nav class="navbar" id="navbar">
         <div class="nav-container">
-            <a href="javascript:void(0)" class="nav-logo" onclick="navigate('home')">
+            <a href="#" class="nav-logo" onclick="navigate('home'); return false;">
                 <img src="assets/logo.svg" alt="은가람 중학교 로고" class="logo-img">
                 <div class="logo-text">
                     <span class="logo-title">은가람 중학교</span>
@@ -55,12 +55,12 @@
                 </div>
             </a>
             <ul class="nav-menu" id="navMenu">
-                <li><a href="javascript:void(0)" onclick="navigate('timetable')">📅 시간표</a></li>
-                <li><a href="javascript:void(0)" onclick="navigate('lunch')">🍱 급식</a></li>
-                <li><a href="javascript:void(0)" onclick="navigate('academic')">🗓️ 학사일정</a></li>
-                <!-- <li><a href="javascript:void(0)" onclick="navigate('board')">💬 자유게시판</a></li>
-                <li><a href="javascript:void(0)" onclick="navigate('votes')">🗳️ 투표</a></li> -->
-                <li><a href="javascript:void(0)" onclick="navigate('links')">🔗 바로가기</a></li>
+                <li><a href="#" onclick="navigate('timetable'); return false;">📅 시간표</a></li>
+                <li><a href="#" onclick="navigate('lunch'); return false;">🍱 급식</a></li>
+                <li><a href="#" onclick="navigate('academic'); return false;">🗓️ 학사일정</a></li>
+                <!-- <li><a href="#" onclick="navigate('board'); return false;">💬 자유게시판</a></li>
+                <li><a href="#" onclick="navigate('votes'); return false;">🗳️ 투표</a></li> -->
+                <li><a href="#" onclick="navigate('links'); return false;">🔗 바로가기</a></li>
                 <!-- 모바일 전용: 로그인 상태 메뉴 -->
                 <li class="nav-menu-user-section" id="navMenuUserSection" style="display:none"></li>
             </ul>
@@ -113,41 +113,41 @@
     <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
     <!-- 기반 스크립트 -->
-    <script defer src="js/firebase-config.js?v=32"></script>
-    <script defer src="js/config.js?v=32"></script>
-    <script defer src="js/security.js?v=32"></script>
-    <script defer src="js/db.js?v=32"></script>
-    <script defer src="js/utils.js?v=32"></script>
-    <script defer src="js/theme.js?v=32"></script>
-    <script defer src="js/modal.js?v=32"></script>
+    <script defer src="js/firebase-config.js?v=33"></script>
+    <script defer src="js/config.js?v=33"></script>
+    <script defer src="js/security.js?v=33"></script>
+    <script defer src="js/db.js?v=33"></script>
+    <script defer src="js/utils.js?v=33"></script>
+    <script defer src="js/theme.js?v=33"></script>
+    <script defer src="js/modal.js?v=33"></script>
 
     <!-- 페이지 렌더러 -->
-    <script defer src="js/home.js?v=32"></script>
-    <script defer src="js/neis-timetable.js?v=32"></script>
-    <script defer src="js/timetable.js?v=32"></script>
-    <script defer src="js/votes.js?v=32"></script>
-    <script defer src="js/dday.js?v=32"></script>
-    <script defer src="js/links.js?v=32"></script>
-    <script defer src="js/suggestion.js?v=32"></script>
-    <script defer src="js/lunch.js?v=32"></script>
-    <script defer src="js/notifications.js?v=32"></script>
-    <script defer src="js/chat.js?v=32"></script>
-    <script defer src="js/reactions.js?v=32"></script>
-    <script defer src="js/academic-calendar.js?v=32"></script>
-    <script defer src="js/cleaning.js?v=32"></script>
+    <script defer src="js/home.js?v=33"></script>
+    <script defer src="js/neis-timetable.js?v=33"></script>
+    <script defer src="js/timetable.js?v=33"></script>
+    <script defer src="js/votes.js?v=33"></script>
+    <script defer src="js/dday.js?v=33"></script>
+    <script defer src="js/links.js?v=33"></script>
+    <script defer src="js/suggestion.js?v=33"></script>
+    <script defer src="js/lunch.js?v=33"></script>
+    <script defer src="js/notifications.js?v=33"></script>
+    <script defer src="js/chat.js?v=33"></script>
+    <script defer src="js/reactions.js?v=33"></script>
+    <script defer src="js/academic-calendar.js?v=33"></script>
+    <script defer src="js/cleaning.js?v=33"></script>
     <!-- <script defer src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js" integrity="sha384-u5N8qJeJOO2iqNjIKTdl6KeKsEikMAmCUBPc6sC6uGpgL34aPJ4VgNhuhumedpEk" crossorigin="anonymous"></script> -->
-    <!-- <script defer src="js/map.js?v=32"></script> -->
+    <!-- <script defer src="js/map.js?v=33"></script> -->
 
     <!-- <script defer src="js/seat-draw.js"></script> -->
-    <script defer src="js/visitors.js?v=32"></script>
+    <script defer src="js/visitors.js?v=33"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" crossorigin="anonymous"></script>
 
     <!-- 관리자 및 게임 -->
-    <!-- <script defer src="js/admin.js?v=32"></script> -->
-    <script defer src="js/games.js?v=32"></script>
+    <!-- <script defer src="js/admin.js?v=33"></script> -->
+    <script defer src="js/games.js?v=33"></script>
 
     <!-- 라우터 & 초기화 (마지막에 로드) -->
-    <script defer src="js/router.js?v=32"></script>
-    <script defer src="js/main.js?v=32"></script>
+    <script defer src="js/router.js?v=33"></script>
+    <script defer src="js/main.js?v=33"></script>
 </body>
 </html>

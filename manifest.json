@@ -10,7 +10,7 @@
   "lang": "ko",
   "icons": [
     {
-      "src": "assets/logo.svg",
+      "src": "assets/icon-pwa.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"

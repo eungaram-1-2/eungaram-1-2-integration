@@ -8,6 +8,7 @@ function navigate(page, params = {}) {
     if (!RateLimit.check('navigate')) return;
     currentPage = page;
     pageParams  = params;
+    history.pushState({ page, params }, '', location.pathname + '#' + page);
     if (isAdmin() && typeof logAccess === 'function') logAccess();
     render();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -22,6 +23,19 @@ function navigate(page, params = {}) {
     if (btn)      btn.setAttribute('aria-label', '메뉴 열기');
     if (backdrop) backdrop.classList.remove('active');
 }
+
+// 뒤로가기/앞으로가기 처리
+window.addEventListener('popstate', e => {
+    if (e.state && e.state.page) {
+        currentPage = e.state.page;
+        pageParams  = e.state.params || {};
+    } else {
+        currentPage = 'home';
+        pageParams  = {};
+    }
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
 
 const BANNED_RESTRICTED   = ['dday'];
 const TIMEOUT_RESTRICTED  = ['dday','votes','vote-detail','vote-create'];

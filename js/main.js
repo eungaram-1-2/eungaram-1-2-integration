@@ -98,8 +98,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         hamburger.setAttribute('aria-expanded', 'false');
     }
 
-    // IP 차단 체크 후 렌더
+    // IP 차단 체크 후 렌더 (URL 해시로 초기 페이지 결정)
     await checkIPBlock();
+    const _initHash = location.hash.replace('#', '');
+    if (_initHash && GUEST_ALLOWED.includes(_initHash)) {
+        currentPage = _initHash;
+    }
+    history.replaceState({ page: currentPage, params: {} }, '', location.pathname + '#' + currentPage);
     render();
 
     // Firebase 백그라운드 동기화 (업데이트가 오면 자동 re-render)

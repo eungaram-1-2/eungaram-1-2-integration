@@ -2,7 +2,17 @@
 // 시간표
 // =============================================
 let _timetableWeekOffset = 0;
-const _timetableCache = {}; // weekOffset -> timetable data
+const _timetableCache = {};
+
+function _timetableSkeleton() {
+    const cell = (w) => `<div class="skeleton skeleton-cell" style="${w ? `flex:0 0 ${w}` : ''}"></div>`;
+    const todayBar = `<div class="skeleton skeleton-cell-lg" style="margin-bottom:20px;height:80px;border-radius:var(--radius)"></div>`;
+    const headerRow = `<div class="skeleton-row">${cell('50px')}${'<div class="skeleton skeleton-cell-lg"></div>'.repeat(5)}</div>`;
+    const rows = Array.from({ length: 7 }, () =>
+        `<div class="skeleton-row">${cell('50px')}${'<div class="skeleton skeleton-cell"></div>'.repeat(5)}</div>`
+    ).join('');
+    return `<div class="skeleton-wrap">${todayBar}${headerRow}${rows}</div>`;
+}
 
 function _getWeekLabel(offset) {
     if (offset === 0) return '이번 주';
@@ -91,8 +101,8 @@ function _buildTimetableHtml(data, weekOffset) {
             if (!c || !c.s) return '';
             const color = SUBJ_COLORS[c.s] || '#64748b';
             return `<div class="tt-mobile-card" style="border-left: 3px solid ${color}">
-                <div style="font-size:0.72rem;color:var(--text-muted);font-weight:600;margin-bottom:4px">${p.num}교시 · ${p.time}</div>
-                <div style="font-size:1rem;font-weight:700;color:${color}">${c.s}</div>
+                <div style="font-size:0.72rem;color:var(--primary);font-weight:600;margin-bottom:4px">${p.num}교시 · ${p.time}</div>
+                <div style="font-size:1rem;font-weight:700;color:#000">${c.s}</div>
                 ${c.t ? `<div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px">${c.t}</div>` : ''}
             </div>`;
         }).filter(Boolean).join('');
@@ -133,12 +143,7 @@ function renderTimetable() {
             <span class="week-nav-label" id="timetableWeekLabel">이번 주</span>
             <button class="week-nav-btn" onclick="changeTimetableWeek(1)">다음 주 ▶</button>
         </div>
-        <div id="timetableContent">
-            <div class="lunch-loading" style="padding:40px 0">
-                <span class="lunch-spinner"></span>
-                <span>시간표 불러오는 중...</span>
-            </div>
-        </div>
+        <div id="timetableContent">${_timetableSkeleton()}</div>
         <p class="page-source">
             출처: <a href="https://open.neis.go.kr" target="_blank" rel="noopener noreferrer">NEIS 교육정보 개방 포털</a>
         </p>
@@ -149,7 +154,7 @@ async function loadTimetableForWeek(weekOffset = 0) {
     const content = document.getElementById('timetableContent');
     if (!content) return;
 
-    content.innerHTML = `<div class="lunch-loading" style="padding:40px 0"><span class="lunch-spinner"></span><span>시간표 불러오는 중...</span></div>`;
+    content.innerHTML = _timetableSkeleton();
 
     let data;
     if (_timetableCache[weekOffset]) {

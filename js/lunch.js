@@ -3,6 +3,17 @@
 // =============================================
 const LUNCH_DATA_URL = 'data/lunch.json';
 
+function _lunchSkeleton() {
+    const col = () => `<div class="skeleton skeleton-cell"></div>`;
+    const colSm = () => `<div class="skeleton skeleton-cell-sm"></div>`;
+    const headerRow = `<div class="skeleton-row">${`<div class="skeleton skeleton-cell-lg"></div>`.repeat(5)}</div>`;
+    const menuRows = Array.from({ length: 7 }, () =>
+        `<div class="skeleton-row">${col()}${col()}${col()}${col()}${col()}</div>`
+    ).join('');
+    const kcalRow = `<div class="skeleton-row">${colSm()}${colSm()}${colSm()}${colSm()}${colSm()}</div>`;
+    return `<div class="skeleton-wrap">${headerRow}${menuRows}${kcalRow}</div>`;
+}
+
 const NEIS_LUNCH_CONFIG = {
     API_KEY: 'ed50e755df5d42d4b94db728feab7952',
     ATPT_CODE: 'J10',
@@ -431,12 +442,7 @@ function renderLunch() {
                     <span class="allergen-panel-item"><strong>19</strong>잣</span>
                 </div>
             </div>
-            <div class="lunch-page-card" id="lunchPageCard">
-                <div class="lunch-loading">
-                    <span class="lunch-spinner"></span>
-                    <span>급식 정보 불러오는 중...</span>
-                </div>
-            </div>
+            <div class="lunch-page-card" id="lunchPageCard">${_lunchSkeleton()}</div>
             <p class="page-source" style="text-align:center;font-size:0.8rem;color:var(--text-muted);margin-top:20px">
                 출처: <a href="https://open.neis.go.kr" target="_blank" rel="noopener noreferrer" style="color:var(--primary)">NEIS 교육정보 개방 포털</a>
             </p>
@@ -463,7 +469,7 @@ async function loadLunchPage(weekOffset = 0) {
     const card = document.getElementById('lunchPageCard');
     if (!card) return;
 
-    card.innerHTML = `<div class="lunch-loading"><span class="lunch-spinner"></span><span>급식 정보 불러오는 중...</span></div>`;
+    card.innerHTML = _lunchSkeleton();
 
     const weeklyData = await fetchWeeklyLunch(weekOffset);
     const hasAny = weeklyData.some(d => d.items.length > 0);

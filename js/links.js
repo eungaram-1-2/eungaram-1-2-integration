@@ -28,12 +28,42 @@ function renderLinks() {
         }
     }).join('');
 
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+    let pwaCard = '';
+    if (!isStandalone) {
+        if (isIOS) {
+            pwaCard = `
+            <div id="pwaInstallCard" style="background:linear-gradient(135deg,#1428A0 0%,#0077C8 100%);border-radius:var(--radius);padding:20px 22px;margin-bottom:20px;color:#fff;display:flex;align-items:center;gap:16px">
+                <span style="font-size:2rem;flex-shrink:0">📲</span>
+                <div style="flex:1">
+                    <div style="font-weight:800;font-size:0.95rem;margin-bottom:4px">홈 화면에 추가하기</div>
+                    <div style="font-size:0.8rem;opacity:0.85">Safari 하단 <strong>공유 버튼(↑)</strong> → <strong>홈 화면에 추가</strong> 탭하세요</div>
+                </div>
+            </div>`;
+        } else {
+            pwaCard = `
+            <div id="pwaInstallCard" style="background:linear-gradient(135deg,#1428A0 0%,#0077C8 100%);border-radius:var(--radius);padding:20px 22px;margin-bottom:20px;color:#fff;display:flex;align-items:center;gap:16px">
+                <span style="font-size:2rem;flex-shrink:0">📲</span>
+                <div style="flex:1">
+                    <div style="font-weight:800;font-size:0.95rem;margin-bottom:4px">앱으로 설치하기</div>
+                    <div style="font-size:0.8rem;opacity:0.85">홈 화면에 추가하면 앱처럼 바로 열 수 있어요</div>
+                </div>
+                <button id="pwaInstallBtn" onclick="pwaInstall()" style="display:${_pwaPrompt ? 'flex' : 'none'};align-items:center;gap:6px;background:#fff;color:#1428A0;border:none;border-radius:var(--radius-full);padding:10px 18px;font-size:0.85rem;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:inherit">
+                    설치
+                </button>
+            </div>`;
+        }
+    }
+
     return `
     <div class="page">
         <div class="page-header">
             <h2>🔗 바로가기</h2>
             <p style="font-size:0.88rem;color:var(--text-muted)">자주 사용하는 학교 관련 링크 모음</p>
         </div>
+        ${pwaCard}
         <div class="links-grid-v">${cards}</div>
     </div>`;
 }

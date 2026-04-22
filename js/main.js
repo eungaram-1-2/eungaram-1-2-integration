@@ -10,6 +10,80 @@ function updateClock() {
     el.textContent = `${now.getFullYear()}.${pad(now.getMonth()+1)}.${pad(now.getDate())} (${days[now.getDay()]}) ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 }
 
+// ── PWA ──
+let _pwaPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    _pwaPrompt = e;
+    const btn = document.getElementById('pwaInstallBtn');
+    if (btn) { btn.style.display = 'flex'; btn.closest('.pwa-card')?.style.setProperty('display', 'block'); }
+});
+
+window.addEventListener('appinstalled', () => {
+    _pwaPrompt = null;
+    document.getElementById('pwaInstallCard')?.remove();
+});
+
+async function pwaInstall() {
+    if (!_pwaPrompt) return;
+    _pwaPrompt.prompt();
+    const { outcome } = await _pwaPrompt.userChoice;
+    if (outcome === 'accepted') _pwaPrompt = null;
+}
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+}
+
+// ── Pull-to-Refresh ──
+(function initPullToRefresh() {
+    const THRESHOLD = 72;
+    let startY = 0, pulling = false;
+
+    const ind = document.createElement('div');
+    ind.id = 'ptr-indicator';
+    ind.innerHTML = '<span class="ptr-spinner"></span><span class="ptr-arrow">↓</span><span class="ptr-label">당겨서 새로고침</span>';
+    document.body.appendChild(ind);
+
+    const label = ind.querySelector('.ptr-label');
+
+    document.addEventListener('touchstart', e => {
+        if (window.scrollY === 0) { startY = e.touches[0].clientY; pulling = true; }
+    }, { passive: true });
+
+    document.addEventListener('touchmove', e => {
+        if (!pulling) return;
+        const dist = e.touches[0].clientY - startY;
+        if (dist <= 0) { pulling = false; ind.className = ''; return; }
+        const ready = dist >= THRESHOLD;
+        ind.className = ready ? 'ptr-ready' : 'ptr-pulling';
+        label.textContent = ready ? '놓으면 새로고침' : '당겨서 새로고침';
+        ind.style.transform = `translateX(-50%) translateY(${Math.min(dist * 0.35, 20)}px)`;
+    }, { passive: true });
+
+    document.addEventListener('touchend', async () => {
+        if (!pulling) return;
+        pulling = false;
+        if (!ind.className.includes('ptr-ready')) { ind.className = ''; ind.style.transform = ''; return; }
+        ind.className = 'ptr-loading';
+        ind.style.transform = '';
+        label.textContent = '새로고침 중...';
+        try {
+            if (currentPage === 'lunch')         await loadLunchPage(_lunchWeekOffset);
+            else if (currentPage === 'timetable') await loadTimetableForWeek(_timetableWeekOffset);
+            else                                  render();
+        } finally {
+            await new Promise(r => setTimeout(r, 350));
+            ind.className = '';
+            ind.style.transform = '';
+            label.textContent = '당겨서 새로고침';
+        }
+    }, { passive: true });
+})();
+
 document.addEventListener('DOMContentLoaded', async () => {
     applyTheme(getTheme());
     updateClock();

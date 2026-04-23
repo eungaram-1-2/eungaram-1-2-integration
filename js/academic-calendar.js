@@ -324,5 +324,52 @@ function initializeCalendarMonth() {
     }
 }
 
+// NEIS API 학사일정 데이터 로드
+async function loadNeisSchedule() {
+    try {
+        const response = await fetch('data/schedule.json');
+        if (!response.ok) {
+            console.warn('[학사일정] schedule.json 로드 실패:', response.status);
+            return;
+        }
+
+        const scheduleData = await response.json();
+        console.log(`✅ [학사일정] ${scheduleData.length}개 NEIS 일정 로드됨`);
+
+        // NEIS 데이터를 academicCalendarData 형식으로 변환
+        const neisEvents = scheduleData.map(item => {
+            const date = item.date;
+            const formattedDate = `${date.substring(0, 4)}-${date.substring(4, 6)}-${date.substring(6, 8)}`;
+            return {
+                date: formattedDate,
+                title: item.event,
+                category: getCategoryForEvent(item.event),
+                source: 'neis'
+            };
+        });
+
+        // 기존 데이터와 병합 (NEIS 데이터 추가)
+        academicCalendarData.events = [...academicCalendarData.events, ...neisEvents];
+        console.log(`📚 [학사일정] 총 ${academicCalendarData.events.length}개 일정 (기본 + NEIS)`);
+
+        // 달력 재렌더링
+        if (document.getElementById('monthCalendar')) {
+            renderMonthCalendar();
+        }
+    } catch (error) {
+        console.error('[학사일정] NEIS 데이터 로드 오류:', error);
+    }
+}
+
+// 이벤트 제목으로 카테고리 자동 분류
+function getCategoryForEvent(title) {
+    if (title.includes('방학') || title.includes('휴일') || title.includes('휴업')) return 'holiday';
+    if (title.includes('시험') || title.includes('평가') || title.includes('진단')) return 'exam';
+    if (title.includes('교육')) return 'education';
+    if (title.includes('식') || title.includes('발표')) return 'major';
+    return 'event';
+}
+
 // 페이지 로드 시 초기화
 initializeCalendarMonth();
+loadNeisSchedule();

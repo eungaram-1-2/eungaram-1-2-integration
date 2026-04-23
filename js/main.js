@@ -38,7 +38,12 @@ function isKakaoAndroidInApp() {
 }
 
 function tryOpenExternalBrowserFromKakao() {
-    if (!isKakaoAndroidInApp()) return false;
+    const ua = navigator.userAgent || '';
+    if (!/KAKAOTALK/i.test(ua)) return false;
+
+    const isAndroid = /android/i.test(ua);
+    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+    if (!isAndroid && !isIOS) return false;
 
     const attemptKey = 'kakao_external_browser_attempted';
     if (sessionStorage.getItem(attemptKey)) return false;
@@ -46,40 +51,55 @@ function tryOpenExternalBrowserFromKakao() {
 
     const targetUrl = location.href;
     const intentPath = targetUrl.replace(/^https?:\/\//i, '');
-    const chromeIntent = `intent://${intentPath}#Intent;scheme=https;package=com.android.chrome;end`;
-    const samsungIntent = `intent://${intentPath}#Intent;scheme=https;package=com.sec.android.app.sbrowser;end`;
 
-    let handedOff = false;
-    const markHandedOff = () => { handedOff = true; };
-    const onVisibilityChange = () => {
-        if (document.visibilityState === 'hidden') markHandedOff();
-    };
-    const cleanup = () => {
-        window.removeEventListener('pagehide', markHandedOff);
-        document.removeEventListener('visibilitychange', onVisibilityChange);
-        window.removeEventListener('blur', markHandedOff);
-    };
+    if (isAndroid) {
+        const chromeIntent = `intent://${intentPath}#Intent;scheme=https;package=com.android.chrome;end`;
+        const samsungIntent = `intent://${intentPath}#Intent;scheme=https;package=com.sec.android.app.sbrowser;end`;
 
-    window.addEventListener('pagehide', markHandedOff, { once: true });
-    document.addEventListener('visibilitychange', onVisibilityChange);
-    window.addEventListener('blur', markHandedOff, { once: true });
+        let handedOff = false;
+        const markHandedOff = () => { handedOff = true; };
+        const onVisibilityChange = () => { if (document.visibilityState === 'hidden') markHandedOff(); };
+        const cleanup = () => {
+            window.removeEventListener('pagehide', markHandedOff);
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+            window.removeEventListener('blur', markHandedOff);
+        };
 
-    setTimeout(() => {
-        location.href = chromeIntent;
+        window.addEventListener('pagehide', markHandedOff, { once: true });
+        document.addEventListener('visibilitychange', onVisibilityChange);
+        window.addEventListener('blur', markHandedOff, { once: true });
 
         setTimeout(() => {
-            if (handedOff) {
-                cleanup();
-                return;
-            }
-
-            location.href = samsungIntent;
+            location.href = chromeIntent;
 
             setTimeout(() => {
-                cleanup();
+                if (handedOff) { cleanup(); return; }
+                location.href = samsungIntent;
+
+                setTimeout(() => {
+                    cleanup();
+                    if (!handedOff) location.href = 'x-safari-' + targetUrl; // 둘 다 실패 → Safari
+                }, 1500);
+            }, 1200);
+        }, 250);
+
+    } else if (isIOS) {
+        // iOS: Chrome → Safari 순서로 시도
+        const chromeURL = 'googlechromes://' + intentPath;
+
+        let handedOff = false;
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') handedOff = true;
+        }, { once: true });
+
+        setTimeout(() => {
+            location.href = chromeURL;  // Chrome 시도
+
+            setTimeout(() => {
+                if (!handedOff) location.href = 'x-safari-' + targetUrl;  // Safari 시도
             }, 1500);
-        }, 1200);
-    }, 250);
+        }, 250);
+    }
 
     return true;
 }

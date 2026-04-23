@@ -1,11 +1,11 @@
-const CACHE = 'eg-1-2-v2';
+const CACHE = 'eg-1-2-v5';
 const PRECACHE = [
     './',
-    './style.min.css',
-    './js/main.js',
-    './js/router.js',
-    './js/lunch.js',
-    './js/timetable.js',
+    './style.min.css?v=35',
+    './js/main.js?v=35',
+    './js/router.js?v=35',
+    './js/lunch.js?v=35',
+    './js/timetable.js?v=35',
     './assets/logo.svg'
 ];
 

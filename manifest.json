@@ -3,6 +3,8 @@
   "short_name": "은가람중 1-2반",
   "description": "은가람 중학교 1학년 2반 학급 홈페이지",
   "start_url": ".",
+  "scope": "./",
+  "id": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#1428A0",

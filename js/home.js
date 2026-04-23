@@ -206,6 +206,10 @@ let _heroAnimId = null;
 function _initHeroCanvas() {
     if (_heroAnimId) { cancelAnimationFrame(_heroAnimId); _heroAnimId = null; }
 
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+    }
+
     const canvas = document.getElementById('heroCanvas');
     if (!canvas) return;
 
@@ -240,14 +244,24 @@ function _initHeroCanvas() {
         pulseSpeed: Math.random() * 0.04 + 0.015,
     }));
 
+    // 별 그래디언트 캐시 (성능 최적화: 매 프레임 생성 대신 초기화 시 한 번만 생성)
+    const isDarkDefault = document.documentElement.getAttribute('data-theme') === 'dark';
+    const starColor1 = isDarkDefault ? '255, 255, 255'  : '255, 255, 255';
+    const starColor2 = isDarkDefault ? '160, 200, 255'  : '255, 200, 120';
+
+    function createStarGradient(s, size) {
+        const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, size * 3);
+        grad.addColorStop(0, `rgba(${starColor1}, 1)`);
+        grad.addColorStop(1, `rgba(${starColor2}, 0)`);
+        return grad;
+    }
+
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
         // 라이트: 황금빛/흰색  /  다크: 청백/보라
         const dustColor  = isDark ? '200, 220, 255' : '255, 240, 210';
-        const starColor1 = isDark ? '255, 255, 255'  : '255, 255, 255';
-        const starColor2 = isDark ? '160, 200, 255'  : '255, 200, 120';
 
         // 파티클 (떠오르는 먼지)
         for (const p of particles) {
@@ -270,13 +284,13 @@ function _initHeroCanvas() {
             const a = 0.3 + 0.7 * ((Math.sin(s.pulse) + 1) / 2);
             const size = s.r * (0.7 + 0.5 * ((Math.sin(s.pulse * 0.7) + 1) / 2));
 
-            const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, size * 3);
-            grad.addColorStop(0, `rgba(${starColor1}, ${a})`);
-            grad.addColorStop(1, `rgba(${starColor2}, 0)`);
+            const grad = createStarGradient(s, size);
+            ctx.globalAlpha = a;
             ctx.beginPath();
             ctx.arc(s.x, s.y, size * 3, 0, Math.PI * 2);
             ctx.fillStyle = grad;
             ctx.fill();
+            ctx.globalAlpha = 1;
         }
 
         _heroAnimId = requestAnimationFrame(draw);

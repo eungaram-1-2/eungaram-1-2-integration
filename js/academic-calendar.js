@@ -228,8 +228,8 @@ function renderMonthCalendar() {
         const sundayClass = currentDate.getDay() === 0 ? 'sunday' : '';
         const saturdayClass = currentDate.getDay() === 6 ? 'saturday' : '';
 
-        // 현재 달 이후의 날짜(다음 달)는 빈 칸으로 처리
-        if (!isCurrentMonth && currentDate > lastDay) {
+        // 현재 달이 아닌 날짜(이전/다음 달)는 모두 빈 칸으로 처리
+        if (!isCurrentMonth) {
             calendarHTML += `<div class="day other-month"></div>`;
         } else {
             const dayEvents = eventMap[currentDate.getDate()] || [];
@@ -327,30 +327,32 @@ function initializeCalendarMonth() {
 // NEIS API 학사일정 데이터 로드
 async function loadNeisSchedule() {
     try {
-        const response = await fetch('data/schedule.json');
-        if (!response.ok) {
-            console.warn('[학사일정] schedule.json 로드 실패:', response.status);
+        const url = 'https://open.neis.go.kr/hub/SchoolSchedule'
+            + '?KEY=ed50e755df5d42d4b94db728feab7952&Type=json'
+            + '&ATPT_OFCDC_SC_CODE=J10&SD_SCHUL_CODE=7692130'
+            + '&AA_FROM_YMD=20260303&AA_TO_YMD=20270108'
+            + '&pIndex=1&pSize=300';
+
+        const response = await fetch(url);
+        const json = await response.json();
+
+        if (!json.SchoolSchedule || !json.SchoolSchedule[1]) {
+            console.warn('[학사일정] NEIS 데이터 없음');
             return;
         }
 
-        const scheduleData = await response.json();
-        console.log(`✅ [학사일정] ${scheduleData.length}개 NEIS 일정 로드됨`);
-
-        // NEIS 데이터를 academicCalendarData 형식으로 변환
-        const neisEvents = scheduleData.map(item => {
-            const date = item.date;
-            const formattedDate = `${date.substring(0, 4)}-${date.substring(4, 6)}-${date.substring(6, 8)}`;
-            return {
-                date: formattedDate,
-                title: item.event,
-                category: getCategoryForEvent(item.event),
+        const neisEvents = json.SchoolSchedule[1].row
+            .filter(item => item.EVENT_NM !== '토요휴업일')
+            .map(item => ({
+                date: `${item.AA_YMD.substring(0, 4)}-${item.AA_YMD.substring(4, 6)}-${item.AA_YMD.substring(6, 8)}`,
+                title: item.EVENT_NM,
+                category: getCategoryForEvent(item.EVENT_NM),
                 source: 'neis'
-            };
-        });
+            }));
 
-        // 기존 데이터와 병합 (NEIS 데이터 추가)
-        academicCalendarData.events = [...academicCalendarData.events, ...neisEvents];
-        console.log(`📚 [학사일정] 총 ${academicCalendarData.events.length}개 일정 (기본 + NEIS)`);
+        // 하드코딩 데이터 대신 NEIS 데이터로 완전 교체 (중복 방지)
+        academicCalendarData.events = neisEvents;
+        console.log(`✅ [학사일정] NEIS에서 ${neisEvents.length}개 로드됨`);
 
         // 달력 재렌더링
         if (document.getElementById('monthCalendar')) {
@@ -363,10 +365,13 @@ async function loadNeisSchedule() {
 
 // 이벤트 제목으로 카테고리 자동 분류
 function getCategoryForEvent(title) {
-    if (title.includes('방학') || title.includes('휴일') || title.includes('휴업')) return 'holiday';
-    if (title.includes('시험') || title.includes('평가') || title.includes('진단')) return 'exam';
+    if (!title) return 'event';
+    const holidays = ['방학', '휴일', '휴업', '신정', '설날', '삼일절', '어린이날',
+                      '현충일', '광복절', '추석', '개천절', '한글날', '성탄절', '대체공휴일', '대체 공휴일'];
+    if (holidays.some(k => title.includes(k))) return 'holiday';
+    if (title.includes('시험') || title.includes('평가') || title.includes('진단') || title.includes('수능')) return 'exam';
     if (title.includes('교육')) return 'education';
-    if (title.includes('식') || title.includes('발표')) return 'major';
+    if (title.includes('식') || title.includes('발표') || title.includes('선거')) return 'major';
     return 'event';
 }
 

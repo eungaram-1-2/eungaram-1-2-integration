@@ -202,13 +202,15 @@ function renderHome() {
 // 히어로 캔버스 파티클
 // =============================================
 let _heroAnimId = null;
+let _heroCleanup = null; // #27: 이전 이벤트 리스너 cleanup 참조
 
 function _initHeroCanvas() {
     if (_heroAnimId) { cancelAnimationFrame(_heroAnimId); _heroAnimId = null; }
 
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        return;
-    }
+    // #27: 이전 호출에서 등록된 resize/visibilitychange 리스너 제거
+    if (_heroCleanup) { _heroCleanup(); _heroCleanup = null; }
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const canvas = document.getElementById('heroCanvas');
     if (!canvas) return;
@@ -222,46 +224,45 @@ function _initHeroCanvas() {
     }
     resize();
 
-    const COUNT = 90;
+    // #28: 느린 연결 시 파티클/별 수 절반으로 감소
+    const conn = navigator.connection;
+    const isSlow = conn && ['slow-2g', '2g'].includes(conn.effectiveType);
+    const COUNT = isSlow ? 45 : 90;
+    const STAR_COUNT = isSlow ? 9 : 18;
+
     const particles = Array.from({ length: COUNT }, () => ({
-        x:     Math.random() * canvas.width,
-        y:     Math.random() * canvas.height,
-        r:     Math.random() * 1.6 + 0.3,
-        speed: Math.random() * 0.35 + 0.08,
-        drift: (Math.random() - 0.5) * 0.3,
-        alpha: Math.random() * 0.6 + 0.2,
-        pulse: Math.random() * Math.PI * 2,
+        x:         Math.random() * canvas.width,
+        y:         Math.random() * canvas.height,
+        r:         Math.random() * 1.6 + 0.3,
+        speed:     Math.random() * 0.35 + 0.08,
+        drift:     (Math.random() - 0.5) * 0.3,
+        alpha:     Math.random() * 0.6 + 0.2,
+        pulse:     Math.random() * Math.PI * 2,
         pulseSpeed: Math.random() * 0.025 + 0.008,
     }));
 
-    // 반짝이는 별 레이어 (크고 밝음)
-    const stars = Array.from({ length: 18 }, () => ({
-        x:     Math.random() * canvas.width,
-        y:     Math.random() * canvas.height,
-        r:     Math.random() * 1.2 + 0.8,
-        alpha: Math.random(),
-        pulse: Math.random() * Math.PI * 2,
+    const stars = Array.from({ length: STAR_COUNT }, () => ({
+        x:         Math.random() * canvas.width,
+        y:         Math.random() * canvas.height,
+        r:         Math.random() * 1.2 + 0.8,
+        alpha:     Math.random(),
+        pulse:     Math.random() * Math.PI * 2,
         pulseSpeed: Math.random() * 0.04 + 0.015,
     }));
 
-    // 별 그래디언트 캐시 (성능 최적화: 매 프레임 생성 대신 초기화 시 한 번만 생성)
-    const isDarkDefault = document.documentElement.getAttribute('data-theme') === 'dark';
-    const starColor1 = isDarkDefault ? '255, 255, 255'  : '255, 255, 255';
-    const starColor2 = isDarkDefault ? '160, 200, 255'  : '255, 200, 120';
-
-    function createStarGradient(s, size) {
-        const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, size * 3);
-        grad.addColorStop(0, `rgba(${starColor1}, 1)`);
-        grad.addColorStop(1, `rgba(${starColor2}, 0)`);
-        return grad;
-    }
+    // #28: isDark를 매 프레임 DOM에서 읽지 않고 캐시 후 10프레임마다 갱신
+    let _isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    let _frameCount = 0;
 
     function draw() {
+        _frameCount++;
+        if (_frameCount % 10 === 0) {
+            _isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        }
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        // 라이트: 황금빛/흰색  /  다크: 청백/보라
-        const dustColor  = isDark ? '200, 220, 255' : '255, 240, 210';
+        const dustColor = _isDark ? '200, 220, 255' : '255, 240, 210';
 
         // 파티클 (떠오르는 먼지)
         for (const p of particles) {
@@ -278,18 +279,24 @@ function _initHeroCanvas() {
             if (p.x < -5 || p.x > canvas.width + 5) p.x = Math.random() * canvas.width;
         }
 
-        // 별 (반짝임)
+        // #28: 별은 radial gradient 대신 단순 arc + globalAlpha (gradient 생성 비용 제거)
+        const starFill = _isDark ? 'rgba(200, 220, 255, 1)' : 'rgba(255, 215, 120, 1)';
         for (const s of stars) {
             s.pulse += s.pulseSpeed;
             const a = 0.3 + 0.7 * ((Math.sin(s.pulse) + 1) / 2);
             const size = s.r * (0.7 + 0.5 * ((Math.sin(s.pulse * 0.7) + 1) / 2));
 
-            const grad = createStarGradient(s, size);
-            ctx.globalAlpha = a;
+            ctx.fillStyle = starFill;
+            ctx.globalAlpha = a * 0.85;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, size, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.globalAlpha = a * 0.15;
             ctx.beginPath();
             ctx.arc(s.x, s.y, size * 3, 0, Math.PI * 2);
-            ctx.fillStyle = grad;
             ctx.fill();
+
             ctx.globalAlpha = 1;
         }
 
@@ -308,7 +315,22 @@ function _initHeroCanvas() {
     });
     obs.observe(hero);
 
+    // #27: 배경 탭 전환 시 애니메이션 정지 (배터리/CPU 절약)
+    function handleVisibility() {
+        if (document.hidden) {
+            if (_heroAnimId) { cancelAnimationFrame(_heroAnimId); _heroAnimId = null; }
+        } else if (!_heroAnimId) {
+            draw();
+        }
+    }
+    document.addEventListener('visibilitychange', handleVisibility);
     window.addEventListener('resize', resize, { passive: true });
+
+    // #27: cleanup 참조 저장 — 다음 _initHeroCanvas 호출 시 이전 리스너 제거
+    _heroCleanup = () => {
+        window.removeEventListener('resize', resize);
+        document.removeEventListener('visibilitychange', handleVisibility);
+    };
 }
 
 // =============================================

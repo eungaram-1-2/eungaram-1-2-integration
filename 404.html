@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>404 - 은가람중 1-2반</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+    <link rel="stylesheet" href="/style.min.css">
+    <style>
+        /* ===== 404 전용 스타일 ===== */
+
+        /* 배경 orb 효과 */
+        .orb-container {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.18;
+        }
+
+        .orb-1 {
+            width: 600px;
+            height: 600px;
+            top: -200px;
+            left: -150px;
+            background: radial-gradient(circle, #1428A0, #2563eb);
+            animation: orb-float-1 12s ease-in-out infinite;
+        }
+
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            bottom: -100px;
+            right: -100px;
+            background: radial-gradient(circle, #3D52C4, #0077C8);
+            animation: orb-float-2 15s ease-in-out infinite;
+        }
+
+        .orb-3 {
+            width: 300px;
+            height: 300px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, #C5CCF0, #80BBFF);
+            animation: orb-float-3 10s ease-in-out infinite;
+            opacity: 0.1;
+        }
+
+        @keyframes orb-float-1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(40px, 30px) scale(1.05); }
+            66% { transform: translate(-20px, 50px) scale(0.95); }
+        }
+
+        @keyframes orb-float-2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-30px, -40px) scale(1.08); }
+        }
+
+        @keyframes orb-float-3 {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.1; }
+            50% { transform: translate(-50%, -55%) scale(1.1); opacity: 0.15; }
+        }
+
+        [data-theme="dark"] .orb {
+            opacity: 0.12;
+        }
+
+        /* 페이지 레이아웃 */
+        .error-page {
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        /* fade-in 애니메이션 */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(24px);
+            animation: fadeInUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        .fade-in-delay-1 { animation-delay: 0.1s; }
+        .fade-in-delay-2 { animation-delay: 0.22s; }
+        .fade-in-delay-3 { animation-delay: 0.34s; }
+        .fade-in-delay-4 { animation-delay: 0.46s; }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 404 숫자 */
+        .error-code {
+            font-size: clamp(96px, 22vw, 180px);
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -4px;
+            background: linear-gradient(135deg, #1428A0 0%, #2563eb 40%, #3D52C4 70%, #0077C8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 4px 24px rgba(20, 40, 160, 0.25));
+            user-select: none;
+        }
+
+        [data-theme="dark"] .error-code {
+            background: linear-gradient(135deg, #4060D4 0%, #5b8def 40%, #6d7fcf 70%, #40a0e8 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            filter: drop-shadow(0 4px 32px rgba(40, 80, 220, 0.4));
+        }
+
+        /* 구분선 */
+        .error-divider {
+            width: 48px;
+            height: 3px;
+            background: linear-gradient(90deg, #1428A0, #2563eb);
+            border-radius: 999px;
+            margin: 0 auto 24px;
+        }
+
+        [data-theme="dark"] .error-divider {
+            background: linear-gradient(90deg, #4060D4, #5b8def);
+        }
+
+        /* 제목 */
+        .error-title {
+            font-size: clamp(1.4rem, 4vw, 2rem);
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        /* 설명 */
+        .error-desc {
+            font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+            color: var(--text-muted);
+            max-width: 380px;
+            line-height: 1.8;
+            margin-bottom: 40px;
+        }
+
+        /* 버튼 그룹 */
+        .error-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn-primary-error {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #1428A0, #2563eb);
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.95rem;
+            padding: 14px 28px;
+            border-radius: 14px;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 4px 20px rgba(20, 40, 160, 0.35);
+            text-decoration: none;
+            font-family: inherit;
+        }
+
+        .btn-primary-error:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(20, 40, 160, 0.45);
+        }
+
+        .btn-primary-error:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary-error {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 14px 28px;
+            border-radius: 14px;
+            border: 1.5px solid var(--border);
+            cursor: pointer;
+            transition: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            text-decoration: none;
+            font-family: inherit;
+        }
+
+        .btn-secondary-error:hover {
+            border-color: var(--primary-light);
+            color: var(--primary);
+            background: var(--primary-bg);
+            transform: translateY(-2px);
+        }
+
+        /* 하단 브랜딩 */
+        .error-brand {
+            margin-top: 56px;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            opacity: 0.7;
+        }
+
+        .error-brand strong {
+            color: var(--primary);
+            opacity: 1;
+        }
+
+        /* 반응형 */
+        @media (max-width: 480px) {
+            .error-actions {
+                flex-direction: column;
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .btn-primary-error,
+            .btn-secondary-error {
+                justify-content: center;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 배경 Orb -->
+    <div class="orb-container" aria-hidden="true">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <!-- 404 컨텐츠 -->
+    <main class="error-page">
+        <div class="error-code fade-in" aria-label="404">404</div>
+
+        <div class="error-divider fade-in fade-in-delay-1"></div>
+
+        <h1 class="error-title fade-in fade-in-delay-2">페이지를 찾을 수 없습니다</h1>
+
+        <p class="error-desc fade-in fade-in-delay-3">
+            요청하신 페이지가 존재하지 않거나<br>
+            이동되었을 수 있습니다.
+        </p>
+
+        <div class="error-actions fade-in fade-in-delay-4">
+            <a href="/" class="btn-primary-error">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                홈으로 돌아가기
+            </a>
+            <button onclick="history.back()" class="btn-secondary-error">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                이전 페이지
+            </button>
+        </div>
+
+        <p class="error-brand fade-in fade-in-delay-4">
+            <strong>은가람중학교 1-2반</strong> &nbsp;·&nbsp; 통합 사이트
+        </p>
+    </main>
+
+    <script>
+        // 다크모드 즉시 적용 (FOUC 방지)
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
+</body>
+</html>

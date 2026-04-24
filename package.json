@@ -5,7 +5,15 @@
   "main": "index.html",
   "scripts": {
     "build": "node build.js",
-    "scrape:lunch": "node scripts/scrape-lunch.js"
+    "scrape:lunch": "node scripts/scrape-lunch.js",
+    "lint": "eslint js/ --ext .js",
+    "lint:fix": "eslint js/ --ext .js --fix",
+    "format": "prettier --write \"**/*.{js,css,html,json}\" --ignore-path .prettierignore",
+    "format:check": "prettier --check \"**/*.{js,css,html,json}\" --ignore-path .prettierignore",
+    "minify": "cleancss style.css -o style.min.css",
+    "test": "playwright test",
+    "prepare": "husky",
+    "dev": "npx http-server -p 8080 -c-1 --cors"
   },
   "keywords": [],
   "author": "",
@@ -13,5 +21,13 @@
   "dependencies": {
     "jsdom": "^23.0.0",
     "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.43.0",
+    "clean-css-cli": "^5.6.3",
+    "eslint": "^8.57.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
+    "prettier": "^3.2.5"
   }
 }

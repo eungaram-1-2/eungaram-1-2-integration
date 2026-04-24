@@ -113,6 +113,63 @@ const Security = {
 };
 
 // =============================================
+// CSRF 토큰 유틸리티
+// =============================================
+const CSRFProtection = {
+    _token: null,
+    getToken() {
+        if (!this._token) {
+            const arr = new Uint8Array(16);
+            crypto.getRandomValues(arr);
+            this._token = Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+            sessionStorage.setItem('csrf_token', this._token);
+        }
+        return this._token;
+    },
+    validate(token) { return token === this._token; }
+};
+
+// =============================================
+// 데이터 암호화 유틸리티 (AES-GCM via Web Crypto API)
+// =============================================
+const CryptoUtils = {
+    async generateKey() {
+        return crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+    },
+    async encrypt(data, key) {
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const enc = new TextEncoder();
+        const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(data));
+        const combined = new Uint8Array(iv.length + cipher.byteLength);
+        combined.set(iv); combined.set(new Uint8Array(cipher), iv.length);
+        return btoa(String.fromCharCode(...combined));
+    },
+    async decrypt(data, key) {
+        const combined = Uint8Array.from(atob(data), c => c.charCodeAt(0));
+        const iv = combined.slice(0, 12); const cipher = combined.slice(12);
+        const dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, cipher);
+        return new TextDecoder().decode(dec);
+    }
+};
+
+// =============================================
+// XSS 방지 강화 (자체 구현)
+// =============================================
+const XSSProtection = {
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'br'],
+    sanitizeHTML(dirty) {
+        const div = document.createElement('div');
+        div.textContent = dirty;
+        return div.innerHTML;
+    },
+    sanitizeURL(url) { return Security.sanitizeUrl(url); },
+    escapeAttr(str) {
+        if (typeof str !== 'string') return '';
+        return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+};
+
+// =============================================
 // IP 차단 체크
 // =============================================
 async function checkIPBlock() {

@@ -6225,3 +6225,99 @@ textarea::placeholder {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* ============================================
+   테마 전환 애니메이션 (#138)
+   ============================================ */
+/* 다크/라이트 전환 시 부드러운 전환 */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+    transition: background-color 0.3s ease,
+                color 0.3s ease,
+                border-color 0.3s ease,
+                box-shadow 0.3s ease !important;
+    animation: none !important;
+}
+
+/* PWA 업데이트 배너 */
+.pwa-update-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10000;
+    background: linear-gradient(135deg, #1428A0, #2563eb);
+    color: white;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    animation: slideDown 0.3s ease;
+}
+@keyframes slideDown {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(0); }
+}
+.pwa-update-banner button {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.4);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    margin-left: 8px;
+}
+.pwa-update-banner button:hover { background: rgba(255,255,255,0.3); }
+
+/* 네트워크 토스트 알림 */
+.network-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #1e293b;
+    color: #f1f5f9;
+    padding: 10px 20px;
+    border-radius: 24px;
+    font-size: 0.875rem;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    z-index: 9999;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap;
+}
+.network-toast.show { transform: translateX(-50%) translateY(0); }
+.network-toast.online { border-left: 3px solid #22c55e; }
+.network-toast.offline { border-left: 3px solid #ef4444; }
+.network-toast.warning { border-left: 3px solid #f59e0b; }
+
+/* 오프라인 지표 */
+.offline-indicator {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+    margin-right: 6px;
+    animation: pulse-offline 2s infinite;
+}
+@keyframes pulse-offline {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* 로딩 스켈레톤 (다크모드 대응) */
+.skeleton {
+    background: linear-gradient(90deg, var(--skeleton-base, #e2e8f0) 25%, var(--skeleton-highlight, #f1f5f9) 50%, var(--skeleton-base, #e2e8f0) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 6px;
+}
+[data-theme="dark"] { --skeleton-base: #334155; --skeleton-highlight: #475569; }
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}

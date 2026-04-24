@@ -35,3 +35,14 @@ npm-debug.log*
 *.xls
 
 .vercel
+
+# Testing
+.playwright/
+test-results/
+playwright-report/
+
+# Cache
+.cache/
+
+# Env production
+.env.production

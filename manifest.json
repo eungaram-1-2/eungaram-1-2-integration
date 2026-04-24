@@ -1,21 +1,47 @@
 {
   "name": "은가람중 1-2반",
-  "short_name": "은가람중 1-2반",
+  "short_name": "은가람 1-2",
   "description": "은가람 중학교 1학년 2반 학급 홈페이지",
-  "start_url": ".",
+  "start_url": "./",
   "scope": "./",
   "id": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "display_override": ["window-controls-overlay", "standalone", "browser"],
+  "background_color": "#1428A0",
   "theme_color": "#1428A0",
   "orientation": "portrait-primary",
   "lang": "ko",
+  "categories": ["education"],
   "icons": [
     {
       "src": "assets/icon-pwa.svg",
       "sizes": "any",
       "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "시간표",
+      "url": "./?route=timetable",
+      "description": "오늘의 시간표"
+    },
+    {
+      "name": "급식",
+      "url": "./?route=lunch",
+      "description": "오늘의 급식"
+    },
+    {
+      "name": "학사일정",
+      "url": "./?route=academic",
+      "description": "학사일정 확인"
+    }
+  ],
+  "screenshots": []
 }

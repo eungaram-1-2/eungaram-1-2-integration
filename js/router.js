@@ -170,7 +170,7 @@ function render() {
                 banner.id = 'emergencyBanner';
                 banner.style.cssText = `background:${en.color};color:white;position:fixed;top:64px;left:0;right:0;z-index:1000;box-shadow:0 3px 12px rgba(0,0,0,0.3)`;
                 banner.innerHTML = `
-                <div style="padding:10px 44px 10px 16px;position:relative;text-align:center">
+                <div style="padding:10px 44px;position:relative;text-align:center">
                     <div style="font-weight:bold;font-size:0.9rem;margin-bottom:2px;color:#000!important;-webkit-text-fill-color:#000!important;word-break:break-word">${escapeHtml(en.title)}</div>
                     <div style="font-size:0.8rem;opacity:0.9;color:#000!important;-webkit-text-fill-color:#000!important;word-break:break-word;white-space:pre-line">${escapeHtml(en.message)}</div>
                     <button onclick="document.getElementById('emergencyBanner').remove()" style="background:rgba(0,0,0,0.15);border:none;color:#000;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:0.9rem;line-height:1;position:absolute;right:10px;top:10px">&times;</button>

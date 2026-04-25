@@ -35,18 +35,35 @@ function _getWeekDates(weekOffset) {
     });
 }
 
+function _getWeekFullDates(weekOffset) {
+    const base = new Date();
+    base.setDate(base.getDate() + weekOffset * 7);
+    const dow = base.getDay();
+    const monday = new Date(base);
+    monday.setDate(base.getDate() - dow + (dow === 0 ? -6 : 1));
+    const p = n => String(n).padStart(2, '0');
+    return Array.from({ length: 5 }, (_, i) => {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+    });
+}
+
 function _buildTimetableHtml(data, weekOffset) {
     const isThisWeek = weekOffset === 0;
     const dow = new Date().getDay();
     const todayIdx = isThisWeek ? (dow - 1) : -1;
     const weekDates = _getWeekDates(weekOffset);
+    const weekFullDates = _getWeekFullDates(weekOffset);
+    const ttOverride = (typeof DB !== 'undefined') ? DB.get('timetable_override', {}) : {};
 
     // ── 오늘 수업 가로 카드 바 (이번 주만) ──
     let todayBarHtml = '';
     if (isThisWeek) {
         if (todayIdx >= 0 && todayIdx <= 4) {
             const todayChips = data.periods.map((p, pi) => {
-                const c = data.schedule[pi][todayIdx];
+                const overrideDay = ttOverride[weekFullDates[todayIdx]];
+                const c = overrideDay ? { s: overrideDay[pi] || '', t: '' } : data.schedule[pi][todayIdx];
                 if (!c || !c.s) return '';
                 const color = SUBJ_COLORS[c.s] || '#64748b';
                 return `<div class="tt-today-chip" style="background:${color}">
@@ -73,7 +90,8 @@ function _buildTimetableHtml(data, weekOffset) {
 
     const rows = data.periods.map((p, pi) => {
         const cells = data.days.map((d, di) => {
-            const c = data.schedule[pi][di];
+            const overrideDay = ttOverride[weekFullDates[di]];
+            const c = overrideDay ? { s: overrideDay[pi] || '', t: '' } : data.schedule[pi][di];
             const isToday = di === todayIdx;
             const cls = isToday ? ' class="today-col"' : '';
             if (!c || !c.s) return `<td${cls}><span style="color:var(--text-muted);font-size:1.1rem;line-height:2.5rem">—</span></td>`;
@@ -97,7 +115,8 @@ function _buildTimetableHtml(data, weekOffset) {
             ? `<span style="font-size:0.65rem;font-weight:700;color:white;background:var(--primary);padding:2px 8px;border-radius:999px;margin-left:8px;vertical-align:middle">오늘</span>`
             : '';
         const cards = data.periods.map((p, pi) => {
-            const c = data.schedule[pi][dayIdx];
+            const overrideDay = ttOverride[weekFullDates[dayIdx]];
+            const c = overrideDay ? { s: overrideDay[pi] || '', t: '' } : data.schedule[pi][dayIdx];
             if (!c || !c.s) return '';
             const color = SUBJ_COLORS[c.s] || '#64748b';
             return `<div class="tt-mobile-card" style="border-left: 3px solid ${color}">

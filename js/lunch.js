@@ -276,6 +276,16 @@ async function fetchLunchMenu() {
     if (_todayMenuPromise) return _todayMenuPromise;
 
     const todayStr = _lunchTodayStr();
+    const lunchOverride = DB.get('lunch_override', {});
+    if (Array.isArray(lunchOverride[todayStr]) && lunchOverride[todayStr].length > 0) {
+        _todayMenuPromise = Promise.resolve({
+            items: lunchOverride[todayStr],
+            kcal: null,
+            date: todayStr
+        });
+        return _todayMenuPromise;
+    }
+
     const cacheKey = `lunch_${todayStr}`;
     const cached   = localStorage.getItem(cacheKey);
     if (cached) {
@@ -341,9 +351,16 @@ async function fetchWeeklyLunch(weekOffset = 0) {
     return weekDays;
 }
 
-// 스크립트 로드 시 프리페치
+// 스크립트 로드 시 프리페치 (이번 주 + 가져올 수 있는 데까지)
 _fetchLunchData();
 fetchLunchMenu();
+// 이번 주 로드 완료 후 다음 주부터 순차적으로 탐색 (데이터 없는 주 만나면 중단)
+(async () => {
+    for (let offset = 1; offset <= 4; offset++) {
+        const data = await _fetchLunchData(offset);
+        if (!data || !data.menus || Object.keys(data.menus).length === 0) break;
+    }
+})();
 
 // =============================================
 // 홈 화면용 급식 위젯

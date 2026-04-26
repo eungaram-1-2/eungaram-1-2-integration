@@ -186,15 +186,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Firebase 백그라운드 동기화 (업데이트가 오면 자동 re-render)
     startFirebaseSync();
 
-    // 시간표 로드 (임시: 컴시간 비활성화, NEIS API → Firebase → 기본값)
+    // 시간표 로드 (NEIS 전용)
     (async () => {
-        // const comtimeSuccess = await loadTimetableFromComtime();
-        // if (!comtimeSuccess) {
-        const neisSuccess = await loadTimetableFromNEIS();
-        if (!neisSuccess) {
-            loadTimetableFromFirebase();
-        }
-        // }
+        await loadTimetableFromNEIS();
     })();
 
     // 채팅 내역 자정 초기화 (렌더 후 지연 실행)

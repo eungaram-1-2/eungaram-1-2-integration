@@ -69,7 +69,7 @@ function _buildTimetableHtml(data, weekOffset) {
                 return `<div class="tt-today-chip" style="background:${color}">
                     <span class="period-num">${p.num}교시 ${p.time}</span>
                     <span style="font-size:1rem;font-weight:800;color:#fff">${c.s}</span>
-                    <span style="font-size:0.7rem;color:rgba(255,255,255,0.75)">${c.t}</span>
+                    
                 </div>`;
             }).filter(Boolean).join('');
             const dayLabel = data.days[todayIdx] + '요일';
@@ -96,7 +96,7 @@ function _buildTimetableHtml(data, weekOffset) {
             const cls = isToday ? ' class="today-col"' : '';
             if (!c || !c.s) return `<td${cls}><span style="color:var(--text-muted);font-size:1.1rem;line-height:2.5rem">—</span></td>`;
             const color = SUBJ_COLORS[c.s] || '#64748b';
-            return `<td${cls}><span class="subject-chip" style="background:${color}">${c.s}</span><span class="teacher">${c.t}</span></td>`;
+            return `<td${cls}><span class="subject-chip" style="background:${color}">${c.s}</span></td>`;
         }).join('');
         return `<tr><td class="period-cell">${p.num}교시<br><small>${p.time}</small></td>${cells}</tr>`;
     }).join('');
@@ -122,7 +122,7 @@ function _buildTimetableHtml(data, weekOffset) {
             return `<div class="tt-mobile-card" style="border-left: 3px solid ${color}">
                 <div style="font-size:0.72rem;color:var(--primary);font-weight:600;margin-bottom:4px">${p.num}교시 · ${p.time}</div>
                 <div style="font-size:1rem;font-weight:700;color:#000">${c.s}</div>
-                ${c.t ? `<div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px">${c.t}</div>` : ''}
+                
             </div>`;
         }).filter(Boolean).join('');
         return `<div class="tt-mobile-day"${todayStyle}${todayAttr}>
@@ -178,36 +178,17 @@ async function loadTimetableForWeek(weekOffset = 0) {
     let data;
     if (_timetableCache[weekOffset]) {
         data = _timetableCache[weekOffset];
-    } else if (weekOffset === 0) {
-        const saved = DB.get('timetable', null);
-        data = (TIMETABLE && TIMETABLE.schedule) ? TIMETABLE : ((saved && saved.schedule) ? saved : TIMETABLE);
-        _timetableCache[0] = data;
     } else {
-        // 컴시간 먼저 시도, 실패 시 NEIS fallback
-        // 임시: 컴시간 비활성화
-        // data = null;
-        // try {
-        //     data = await fetchComtimeTimetable(weekOffset);
-        // } catch (e) {
-        //     data = null;
-        // }
-
-        if (!data) {
-            try {
-                const neisRaw = await fetchNeisTimeTableData(weekOffset);
-                if (Object.keys(neisRaw).length > 0) {
-                    data = parseNeisDataToTimetable(neisRaw) || null;
-                } else {
-                    // 다음 주 데이터가 아직 공개 전이면 현재 표를 임시 표시
-                    data = (TIMETABLE && TIMETABLE.schedule) ? TIMETABLE : null;
-                }
-
-                if (!data && TIMETABLE && TIMETABLE.schedule) {
-                    data = TIMETABLE;
-                }
-            } catch (e) {
+        // NEIS 전용: Firebase/컴시간/로컬 저장값 미사용
+        try {
+            const neisRaw = await fetchNeisTimeTableData(weekOffset);
+            if (Object.keys(neisRaw).length > 0) {
+                data = parseNeisDataToTimetable(neisRaw) || null;
+            } else {
                 data = null;
             }
+        } catch (e) {
+            data = null;
         }
 
         if (data) _timetableCache[weekOffset] = data;

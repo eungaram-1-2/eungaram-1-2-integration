@@ -86,9 +86,11 @@ async function fetchNeisTimeTableData(weekOffset = 0) {
         responses.forEach((json, idx) => {
             if (!json || !json.misTimetable || !json.misTimetable[1]) return;
 
-            const filtered = json.misTimetable[1].row.filter(r =>
-                r.GRADE === NEIS_CONFIG.GRADE && r.CLASS_NM === NEIS_CONFIG.CLASS
-            );
+            const filtered = json.misTimetable[1].row.filter(r => {
+                const grade = String(r.GRADE ?? '').trim();
+                const classNm = String(r.CLASS_NM ?? '').replace(/반$/, '').trim();
+                return grade === NEIS_CONFIG.GRADE && classNm === NEIS_CONFIG.CLASS;
+            });
 
             if (filtered.length > 0) {
                 allData[dates[idx]] = filtered;
@@ -110,9 +112,11 @@ async function fetchNeisTimeTableData(weekOffset = 0) {
 function parseNeisDataToTimetable(neisDataByDate) {
     if (!neisDataByDate || Object.keys(neisDataByDate).length === 0) return null;
 
-    // 기존 시간표 구조 유지
-    const periods = TIMETABLE.periods.slice();  // 기본값 복사
-    const schedule = TIMETABLE.schedule.map((row, idx) => [...row]);  // 깊은 복사
+    // NEIS 원본만 사용: 기존 시간표 데이터와 섞지 않음
+    const periods = TIMETABLE.periods.slice();
+    const schedule = periods.map(() =>
+        Array.from({ length: 5 }, () => ({ s: '', t: '' }))
+    );
 
     // 각 날짜별로 처리
     Object.entries(neisDataByDate).forEach(([dateStr, neisData]) => {
@@ -133,9 +137,9 @@ function parseNeisDataToTimetable(neisDataByDate) {
             // 과목명 정규화
             subject = normalizeSubjectName(subject);
 
-            if (perio >= 1 && perio <= 7 && subject) {                // NEIS에 교사명이 없으면 기존 값(기본/수정표)을 유지
-                const prevTeacher = schedule[perio - 1][dayOfWeek]?.t || '';
-                schedule[perio - 1][dayOfWeek] = { s: subject, t: prevTeacher };
+            if (perio >= 1 && perio <= 7 && subject) {
+                // 이름(교사명)은 표시하지 않고 과목만 사용
+                schedule[perio - 1][dayOfWeek] = { s: subject, t: '' };
             }
         });
     });
@@ -174,25 +178,7 @@ async function loadTimetableFromNEIS() {
         delete _timetableCache[0];
     }
 
-    // 로컬/동기화 저장소도 최신 NEIS 값으로 맞춤 (화면 우선순위 충돌 방지)
-    if (typeof DB !== 'undefined' && typeof DB.set === 'function') {
-        try {
-            DB.set('timetable', timetable);
-        } catch (e) {
-            console.warn('[DB] 시간표 저장 실패:', e);
-        }
-    }
-
     console.log('[NEIS] 주간 시간표 업데이트 완료:', Object.keys(neisDataByDate).length, '일간');
-
-    // 4. Firebase에 저장 (선택사항)
-    if (fbReady()) {
-        try {
-            _fbDB.ref('config/timetable').set(timetable).catch(e => {
-                console.warn('[Firebase] 시간표 저장 실패:', e);
-            });
-        } catch (e) {}
-    }
 
     return true;
 }

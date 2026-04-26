@@ -180,15 +180,17 @@ async function loadTimetableForWeek(weekOffset = 0) {
         data = _timetableCache[weekOffset];
     } else if (weekOffset === 0) {
         const saved = DB.get('timetable', null);
-        data = (saved && saved.schedule) ? saved : TIMETABLE;
+        data = (TIMETABLE && TIMETABLE.schedule) ? TIMETABLE : ((saved && saved.schedule) ? saved : TIMETABLE);
         _timetableCache[0] = data;
     } else {
         // 컴시간 먼저 시도, 실패 시 NEIS fallback
-        try {
-            data = await fetchComtimeTimetable(weekOffset);
-        } catch (e) {
-            data = null;
-        }
+        // 임시: 컴시간 비활성화
+        // data = null;
+        // try {
+        //     data = await fetchComtimeTimetable(weekOffset);
+        // } catch (e) {
+        //     data = null;
+        // }
 
         if (!data) {
             try {

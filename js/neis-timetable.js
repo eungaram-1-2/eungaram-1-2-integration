@@ -167,6 +167,16 @@ async function loadTimetableFromNEIS() {
 
     // 3. TIMETABLE 업데이트
     TIMETABLE = timetable;
+
+    // 로컬/동기화 저장소도 최신 NEIS 값으로 맞춤 (화면 우선순위 충돌 방지)
+    if (typeof DB !== 'undefined' && typeof DB.set === 'function') {
+        try {
+            DB.set('timetable', timetable);
+        } catch (e) {
+            console.warn('[DB] 시간표 저장 실패:', e);
+        }
+    }
+
     console.log('[NEIS] 주간 시간표 업데이트 완료:', Object.keys(neisDataByDate).length, '일간');
 
     // 4. Firebase에 저장 (선택사항)

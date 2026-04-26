@@ -163,7 +163,7 @@ function render() {
     document.getElementById('emergencyBanner')?.remove();
     try {
         const enRaw = localStorage.getItem('emergency_notice');
-        if (enRaw) {
+        if (enRaw && !sessionStorage.getItem('emergencyBannerDismissed')) {
             const en = JSON.parse(enRaw);
             if (en && en.active === true) {
                 const banner = document.createElement('div');
@@ -173,7 +173,7 @@ function render() {
                 <div style="padding:10px 44px;position:relative;text-align:center">
                     <div style="font-weight:bold;font-size:0.9rem;margin-bottom:2px;color:#000!important;-webkit-text-fill-color:#000!important;word-break:break-word">${escapeHtml(en.title)}</div>
                     <div style="font-size:0.8rem;opacity:0.9;color:#000!important;-webkit-text-fill-color:#000!important;word-break:break-word;white-space:pre-line">${escapeHtml(en.message)}</div>
-                    <button onclick="document.getElementById('emergencyBanner').remove()" style="background:rgba(0,0,0,0.15);border:none;color:#000;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:0.9rem;line-height:1;position:absolute;right:10px;top:10px">&times;</button>
+                    <button onclick="sessionStorage.setItem('emergencyBannerDismissed','1');document.getElementById('emergencyBanner').remove()" style="background:rgba(0,0,0,0.15);border:none;color:#000;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:0.9rem;line-height:1;position:absolute;right:10px;top:10px">&times;</button>
                 </div>`;
                 document.body.appendChild(banner);
             }

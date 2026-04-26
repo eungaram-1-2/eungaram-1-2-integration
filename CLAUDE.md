@@ -15,114 +15,168 @@ https://eungaram-lunch-krohe8wsn-juhyukkang2013-8919s-projects.vercel.app
 
 ## 📋 프로젝트 구조
 
-- `index.html` - 메인 페이지
-- `js/` - 자바스크립트 모듈
-  - `router.js` - 라우팅 및 페이지 렌더링
-  - `timetable.js` - 시간표 모듈
-  - `meals.js` - 급식 모듈
-  - `academic-calendar.js` - 학사일정 모듈
-  - `firebase-config.js` - Firebase 설정
-- `style.css` / `style.min.css` - 스타일시트
-- `data/` - JSON 데이터
-  - `lunch.json` - 급식 데이터
-  - `schedule.json` - 학사일정 데이터 (로컬 백업용)
-- `assets/` - 로고, 이미지 자산
-- `vercel.json` - Vercel 배포 설정
+```
+index.html            메인 진입점 (모든 JS를 defer로 로드)
+style.css             원본 스타일시트
+style.min.css         배포용 최소화 버전 (style.css 수정 시 함께 수정)
+manifest.json         PWA 매니페스트
+sw.js                 Service Worker (오프라인 캐시)
+build.js              CSS 최소화 빌드 스크립트
+vercel.json           Vercel 배포 설정
+tsconfig.json         IDE 자동완성용 (checkJs: false — 실제 타입 검사 없음)
+data/
+  lunch.json          급식 데이터 (NEIS API 폴백용)
+  schedule.json       학사일정 로컬 백업
+assets/               로고, 이미지
+scripts/
+  scrape-lunch.js     급식 스크래퍼 (Node.js, jsdom + node-fetch 사용)
+```
+
+---
+
+## 🧩 JS 모듈 목록 (js/)
+
+### 핵심 인프라
+| 파일 | 역할 |
+|------|------|
+| `main.js` | 앱 초기화 — 모든 모듈 부트스트랩 |
+| `router.js` | 해시 기반 라우팅, 긴급공지 배너 표시 |
+| `db.js` | localStorage + Firebase 실시간 동기화 |
+| `firebase-config.js` | Firebase 초기화 설정 |
+| `config.js` | 시간표 기본값 (data/timetable.csv로 오버라이드 가능) |
+| `utils.js` | 공통 유틸리티 (escapeHtml, 날짜 포매팅 등) |
+
+### 페이지 렌더링
+| 파일 | 역할 |
+|------|------|
+| `home.js` | 홈 페이지 (오늘 급식·시간표 요약) |
+| `static-pages.js` | 정적 페이지 (공지사항, 정보, 개인정보처리방침 등) |
+| `modal.js` | 전역 모달 컴포넌트 |
+
+### 주요 기능
+| 파일 | 역할 |
+|------|------|
+| `lunch.js` | 급식 메뉴 (NEIS API → Firebase → lunch.json 폴백) |
+| `timetable.js` | 로컬 시간표 렌더링 |
+| `neis-timetable.js` | NEIS API에서 시간표 실시간 조회 |
+| `academic-calendar.js` | 학사일정 달력 (NEIS API + 하드코딩 공휴일) |
+| `dday.js` | D-Day 카운터 |
+| `chat.js` | Firebase 기반 실시간 채팅 |
+| `votes.js` | 투표 기능 |
+| `board` | (게시판 — router.js에 라우트 있으나 별도 처리) |
+| `links.js` | 학급 바로가기 링크 모음 |
+| `cleaning.js` | 청소 당번표 |
+| `seat-draw.js` | 자리 뽑기 (랜덤 배치) |
+| `games.js` | 미니게임 모음 |
+| `map.js` | OpenStreetMap + Leaflet.js 학교 지도 |
+| `suggestion.js` | 건의함/신고함 (Google Forms 연동) |
+| `reactions.js` | 게시글 이모지 반응 |
+
+### 시스템 / 관리
+| 파일 | 역할 |
+|------|------|
+| `admin.js` | 관리자 패널 (긴급공지, 유지보수 모드, 밴/타임아웃, 로그 등) |
+| `security.js` | Rate Limiter (DDoS/브루트포스 방지) |
+| `notifications.js` | Web Notifications API (새 공지·게시글 알림) |
+| `pwa-manager.js` | Service Worker 등록, 업데이트 배너, 설치 프롬프트 |
+| `cache-manager.js` | IndexedDB 기반 API 응답 캐시 (TTL 지원) |
+| `network-monitor.js` | 온라인/오프라인 상태, 배터리, 연결 속도 감지 |
+| `performance-monitor.js` | Core Web Vitals 등 성능 지표 수집 |
+| `analytics.js` | GA4 + Web Vitals 이벤트 전송 |
+| `error-handler.js` | 전역 에러 핸들링 |
+| `error-tracking.js` | Sentry 통합 에러 추적 |
+| `logger.js` | 통합 로거 (레벨별 필터링) |
+| `ab-testing.js` | A/B 테스팅 프레임워크 |
+| `theme.js` | 다크/라이트 모드 전환 |
+| `visitors.js` | 방문자 카운터 |
+| `user-feedback.js` | 사용자 피드백 위젯 |
 
 ---
 
 ## 🔌 API 통합
 
-### NEIS API (National Education Information System)
-**엔드포인트:** https://open.neis.go.kr/hub/SchoolSchedule
-- 학교 코드: 7692130 (은가람중학교)
-- 교육청 코드: J10 (경기도)
-- API 키: `ed50e755df5d42d4b94db728feab7952` (js/academic-calendar.js 에 하드코딩)
-- 조회 기간: 매년 3월~다음년 1월
-- 데이터 갱신: 자동 (페이지 로드 시)
+### NEIS API
+- **학사일정:** `https://open.neis.go.kr/hub/SchoolSchedule`
+- **시간표:** `https://open.neis.go.kr/hub/hisTimetable`
+- 학교 코드: `7692130`, 교육청 코드: `J10` (경기도)
+- API 키: `ed50e755df5d42d4b94db728feab7952` (`js/academic-calendar.js`, `js/neis-timetable.js`에 하드코딩)
+- 토요휴업일 이벤트는 필터링됨 (달력 가독성)
 
-**주의:**
-- 토요휴업일(토요일) 이벤트는 필터링됨 (달력 가독성)
-- 공휴일 인식: 신정, 설날, 삼일절, 어린이날, 현충일, 광복절, 추석, 개천절, 한글날, 성탄절, 대체공휴일 등
+### Firebase Realtime Database
+- 동기화 키: `board`, `votes`, `ddays`, `bans`, `timeouts`, `chat`, `emergency_notice`, `timetable` 등
+- `js/db.js`의 `_FB_SYNC_KEYS` 배열이 동기화 대상 관리
+
+### 급식 데이터 흐름
+NEIS API → (실패 시) Firebase → (실패 시) `data/lunch.json`
+
+---
+
+## 📦 의존성
+
+### dependencies (런타임)
+- `jsdom` + `node-fetch` — `scripts/scrape-lunch.js` 서버사이드 스크래퍼 전용
+
+### devDependencies
+- `@playwright/test` — E2E 테스트 (`npm test`)
+- `clean-css-cli` — CSS 최소화 (`npm run minify`)
+- `eslint` / `prettier` — 코드 품질
+- `husky` + `lint-staged` — pre-commit 훅
 
 ---
 
 ## 🔧 최근 수정 사항
 
+### 긴급공지 X 버튼 개선 (2026-04-26)
+- X 클릭 시 `sessionStorage`에 상태 저장 → 같은 세션 내 재표시 방지
+- 브라우저 닫고 다시 열면 재표시 (sessionStorage 초기화)
+
 ### NEIS API 통합 (2026-04-23)
 - 학사일정을 NEIS API에서 실시간 조회 (정적 JSON 대신)
-- 토요휴업일 필터링으로 달력 가독성 개선
-- 한국 공휴일 자동 인식 및 색상 분류
-- 달력 중복 날짜 표시 버그 수정 (이전/다음 달 날짜 제외)
+- 토요휴업일 필터링, 한국 공휴일 자동 인식 및 색상 분류
+- 달력 이전/다음 달 날짜 빈 칸 처리 수정
 
 ### 모바일 최적화 (2026-04-19)
-- `viewport-fit=cover` 추가 (노치폰 대응)
-- `safe-area-inset` 적용 (iPhone 홈바 대응)
-- `100dvh` 사용 (iOS Safari 주소창 버그 수정)
-- 급식 주간 이동 버튼 모바일 한 줄 배치
-
-### 이전 버그 수정
-- `router.js`에서 미구현 `renderBoard()` 호출 제거
-- BANNED_RESTRICTED, TIMEOUT_RESTRICTED 배열 정리
+- `viewport-fit=cover`, `safe-area-inset`, `100dvh` 적용
 
 ---
 
 ## 📍 GitHub Repositories
 
-- **원본:** https://github.com/eungaram-1-2/eungaram-1-2-tt-lunch
-- **통합 브랜치:** https://github.com/eungaram-1-2/eungaram-1-2-integration
-
-**원격 저장소 설정:**
-```bash
-git remote -v
-# origin: https://github.com/eungaram-1-2/eungaram-1-2-tt-lunch
-# integration: https://github.com/eungaram-1-2/eungaram-1-2-integration
-```
+- **origin:** https://github.com/eungaram-1-2/eungaram-1-2-tt-lunch
+- **integration:** https://github.com/eungaram-1-2/eungaram-1-2-integration (Vercel 자동 배포)
 
 ---
 
 ## 🚀 배포 방법
 
 ```bash
-# Vercel CLI로 배포 (설치 필요: npm i -g vercel)
+git push integration main   # GitHub → Vercel 자동 배포
+# 또는
 vercel --prod
-
-# 또는 GitHub integration 브랜치에 푸시 (자동 배포)
-git push integration main
 ```
-
-Vercel과 GitHub(integration remote)가 연동되어 있습니다.
 
 ---
 
 ## ⚙️ 주의사항
 
 ### CSS 수정
-- `style.css` 수정 시 `style.min.css`도 함께 수정 필요
+- `style.css` 수정 시 `npm run minify`로 `style.min.css`도 재생성
 
 ### 라우팅
-- 새로운 라우트는 `router.js`에 추가 후 함수 구현 필요
-- 라우트 추가 형식: `routes['route-name'] = renderFunctionName`
+- 새 라우트는 `router.js`의 `routes` 객체에 추가 후 렌더 함수 구현
 
 ### Firebase
-- Firebase 설정은 `js/firebase-config.js` 참고
-- 환경변수는 Vercel 대시보드에서 관리
+- `js/firebase-config.js` 참고, 환경변수는 Vercel 대시보드에서 관리
 
-### 데이터 소스
-- 급식: Google Sheets API 또는 로컬 lunch.json
-- 시간표: 로컬 데이터
-- 학사일정: **NEIS API (실시간)** - 인터넷 연결 필수
+### 데이터 소스 요약
+| 기능 | 소스 |
+|------|------|
+| 급식 | NEIS API → Firebase → lunch.json |
+| 시간표 | NEIS API (neis-timetable.js) + 로컬 (timetable.js) |
+| 학사일정 | NEIS API + 하드코딩 공휴일 (academic-calendar.js) |
+| 커뮤니티 | Firebase Realtime Database |
 
-### 자주 발생하는 버그
-1. **달력에 비워진 날짜 표시 문제**
-   - 이전/다음 달 날짜가 현재 달처럼 표시됨
-   - 해결: `renderMonthCalendar()` 의 `if (!isCurrentMonth)` 조건 확인
-
-2. **검정색 이벤트 박스**
-   - 같은 날에 3개 이상 이벤트 시 "+N" 버튼이 어두운 색으로 표시
-   - 원인: 하드코딩된 이벤트와 NEIS 이벤트가 중복되거나 너무 많음
-   - 해결: `loadNeisSchedule()`에서 기존 이벤트 완전 제거 후 교체
-
-3. **공휴일이 기본 색상(노란색)으로 표시**
-   - 원인: `getCategoryForEvent()`에서 공휴일명 인식 못함
-   - 해결: 한국 공휴일 키워드 배열에 추가
+### 알려진 이슈 (수정 완료)
+- 달력 이전/다음 달 날짜 이벤트 표시 → ✅ `if (!isCurrentMonth)` 빈 칸 처리
+- 공휴일 노란색 표시 → ✅ `getCategoryForEvent()` 키워드 배열에 추가
+- 이벤트 더보기(+N) 버튼 색상 → `var(--text-muted)` 사용 중 (의도된 동작)

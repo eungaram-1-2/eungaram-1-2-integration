@@ -13,7 +13,7 @@
     "minify": "cleancss style.css -o style.min.css",
     "test": "playwright test",
     "prepare": "husky",
-    "dev": "npx http-server -p 8080 -c-1 --cors"
+    "dev": "vercel dev --listen 8080"
   },
   "keywords": [],
   "author": "",

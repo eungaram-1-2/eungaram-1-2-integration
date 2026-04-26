@@ -60,9 +60,9 @@ async function searchSchool(baseUrl, extractCode, schoolName) {
     return results.map(d => ({ code: d[3], region: d[1], name: d[2] }));
 }
 
-async function getTimetableData(baseUrl, extractCode, scData, schoolCode) {
+async function getTimetableData(baseUrl, extractCode, scData, schoolCode, weekOffset = 0) {
     const s7 = scData[0] + schoolCode;
-    const rawQuery = s7 + '_0_1';
+    const rawQuery = s7 + `_${weekOffset}_1`;
     const b64 = Buffer.from(rawQuery).toString('base64');
     const sc3 = extractCode.split('?')[0] + '?' + b64;
     const url = baseUrl + sc3;
@@ -191,10 +191,11 @@ export default async function handler(req, res) {
     res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate');
 
     try {
+        const weekOffset = parseInt(req.query.weekOffset || '0', 10);
         const { baseUrl, extractCode, scData } = await init();
         const schools = await searchSchool(baseUrl, extractCode, SCHOOL_NAME);
         const school = schools[0];
-        const data = await getTimetableData(baseUrl, extractCode, scData, school.code);
+        const data = await getTimetableData(baseUrl, extractCode, scData, school.code, weekOffset);
         const timetable = parseTimetable(data, GRADE, CLASS);
 
         res.status(200).json({ ok: true, timetable });

@@ -183,17 +183,25 @@ async function loadTimetableForWeek(weekOffset = 0) {
         data = (saved && saved.schedule) ? saved : TIMETABLE;
         _timetableCache[0] = data;
     } else {
+        // 컴시간 먼저 시도, 실패 시 NEIS fallback
         try {
-            const neisRaw = await fetchNeisTimeTableData(weekOffset);
-            if (Object.keys(neisRaw).length > 0) {
-                data = parseNeisDataToTimetable(neisRaw) || TIMETABLE;
-            } else {
-                data = null;
-            }
-            if (data) _timetableCache[weekOffset] = data;
+            data = await fetchComtimeTimetable(weekOffset);
         } catch (e) {
             data = null;
         }
+
+        if (!data) {
+            try {
+                const neisRaw = await fetchNeisTimeTableData(weekOffset);
+                if (Object.keys(neisRaw).length > 0) {
+                    data = parseNeisDataToTimetable(neisRaw) || null;
+                }
+            } catch (e) {
+                data = null;
+            }
+        }
+
+        if (data) _timetableCache[weekOffset] = data;
     }
 
     if (!data) {

@@ -2,11 +2,11 @@
 // 컴시간 시간표 API 호출 (Vercel Function)
 // =============================================
 
-async function fetchComtimeTimetable() {
+async function fetchComtimeTimetable(weekOffset = 0) {
     try {
-        console.log('[컴시간] 시간표 API 호출 시작...');
+        console.log(`[컴시간] 시간표 API 호출 (${weekOffset >= 0 ? '+' : ''}${weekOffset}주)...`);
 
-        const res = await fetch('/api/timetable');
+        const res = await fetch(`/api/timetable?weekOffset=${weekOffset}`);
         if (!res.ok) {
             console.warn(`[컴시간] API 응답 실패: ${res.status}`);
             return null;
@@ -27,7 +27,7 @@ async function fetchComtimeTimetable() {
 }
 
 async function loadTimetableFromComtime() {
-    const timetable = await fetchComtimeTimetable();
+    const timetable = await fetchComtimeTimetable(0);
     if (!timetable) {
         console.warn('[컴시간] 데이터 없음 → NEIS API/Firebase 사용');
         return false;

@@ -1,7 +1,13 @@
 {
   "buildCommand": "echo 'Static site - no build needed'",
   "outputDirectory": ".",
-  "installCommand": "echo 'No dependencies'",
+  "installCommand": "npm install",
+  "rewrites": [
+    {
+      "source": "/((?!api/|assets/|data/|js/|scripts/|admin-panel/|manifest\\.json|sw\\.js|style\\.css|style\\.min\\.css|favicon\\.ico|robots\\.txt).*)",
+      "destination": "/index.html"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

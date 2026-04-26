@@ -19,6 +19,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "comcigan-parser-edited": "^0.3.0",
     "jsdom": "^23.0.0",
     "node-fetch": "^2.7.0"
   },

@@ -174,8 +174,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     await checkIPBlock();
     const _initHash = location.hash.replace('#', '');
     history.replaceState({ page: 'home', params: {} }, '', location.pathname + '#home');
-    if (_initHash && GUEST_ALLOWED.includes(_initHash) && _initHash !== 'home') {
-        currentPage = _initHash;
+    if (_initHash && _initHash !== 'home') {
+        currentPage = GUEST_ALLOWED.includes(_initHash) ? _initHash : 'not-found';
         history.pushState({ page: currentPage, params: {} }, '', location.pathname + '#' + currentPage);
     } else {
         currentPage = 'home';
@@ -186,11 +186,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Firebase 백그라운드 동기화 (업데이트가 오면 자동 re-render)
     startFirebaseSync();
 
-    // 시간표 로드 (우선순위: NEIS API → Firebase → 기본값)
+    // 시간표 로드 (우선순위: 컴시간 → NEIS API → Firebase → 기본값)
     (async () => {
-        const neisSuccess = await loadTimetableFromNEIS();
-        if (!neisSuccess) {
-            loadTimetableFromFirebase();
+        const comtimeSuccess = await loadTimetableFromComtime();
+        if (!comtimeSuccess) {
+            const neisSuccess = await loadTimetableFromNEIS();
+            if (!neisSuccess) {
+                loadTimetableFromFirebase();
+            }
         }
     })();
 

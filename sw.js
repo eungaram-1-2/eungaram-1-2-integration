@@ -3,7 +3,7 @@
 // 버전: eg-1-2-v6
 // =============================================
 
-const CACHE_VERSION = 'eg-1-2-v6';
+const CACHE_VERSION = 'eg-1-2-v9';
 const STATIC_CACHE  = `${CACHE_VERSION}-static`;
 const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
 
@@ -11,10 +11,12 @@ const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
 const PRECACHE_URLS = [
     './',
     './style.min.css?v=35',
-    './js/main.js?v=35',
+    './js/main.js?v=36',
     './js/router.js?v=35',
-    './js/lunch.js?v=35',
-    './js/timetable.js?v=35',
+    './js/static-pages.js?v=36',
+    './js/lunch.js?v=36',
+    './js/timetable.js?v=36',
+    './js/neis-timetable.js?v=36',
     './assets/logo.svg',
     './assets/icon-pwa.svg'
 ];

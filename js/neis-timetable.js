@@ -133,8 +133,9 @@ function parseNeisDataToTimetable(neisDataByDate) {
             // 과목명 정규화
             subject = normalizeSubjectName(subject);
 
-            if (perio >= 1 && perio <= 7 && subject) {
-                schedule[perio - 1][dayOfWeek] = { s: subject, t: '' };  // 선생님 정보는 비워둠
+            if (perio >= 1 && perio <= 7 && subject) {                // NEIS에 교사명이 없으면 기존 값(기본/수정표)을 유지
+                const prevTeacher = schedule[perio - 1][dayOfWeek]?.t || '';
+                schedule[perio - 1][dayOfWeek] = { s: subject, t: prevTeacher };
             }
         });
     });
@@ -167,6 +168,11 @@ async function loadTimetableFromNEIS() {
 
     // 3. TIMETABLE 업데이트
     TIMETABLE = timetable;
+
+    // 이번 주 캐시 무효화 (즉시 최신값 반영)
+    if (typeof _timetableCache !== 'undefined') {
+        delete _timetableCache[0];
+    }
 
     // 로컬/동기화 저장소도 최신 NEIS 값으로 맞춤 (화면 우선순위 충돌 방지)
     if (typeof DB !== 'undefined' && typeof DB.set === 'function') {

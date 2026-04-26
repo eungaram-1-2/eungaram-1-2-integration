@@ -197,6 +197,13 @@ async function loadTimetableForWeek(weekOffset = 0) {
                 const neisRaw = await fetchNeisTimeTableData(weekOffset);
                 if (Object.keys(neisRaw).length > 0) {
                     data = parseNeisDataToTimetable(neisRaw) || null;
+                } else {
+                    // 다음 주 데이터가 아직 공개 전이면 현재 표를 임시 표시
+                    data = (TIMETABLE && TIMETABLE.schedule) ? TIMETABLE : null;
+                }
+
+                if (!data && TIMETABLE && TIMETABLE.schedule) {
+                    data = TIMETABLE;
                 }
             } catch (e) {
                 data = null;

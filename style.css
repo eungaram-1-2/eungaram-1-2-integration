@@ -2290,6 +2290,17 @@ button { font-family: inherit; }
     transition: background 0.3s;
 }
 
+.footer a {
+    color: inherit;
+    text-decoration: underline;
+    transition: opacity 0.2s;
+    opacity: 0.8;
+}
+
+.footer a:hover {
+    opacity: 1;
+}
+
 /* ===== 방문자 카운터 ===== */
 .visitor-wrap {
     display: flex;

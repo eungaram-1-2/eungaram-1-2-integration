@@ -161,6 +161,7 @@ function render() {
     }
 
     document.getElementById('emergencyBanner')?.remove();
+    document.getElementById('generalBanner')?.remove();
     try {
         const enRaw = localStorage.getItem('emergency_notice');
         if (enRaw && !sessionStorage.getItem('emergencyBannerDismissed')) {
@@ -174,6 +175,25 @@ function render() {
                     <div style="font-weight:bold;font-size:0.9rem;margin-bottom:2px;color:#000!important;-webkit-text-fill-color:#000!important;word-break:break-word">${escapeHtml(en.title)}</div>
                     <div style="font-size:0.8rem;opacity:0.9;color:#000!important;-webkit-text-fill-color:#000!important;word-break:break-word;white-space:pre-line">${escapeHtml(en.message)}</div>
                     <button onclick="sessionStorage.setItem('emergencyBannerDismissed','1');document.getElementById('emergencyBanner').remove()" style="background:rgba(0,0,0,0.15);border:none;color:#000;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:0.9rem;line-height:1;position:absolute;right:10px;top:10px">&times;</button>
+                </div>`;
+                document.body.appendChild(banner);
+            }
+        }
+
+        const gnRaw = localStorage.getItem('general_notice');
+        if (gnRaw && !sessionStorage.getItem('generalBannerDismissed')) {
+            const gn = JSON.parse(gnRaw);
+            if (gn && gn.active === true) {
+                const enActive = localStorage.getItem('emergency_notice') ? JSON.parse(localStorage.getItem('emergency_notice')).active : false;
+                const topOffset = enActive ? '120px' : '64px';
+                const banner = document.createElement('div');
+                banner.id = 'generalBanner';
+                banner.style.cssText = `background:${gn.color};color:white;position:fixed;top:${topOffset};left:0;right:0;z-index:999;box-shadow:0 2px 8px rgba(0,0,0,0.2)`;
+                banner.innerHTML = `
+                <div style="padding:8px 44px;position:relative;text-align:center">
+                    <div style="font-weight:600;font-size:0.85rem;margin-bottom:2px;color:#fff!important;-webkit-text-fill-color:#fff!important;word-break:break-word">${escapeHtml(gn.title)}</div>
+                    <div style="font-size:0.75rem;opacity:0.95;color:#fff!important;-webkit-text-fill-color:#fff!important;word-break:break-word;white-space:pre-line">${escapeHtml(gn.message)}</div>
+                    <button onclick="sessionStorage.setItem('generalBannerDismissed','1');document.getElementById('generalBanner').remove()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:0.85rem;line-height:1;position:absolute;right:10px;top:50%;transform:translateY(-50%)">&times;</button>
                 </div>`;
                 document.body.appendChild(banner);
             }

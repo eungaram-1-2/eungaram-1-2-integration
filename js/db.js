@@ -3,7 +3,7 @@
 // =============================================
 
 // Firebase에 동기화할 키 목록
-const _FB_SYNC_KEYS = ['board', 'votes', 'ddays', 'bans', 'timeouts', 'admin_logs', 'admin_login_logs', 'board_logs', 'chat', 'emergency_notice', 'suggestions', 'reports', 'cleaning_schedule', 'cleaning_history', 'access_logs', 'maintenance_mode', 'ip_blocklist', 'lunch_override', 'calendar_override', 'site_settings', 'timetable'];
+const _FB_SYNC_KEYS = ['board', 'votes', 'ddays', 'bans', 'timeouts', 'admin_logs', 'admin_login_logs', 'board_logs', 'chat', 'emergency_notice', 'general_notice', 'suggestions', 'reports', 'cleaning_schedule', 'cleaning_history', 'access_logs', 'maintenance_mode', 'ip_blocklist', 'lunch_override', 'calendar_override', 'site_settings', 'timetable'];
 function _shouldSyncToFb(key) {
     return _FB_SYNC_KEYS.includes(key);
 }
@@ -47,7 +47,7 @@ const DB = {
 // Firebase → localStorage 실시간 동기화 리스너
 function startFirebaseSync(onFirstLoad) {
     if (!fbReady()) {
-        onFirstLoad && onFirstLoad();
+        setTimeout(() => startFirebaseSync(onFirstLoad), 700);
         return;
     }
     let isFirst = true;
@@ -67,6 +67,17 @@ function startFirebaseSync(onFirstLoad) {
             const jsonStr = child.val();
             if (typeof jsonStr === 'string') {
                 try { localStorage.setItem(key, jsonStr); } catch(e) {}
+                if (key === 'timetable' && typeof _timetableCache !== 'undefined') {
+                    delete _timetableCache[0];
+                }
+                if (key === 'lunch_override') {
+                    if (typeof _todayMenuPromise !== 'undefined') _todayMenuPromise = null;
+                    try {
+                        const today = new Date();
+                        const p = n => String(n).padStart(2, '0');
+                        localStorage.removeItem(`lunch_${today.getFullYear()}-${p(today.getMonth()+1)}-${p(today.getDate())}`);
+                    } catch (e) {}
+                }
             }
         });
         if (isFirst) {

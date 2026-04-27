@@ -190,10 +190,10 @@ function render() {
                 banner.id = 'generalBanner';
                 banner.style.cssText = `background:${gn.color};color:white;position:fixed;top:${topOffset};left:0;right:0;z-index:999;box-shadow:0 2px 8px rgba(0,0,0,0.2)`;
                 banner.innerHTML = `
-                <div style="padding:8px 44px;position:relative;text-align:center">
-                    <div style="font-weight:600;font-size:0.85rem;margin-bottom:2px;color:#fff!important;-webkit-text-fill-color:#fff!important;word-break:break-word">${escapeHtml(gn.title)}</div>
-                    <div style="font-size:0.75rem;opacity:0.95;color:#fff!important;-webkit-text-fill-color:#fff!important;word-break:break-word;white-space:pre-line">${escapeHtml(gn.message)}</div>
-                    <button onclick="sessionStorage.setItem('generalBannerDismissed','1');document.getElementById('generalBanner').remove()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:0.85rem;line-height:1;position:absolute;right:10px;top:50%;transform:translateY(-50%)">&times;</button>
+                <div style="padding:5px 44px;position:relative;text-align:center">
+                    <div style="font-weight:600;font-size:0.8rem;margin-bottom:1px;color:#fff!important;-webkit-text-fill-color:#fff!important;word-break:break-word">${escapeHtml(gn.title)}</div>
+                    <div style="font-size:0.7rem;opacity:0.95;color:#fff!important;-webkit-text-fill-color:#fff!important;word-break:break-word;white-space:pre-line">${escapeHtml(gn.message)}</div>
+                    <button onclick="sessionStorage.setItem('generalBannerDismissed','1');document.getElementById('generalBanner').remove()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:0.8rem;line-height:1;position:absolute;right:10px;top:50%;transform:translateY(-50%)">&times;</button>
                 </div>`;
                 document.body.appendChild(banner);
             }

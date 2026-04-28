@@ -435,8 +435,8 @@ function renderLunch() {
                 <button class="week-nav-btn" onclick="changeLunchWeek(1)">다음 주 ▶</button>
             </div>
             <div style="display:flex;gap:8px;margin:12px 0">
-                <button class="btn btn-primary" onclick="shareLunch()" style="color:white">📤 공유</button>
-                <button class="btn btn-primary" onclick="downloadLunch()" style="color:white">📥 급식 저장</button>
+                <button class="btn btn-primary" onclick="shareLunch()" style="color:white!important;-webkit-text-fill-color:white!important">📤 공유</button>
+                <button class="btn btn-primary" onclick="downloadLunch()" style="color:white!important;-webkit-text-fill-color:white!important">📥 급식 저장</button>
             </div>
             <div class="allergen-panel" id="allergenPanel">
                 <div class="allergen-panel-toggle" onclick="document.getElementById('allergenPanel').classList.toggle('open')">

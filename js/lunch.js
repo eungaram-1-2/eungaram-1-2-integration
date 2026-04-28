@@ -410,7 +410,10 @@ async function loadLunchWidget() {
     ).join('');
 
     body.innerHTML = `
-        ${kcalBadge}
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            ${kcalBadge || '<span></span>'}
+            <button onclick="shareLunch()" style="font-size:0.75rem;padding:4px 10px;background:transparent;border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--text-muted)">📤 공유</button>
+        </div>
         <ul class="lunch-list">${itemsHtml}</ul>`;
 }
 
@@ -424,7 +427,10 @@ function renderLunch() {
     <div class="page">
         <div class="page-header header-white">
             <h2>🍱 급식</h2>
-            <button class="btn btn-primary" onclick="downloadLunch()" style="margin-top:12px">📥 급식 저장</button>
+            <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn btn-primary" onclick="downloadLunch()">📥 급식 저장</button>
+            <button class="btn btn-outline" onclick="shareLunch()">📤 공유</button>
+        </div>
         </div>
         <div class="container" style="max-width:900px;margin:0 auto;padding:0 20px 60px">
             <div class="week-nav">
@@ -719,6 +725,43 @@ async function loadLunchPageWithAutoScroll() {
     await loadLunchPage(0);
     // 테이블 렌더링 후 자동 스크롤 활성화
     setTimeout(() => enableAutoScrollLunchTable(), 100);
+}
+
+// =============================================
+// 급식 공유 (Web Share API / 클립보드 폴백)
+// =============================================
+async function shareLunch() {
+    const menu = await fetchLunchMenu();
+    if (!menu) {
+        showToast('공유할 급식 정보가 없습니다.', 'error');
+        return;
+    }
+
+    const today = new Date();
+    const days = ['일','월','화','수','목','금','토'];
+    const p = n => String(n).padStart(2, '0');
+    const dateStr = `${today.getFullYear()}.${p(today.getMonth()+1)}.${p(today.getDate())} (${days[today.getDay()]})`;
+
+    const items = menu.items
+        .map(item => item.replace(/\([\d.]+\)/g, '').replace(/\([가-힣]+\)/g, '').trim())
+        .filter(Boolean);
+    const text = `🍱 오늘의 급식 (${dateStr})\n\n${items.map(i => `• ${i}`).join('\n')}${menu.kcal ? `\n\n🔥 ${menu.kcal} kcal` : ''}\n\n📍 은가람 중학교 1-2반`;
+
+    if (navigator.share) {
+        try {
+            await navigator.share({ title: `오늘의 급식 (${dateStr})`, text, url: location.href });
+        } catch (e) {
+            if (e.name !== 'AbortError') _copyLunchText(text);
+        }
+    } else {
+        _copyLunchText(text);
+    }
+}
+
+function _copyLunchText(text) {
+    navigator.clipboard.writeText(text)
+        .then(() => showToast('클립보드에 복사되었습니다! 카카오톡에 붙여넣기하세요 📋', 'success'))
+        .catch(() => showToast('공유 기능을 지원하지 않는 브라우저입니다.', 'error'));
 }
 
 // =============================================

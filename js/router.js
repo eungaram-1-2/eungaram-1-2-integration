@@ -41,7 +41,7 @@ window.addEventListener('popstate', e => {
 
 const BANNED_RESTRICTED   = ['dday'];
 const TIMEOUT_RESTRICTED  = ['dday','votes','vote-detail','vote-create'];
-const GUEST_ALLOWED       = ['home','timetable','lunch','academic','weather','cleaning','votes','vote-detail','vote-create','dday','chat','links','suggestion','games','admin','privacy','offline','not-found'];
+const GUEST_ALLOWED       = ['home','timetable','lunch','academic','weather','cleaning','votes','vote-detail','vote-create','dday','chat','links','suggestion','games','admin','privacy','offline','not-found','quotes'];
 
 // 로그인 기능 삭제로 인해 더 이상 사용되지 않음
 // function renderLoginRequiredPage() { ... }
@@ -153,12 +153,15 @@ function render() {
         // case 'seat-draw':    app.innerHTML = renderSeatDraw();          break;
         case 'lunch':        app.innerHTML = renderLunch(); setTimeout(() => loadLunchPageWithAutoScroll(), 0); break;
         case 'cleaning':     app.innerHTML = renderCleaning(); break;
+        case 'quotes':       app.innerHTML = renderQuotes(); break;
         case 'privacy':      app.innerHTML = renderPrivacyPage(); break;
         case 'offline':      app.innerHTML = renderOfflinePage(); break;
         case 'not-found':    app.innerHTML = renderNotFoundPage(); break;
         // case 'map':          app.innerHTML = renderMap(); setTimeout(() => initMapPage(), 0); break;
         default:             currentPage = 'not-found'; app.innerHTML = renderNotFoundPage();
     }
+
+    if (!_sitePopupShown) { _sitePopupShown = true; setTimeout(_checkSitePopup, 800); }
 
     document.getElementById('emergencyBanner')?.remove();
     document.getElementById('generalBanner')?.remove();
@@ -255,6 +258,41 @@ function toggleMenu() {
     const isOpen = menu.classList.contains('active');
     btn && btn.setAttribute('aria-expanded', isOpen);
     btn && btn.setAttribute('aria-label', isOpen ? '메뉴 닫기' : '메뉴 열기');
+}
+
+// =============================================
+// 사이트 팝업 (admin에서 설정)
+// =============================================
+let _sitePopupShown = false;
+
+function _checkSitePopup() {
+    try {
+        const raw = localStorage.getItem('popup_notice');
+        if (!raw) return;
+        const popup = JSON.parse(raw);
+        if (!popup || !popup.active) return;
+        if (popup.expiresAt && new Date(popup.expiresAt) <= new Date()) return;
+        if (sessionStorage.getItem('sitePopupDismissed')) return;
+
+        const overlay = document.createElement('div');
+        overlay.id = 'sitePopupOverlay';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box';
+        overlay.innerHTML = `
+        <div style="background:var(--card);border-radius:16px;padding:28px 24px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+            <h3 style="margin:0 0 12px;font-size:1.05rem;font-weight:700">${escapeHtml(popup.title || '')}</h3>
+            <p style="font-size:0.9rem;line-height:1.65;white-space:pre-line;color:var(--text-muted);margin:0 0 20px">${escapeHtml(popup.message || '')}</p>
+            <button onclick="sessionStorage.setItem('sitePopupDismissed','1');document.getElementById('sitePopupOverlay').remove()" style="padding:10px;width:100%;background:var(--primary);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;font-size:0.95rem">
+                ${escapeHtml(popup.buttonText || '닫기')}
+            </button>
+        </div>`;
+        overlay.addEventListener('click', e => {
+            if (e.target === overlay) {
+                sessionStorage.setItem('sitePopupDismissed', '1');
+                overlay.remove();
+            }
+        });
+        document.body.appendChild(overlay);
+    } catch(e) {}
 }
 
 // 스크롤 감지

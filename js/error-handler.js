@@ -54,6 +54,12 @@ const ErrorHandler = {
         };
         this._errors.push(entry);
         if (this._errors.length > this.MAX_ERRORS) this._errors.shift();
+        try {
+            const stored = JSON.parse(localStorage.getItem('js_errors') || '[]');
+            stored.push({ level: 'error', message: errorInfo.message, source: errorInfo.filename ? `${errorInfo.filename}:${errorInfo.lineno}` : (errorInfo.type || ''), stack: errorInfo.stack, time: entry.time });
+            if (stored.length > 100) stored.shift();
+            localStorage.setItem('js_errors', JSON.stringify(stored));
+        } catch(e) {}
         AppLogger.error('Captured error:', errorInfo.message);
 
         // Sentry가 로드된 경우 전송

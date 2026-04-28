@@ -411,8 +411,8 @@ async function loadLunchWidget() {
 
     body.innerHTML = `
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <button onclick="shareLunch()" style="font-size:0.75rem;padding:6px 12px;background:var(--primary);border:none;border-radius:6px;cursor:pointer;color:white;font-weight:600">📤 공유</button>
             ${kcalBadge || '<span></span>'}
-            <button onclick="shareLunch()" style="font-size:0.75rem;padding:4px 10px;background:transparent;border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--text-muted)">📤 공유</button>
         </div>
         <ul class="lunch-list">${itemsHtml}</ul>`;
 }
@@ -427,9 +427,9 @@ function renderLunch() {
     <div class="page">
         <div class="page-header header-white">
             <h2>🍱 급식</h2>
-            <div style="display:flex;gap:8px;margin-top:12px">
+            <div style="display:flex;gap:8px;margin-top:12px;margin-left:-8px">
+            <button class="btn btn-primary" onclick="shareLunch()">📤 공유</button>
             <button class="btn btn-primary" onclick="downloadLunch()">📥 급식 저장</button>
-            <button class="btn btn-outline" onclick="shareLunch()">📤 공유</button>
         </div>
         </div>
         <div class="container" style="max-width:900px;margin:0 auto;padding:0 20px 60px">

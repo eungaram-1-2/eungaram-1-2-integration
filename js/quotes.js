@@ -44,7 +44,7 @@ function renderQuotes() {
         </div>
         <div class="container" style="max-width:900px;margin:0 auto;padding:0 20px 80px">
             <div style="text-align:center;margin:24px 0 20px">
-                <button class="btn btn-primary" onclick="showRandomQuote()" style="font-size:1rem;padding:12px 28px">🎲 랜덤 명언 뽑기</button>
+                <button class="btn btn-outline" onclick="showRandomQuote()" style="font-size:1rem;padding:12px 28px">🎲 랜덤 명언 뽑기</button>
             </div>
 
             <div id="quoteRandomBox" style="display:none" class="quote-random-box">

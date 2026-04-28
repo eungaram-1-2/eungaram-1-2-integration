@@ -427,7 +427,7 @@ function renderLunch() {
     <div class="page">
         <div class="page-header header-white">
             <h2>🍱 급식</h2>
-            <div style="display:flex;gap:8px;margin-top:12px;margin-left:-198px">
+            <div style="display:flex;gap:8px;margin-top:12px;margin-left:-400px">
             <button class="btn btn-primary" onclick="shareLunch()">📤 공유</button>
             <button class="btn btn-primary" onclick="downloadLunch()">📥 급식 저장</button>
         </div>

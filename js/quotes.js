@@ -2,33 +2,7 @@
 // 선생님 명언 모음
 // =============================================
 
-const TEACHER_QUOTES = [
-    { emoji: '📚', text: '배우고 때때로 익히면 또한 기쁘지 아니한가?', author: '공자 (孔子)', category: '학습' },
-    { emoji: '🌱', text: '배우기만 하고 생각하지 않으면 헛되고, 생각하기만 하고 배우지 않으면 위태롭다.', author: '공자 (孔子)', category: '학습' },
-    { emoji: '🔍', text: '너 자신을 알라.', author: '소크라테스 (Socrates)', category: '자기계발' },
-    { emoji: '✨', text: '상상력이 지식보다 더 중요하다. 지식은 한계가 있지만, 상상력은 세계를 품는다.', author: '알베르트 아인슈타인', category: '창의' },
-    { emoji: '🏃', text: '아는 것으로는 충분하지 않다. 응용해야 한다. 의지하는 것으로는 충분하지 않다. 실행해야 한다.', author: '요한 볼프강 폰 괴테', category: '실천' },
-    { emoji: '🌟', text: '교육의 목적은 올바른 것을 좋아하도록 가르치는 것이다.', author: '플라톤 (Plato)', category: '교육' },
-    { emoji: '💪', text: '삶에서 무서운 것은 아무것도 없다. 다만 이해해야 할 것들이 있을 뿐이다.', author: '마리 퀴리 (Marie Curie)', category: '용기' },
-    { emoji: '🎯', text: '성공은 최종 목적지가 아니며, 실패는 치명적인 것이 아니다. 계속하려는 용기가 중요하다.', author: '윈스턴 처칠', category: '용기' },
-    { emoji: '🎓', text: '교육은 세상에서 가장 강력한 무기다. 세상을 바꾸는 데 쓸 수 있다.', author: '넬슨 만델라', category: '교육' },
-    { emoji: '🌊', text: '물이 낮은 곳으로 흘러가듯, 지혜는 낮은 마음에 쌓인다.', author: '노자 (老子)', category: '겸손' },
-    { emoji: '🔥', text: '천재는 99%의 노력과 1%의 영감으로 이루어진다.', author: '토마스 에디슨', category: '노력' },
-    { emoji: '🌙', text: '실수란 경험의 다른 이름이다.', author: '오스카 와일드', category: '성장' },
-    { emoji: '🚀', text: '꿈을 크게 가져라. 그래야 실현될 가능성도 크다.', author: '노먼 빈센트 필', category: '꿈' },
-    { emoji: '🌸', text: '천 리 길도 한 걸음부터.', author: '노자 (老子)', category: '실천' },
-    { emoji: '💡', text: '가장 중요한 것은 끊임없이 질문하는 것이다.', author: '알베르트 아인슈타인', category: '호기심' },
-    { emoji: '🦁', text: '용기란 두려움이 없는 것이 아니라, 두려움보다 더 중요한 것이 있다고 판단하는 것이다.', author: '넬슨 만델라', category: '용기' },
-    { emoji: '🌍', text: '내가 더 멀리 볼 수 있었던 건, 거인들의 어깨 위에 서 있었기 때문이다.', author: '아이작 뉴턴', category: '겸손' },
-    { emoji: '⚡', text: '성공한 사람들은 다른 사람들이 포기할 때도 계속한다.', author: '컨래드 힐튼', category: '끈기' },
-    { emoji: '🌹', text: '배움은 어떤 보물보다 값지다.', author: '이솝 (Aesop)', category: '학습' },
-    { emoji: '💭', text: '우리가 알고 있는 것은 한 방울의 물이요, 모르는 것은 바다다.', author: '아이작 뉴턴', category: '겸손' },
-    { emoji: '🎵', text: '지식은 힘이다.', author: '프랜시스 베이컨', category: '지식' },
-    { emoji: '⭐', text: '지금 하지 않으면 언제 하겠는가?', author: '히포크라테스', category: '실천' },
-    { emoji: '🌻', text: '오늘 배운 것이 내일의 나를 만든다.', author: '은가람 중학교 선생님', category: '학습' },
-    { emoji: '🏅', text: '포기하지 마라. 위대한 것들은 시간이 걸린다.', author: '은가람 중학교 선생님', category: '끈기' },
-    { emoji: '🌈', text: '틀려도 괜찮다. 틀리면서 배우는 것이다.', author: '은가람 중학교 선생님', category: '성장' },
-];
+const TEACHER_QUOTES = [];
 
 const CATEGORY_COLORS = {
     '학습': '#1428A0',

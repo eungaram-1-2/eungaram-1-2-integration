@@ -57,6 +57,7 @@ const TEXTBOOKS = [
 // =============================================
 const QUICK_LINKS = [
     { icon: '🎵', title: '교가', desc: '은가람중학교 교가 감상', audio: 'assets/교가.mp3', color: '#6366f1' },
+    { icon: '💬', title: '명언', desc: '선생님 명언 모음', page: 'quotes', color: '#ec4899' },
     { icon: '🤖', title: '중학교 AI 선생님', desc: '어려운 개념도 쉽게 설명해요', url: 'https://eungaram-1-2.github.io/eungaram_chat_ai/', color: '#667eea' }
 ];
 

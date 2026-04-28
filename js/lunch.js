@@ -425,12 +425,12 @@ let _lunchWeekOffset = 0;
 function renderLunch() {
     return `
     <div class="page">
-        <div class="page-header header-white">
+        <div class="page-header header-white" style="flex-direction:column;align-items:flex-start">
             <h2>🍱 급식</h2>
-            <div style="display:flex;gap:8px;margin-top:12px;margin-left:-400px">
-            <button class="btn btn-primary" onclick="shareLunch()">📤 공유</button>
-            <button class="btn btn-primary" onclick="downloadLunch()">📥 급식 저장</button>
-        </div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+                <button class="btn btn-primary" onclick="shareLunch()">📤 공유</button>
+                <button class="btn btn-primary" onclick="downloadLunch()">📥 급식 저장</button>
+            </div>
         </div>
         <div class="container" style="max-width:900px;margin:0 auto;padding:0 20px 60px">
             <div class="week-nav">

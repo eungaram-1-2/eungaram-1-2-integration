@@ -159,7 +159,16 @@ if ('serviceWorker' in navigator) {
 document.addEventListener('DOMContentLoaded', async () => {
     applyTheme(getTheme());
     updateClock();
-    setInterval(updateClock, 1000);
+    let _clockTimer = setInterval(updateClock, 1000);
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            clearInterval(_clockTimer);
+            _clockTimer = null;
+        } else {
+            updateClock();
+            _clockTimer = setInterval(updateClock, 1000);
+        }
+    });
 
     // 메뉴 초기 상태 보장
     const navMenu = document.getElementById('navMenu');

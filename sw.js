@@ -3,15 +3,15 @@
 // 버전: eg-1-2-v6
 // =============================================
 
-const CACHE_VERSION = 'eg-1-2-v10';
+const CACHE_VERSION = 'eg-1-2-v11';
 const STATIC_CACHE  = `${CACHE_VERSION}-static`;
 const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
 
 // 사전 캐싱할 정적 자산
 const PRECACHE_URLS = [
     './',
-    './style.min.css?v=35',
-    './js/main.js?v=37',
+    './style.min.css?v=37',
+    './js/main.js?v=38',
     './js/router.js?v=35',
     './js/lunch.js?v=36',
     './js/timetable.js?v=37',

@@ -77,7 +77,6 @@ body {
     -webkit-font-smoothing: antialiased;
     -webkit-text-size-adjust: 100%;
     overscroll-behavior-y: none;
-    transition: background 0.3s, color 0.3s;
 }
 
 a { text-decoration: none; color: inherit; }
@@ -92,15 +91,17 @@ button { font-family: inherit; }
 /* ===== Navbar ===== */
 .navbar {
     background: var(--nav-bg);
-    backdrop-filter: blur(32px) saturate(180%);
-    -webkit-backdrop-filter: blur(32px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
     border-bottom: 1px solid var(--glass-border);
     position: fixed;
     top: 0; left: 0; right: 0;
     z-index: 1001;
     height: 64px;
     padding-top: env(safe-area-inset-top, 0px);
-    transition: var(--transition);
+    transition: box-shadow var(--transition), border-color var(--transition);
+    will-change: transform;
+    contain: layout style;
 }
 
 .navbar.scrolled {
@@ -543,6 +544,8 @@ button { font-family: inherit; }
     height: 420px;
     position: relative;
     animation: heroFadeUp 1.2s 0.1s cubic-bezier(0.16,1,0.3,1) both;
+    will-change: transform;
+    contain: layout style paint;
 }
 
 /* 바깥 링 */
@@ -599,6 +602,7 @@ button { font-family: inherit; }
     );
     filter: blur(30px);
     animation: orbBreath 4s ease-in-out infinite;
+    will-change: transform, opacity;
 }
 @keyframes orbBreath {
     0%, 100% { transform: scale(1); opacity: 0.8; }

@@ -2,7 +2,14 @@
 // 선생님 명언 모음
 // =============================================
 
-const TEACHER_QUOTES = [];
+const TEACHER_QUOTES = [
+    {
+        emoji: '💪',
+        text: '천재는 노력하는 사람을 이길 수 없고, 노력하는 사람은 즐기는 사람을 이길 수 없다.',
+        author: '이*란 선생님',
+        category: '노력'
+    }
+];
 
 const CATEGORY_COLORS = {
     '학습': '#1428A0',

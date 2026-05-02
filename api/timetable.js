@@ -1,8 +1,7 @@
 // Vercel Serverless Function - 컴시간 시간표 API
-// school-timetable 프로젝트의 파싱 로직을 기반으로 작성
+// 참고: comcigan-py (school_new.py), school-timetable-main (comcigan-parser.ts)
 
 const BASE_URL = 'http://comci.net:4082';
-const SCHOOL_NAME_EUCKR_HEX = '%C3%BA%B0%A1%B6%F7%C1%DF'; // 은가람중 EUC-KR hex (런타임에 계산)
 const GRADE = 1;
 const CLASS = 2;
 
@@ -27,7 +26,7 @@ async function fetchWithProxy(targetUrl, isEucKr = false) {
             const url = proxy ? `${proxy}${encodeURIComponent(targetUrl)}` : targetUrl;
             const res = await fetch(url, {
                 headers: HEADERS,
-                signal: AbortSignal.timeout(8000)
+                signal: AbortSignal.timeout(10000)
             });
             if (!res.ok) continue;
 
@@ -44,32 +43,49 @@ async function fetchWithProxy(targetUrl, isEucKr = false) {
     throw lastError || new Error('모든 프록시 실패');
 }
 
-async function getPrefix() {
+// /st 페이지에서 3가지 코드를 추출
+// searchPath: 학교 검색 경로 (school_ra -> url:'./xxx')
+// timePath:   시간표 데이터 경로 (var sc3='./xxx')
+// prefix:     base64 쿼리 접두사 (sc_data('PREFIX', ...))
+async function getPageCodes() {
     const html = await fetchWithProxy(`${BASE_URL}/st`, true);
-    const match = html.match(/sc_data\('([^']+)'/);
-    if (!match) throw new Error('sc_data prefix를 찾을 수 없습니다');
-    return match[1];
+
+    // url:'./xxx' 또는 url:"./xxx" 패턴에서 경로 추출 (앞의 . 한 글자 스킵)
+    const searchMatch = html.match(/url:['"]\.([^'"]+?)['"]/);
+    if (!searchMatch) throw new Error('검색 경로를 찾을 수 없습니다 (school_ra url)');
+    const searchPath = searchMatch[1]; // e.g. "/abc?"
+
+    // var sc3='./xxx' 또는 var sc3="./xxx" 패턴에서 경로 추출
+    const timeMatch = html.match(/var\s+sc3\s*=\s*['"]\.([^'"]+?)['"]/);
+    if (!timeMatch) throw new Error('시간표 경로를 찾을 수 없습니다 (var sc3)');
+    const timePath = timeMatch[1]; // e.g. "/xyz?"
+
+    // sc_data('PREFIX', ...) 에서 첫 번째 인자 추출
+    const prefixMatch = html.match(/sc_data\s*\(\s*['"]([^'"]+)['"]/);
+    if (!prefixMatch) throw new Error('접두사를 찾을 수 없습니다 (sc_data)');
+    const prefix = prefixMatch[1];
+
+    console.log(`[Comcigan] searchPath=${searchPath}, timePath=${timePath}, prefix=${prefix}`);
+    return { searchPath, timePath, prefix };
 }
 
-// 한글을 EUC-KR hex로 변환 (서버 환경에서)
 function toEucKrHex(str) {
-    // Node.js Buffer를 사용해 EUC-KR 인코딩
     try {
         const iconv = require('iconv-lite');
         const buf = iconv.encode(str, 'euc-kr');
         return Array.from(buf).map(b => '%' + b.toString(16).toUpperCase().padStart(2, '0')).join('');
     } catch {
-        // iconv-lite 없을 경우 미리 인코딩된 값 사용
-        // 은가람중학교 = C3 BA B0 A1 B6 F7 C1 DF C7 D0 B1 B3
+        // 은가람중학교 EUC-KR 고정값 (iconv-lite 없을 때 폴백)
         return '%C3%BA%B0%A1%B6%F7%C1%DF%C7%D0%B1%B3';
     }
 }
 
-async function getSchoolCode(prefix) {
+async function getSchoolCode(searchPath) {
     const hex = toEucKrHex('은가람중학교');
-    const searchUrl = `${BASE_URL}/${prefix}${hex}`;
-    const jsonText = await fetchWithProxy(searchUrl, false);
+    const searchUrl = `${BASE_URL}${searchPath}${hex}`;
+    console.log(`[Comcigan] 학교검색 URL: ${searchUrl}`);
 
+    const jsonText = await fetchWithProxy(searchUrl, false);
     const start = jsonText.indexOf('{');
     const end = jsonText.lastIndexOf('}');
     if (start === -1 || end === -1) throw new Error('학교 검색 JSON 파싱 실패');
@@ -77,42 +93,35 @@ async function getSchoolCode(prefix) {
     const data = JSON.parse(jsonText.substring(start, end + 1));
     const schools = data['학교검색'] || [];
 
-    // 은가람중학교 찾기
     const target = schools.find(s => s[2] && s[2].includes('은가람중'));
     if (!target) {
-        console.warn('[Comcigan] 은가람중 검색 결과:', schools.map(s => s[2]));
+        console.warn('[Comcigan] 검색 결과:', schools.map(s => s[2]));
         throw new Error('은가람중학교를 찾을 수 없습니다');
     }
 
-    return { code1: target[3], code2: target[4] };
+    console.log(`[Comcigan] 학교 발견: ${target[2]} (코드: ${target[3]})`);
+    return target[3]; // schoolCode (숫자)
 }
 
-async function getRawTimetableData(prefix, code1, code2) {
-    // 항상 _0_1 (weekOffset 아님 - 컴시간은 전체 데이터를 한번에 반환)
-    const param = `${prefix}${code2}_0_1`;
-    const b64 = Buffer.from(param).toString('base64');
-    const url = `${BASE_URL}/${code1}?${b64}`;
+async function getRawTimetableData(timePath, prefix, schoolCode) {
+    // base64(prefix + schoolCode + '_0_1') — 항상 _0_1 고정
+    const rawQuery = `${prefix}${schoolCode}_0_1`;
+    const b64 = Buffer.from(rawQuery).toString('base64');
+    const url = `${BASE_URL}${timePath}${b64}`;
+    console.log(`[Comcigan] 데이터 URL: ${url}`);
 
     const jsonText = await fetchWithProxy(url, false);
     const start = jsonText.indexOf('{');
     const end = jsonText.lastIndexOf('}');
     if (start === -1 || end === -1) throw new Error('시간표 JSON 파싱 실패');
 
-    let parsed;
-    try {
-        parsed = JSON.parse(jsonText.substring(start, end + 1));
-    } catch {
-        // UTF-8 실패 시 EUC-KR 재시도는 fetchWithProxy에서 이미 처리
-        throw new Error('시간표 JSON 파싱 실패');
-    }
-    return parsed;
+    return JSON.parse(jsonText.substring(start, end + 1));
 }
 
-// targetDate (YYYYMMDD) 기반으로 어떤 데이터셋을 쓸지 선택
+// targetDate(YYYYMMDD) 기반으로 적합한 데이터셋 키 선택
 function selectDataset(rawData, timetableProps, targetDate) {
     const dateRanges = {};
 
-    // 일자 배열에서 날짜 범위 추출
     if (rawData['일자'] && Array.isArray(rawData['일자'])) {
         timetableProps.forEach((key, idx) => {
             if (idx + 1 < rawData['일자'].length) {
@@ -149,28 +158,45 @@ function selectDataset(rawData, timetableProps, targetDate) {
         }
     }
 
-    // 날짜 범위 없는 가장 큰 번호의 데이터셋 (기본 시간표)
-    const unbounded = timetableProps.filter(k => !dateRanges[k]);
-    if (unbounded.length > 0) {
-        return unbounded.reduce((max, k) => {
-            const n = parseInt(k.replace('자료', '') || '0');
-            return n > parseInt(max.replace('자료', '') || '0') ? k : max;
-        }, unbounded[0]);
+    // 날짜 범위 없는 것 중 데이터 가장 많은 것 (기본 시간표)
+    // school-timetable-main 방식: 데이터 수가 10 이상이면서 가장 작은 것
+    let bestKey = null;
+    let minCount = Infinity;
+    for (const key of timetableProps) {
+        if (dateRanges[key]) continue; // 특정 기간 데이터는 제외
+        const gradeData = rawData[key][GRADE];
+        if (!gradeData) continue;
+        let count = 0;
+        for (let c = 1; c < gradeData.length; c++) {
+            const cls = gradeData[c];
+            if (!cls) continue;
+            for (let w = 1; w <= 5; w++) {
+                if (cls[w] && Array.isArray(cls[w])) {
+                    count += cls[w].filter(v => typeof v === 'number' && v > 0).length;
+                }
+            }
+        }
+        if (count > 10 && count <= minCount) {
+            minCount = count;
+            bestKey = key;
+        }
     }
+    if (bestKey) return bestKey;
 
-    return timetableProps[0] || null;
+    // 최후 폴백: 가장 마지막 키
+    return timetableProps[timetableProps.length - 1] || null;
 }
 
 function parseTimetableData(rawData, grade, classNum, targetDate) {
     const keys = Object.keys(rawData);
-    const keywords = ['국어', '수학', '영어', '과학', '사회', '체육', '음악', '미술', '진로', '도덕', '기술', '정보', '한국사', '기가', '주제'];
+    const keywords = ['국어', '수학', '영어', '과학', '사회', '체육', '음악', '미술', '진로', '도덕', '기술', '정보', '한국사', '기가', '주제', '통합'];
 
-    // 교사 배열 찾기 (끝에 * 있는 문자열 포함)
+    // 교사 배열 (끝에 * 있는 문자열 포함)
     const teacherKey = keys.find(k =>
         Array.isArray(rawData[k]) && rawData[k].some(s => typeof s === 'string' && s.endsWith('*'))
     );
 
-    // 과목 배열 찾기
+    // 과목 배열
     let subjectKey = keys.find(k => {
         if (k === teacherKey) return false;
         const val = rawData[k];
@@ -189,22 +215,22 @@ function parseTimetableData(rawData, grade, classNum, targetDate) {
         if (candidates.length > 0) subjectKey = candidates[0];
     }
 
-    // 시간표 데이터셋 목록
+    // 시간표 데이터셋 목록 (grade[class][day] 배열 구조인 키들)
     const timetableProps = keys.filter(k => {
         const val = rawData[k];
         return Array.isArray(val) && val[grade] && val[grade][1] && Array.isArray(val[grade][1]);
     });
 
-    // 날짜에 맞는 데이터셋 선택
+    if (timetableProps.length === 0) throw new Error('시간표 데이터셋 없음');
+
     const selectedKey = selectDataset(rawData, timetableProps, targetDate);
     if (!selectedKey) throw new Error('사용 가능한 데이터셋 없음');
 
-    // 기본 시간표 (baseline - 기준 시간표)
-    const baselineKey = timetableProps.filter(k => !rawData['일자자료']?.some(d => d[1]?.includes(k)))
-        .reduce((max, k) => {
-            const n = parseInt(k.replace('자료', '') || '0');
-            return n > parseInt(max.replace('자료', '') || '0') ? k : max;
-        }, timetableProps[0]);
+    // baseline: 날짜 범위 없는 기본 시간표 (변경 여부 비교용)
+    const baselineKey = timetableProps.find(k => {
+        if (rawData['일자자료']) return !rawData['일자자료'].some(d => d[1]?.includes(k));
+        return !rawData['일자']?.some(r => String(r).includes(k));
+    }) || timetableProps[0];
 
     const teachers = teacherKey ? rawData[teacherKey] : [];
     const subjects = subjectKey ? rawData[subjectKey] : [];
@@ -212,13 +238,16 @@ function parseTimetableData(rawData, grade, classNum, targetDate) {
     const baseData = baselineKey ? rawData[baselineKey] : null;
     const bunri = rawData['분리'] !== undefined ? rawData['분리'] : 100;
 
+    console.log(`[Comcigan] 선택된 데이터셋: ${selectedKey}, baseline: ${baselineKey}, bunri: ${bunri}`);
+    console.log(`[Comcigan] 교사 배열: ${teacherKey} (${teachers.length}개), 과목 배열: ${subjectKey} (${subjects.length}개)`);
+
     if (!data || !data[grade] || !data[grade][classNum]) {
         throw new Error(`${grade}학년 ${classNum}반 데이터 없음`);
     }
 
     const classData = data[grade][classNum];
 
-    // 전체 데이터가 비어있는지 확인 (미래 주간 데이터 없을 때)
+    // 선택된 데이터셋이 비어있으면 baseline으로 대체
     let isEmptyDataset = true;
     for (let w = 1; w <= 5; w++) {
         if (classData[w]?.some(v => v !== 0)) { isEmptyDataset = false; break; }
@@ -229,7 +258,6 @@ function parseTimetableData(rawData, grade, classNum, targetDate) {
         { num: 4, time: '11:55' }, { num: 5, time: '13:40' }, { num: 6, time: '14:35' }, { num: 7, time: '15:30' }
     ];
 
-    // schedule[교시][요일] 형식으로 변환
     const schedule = periods.map((_, pi) => {
         const period = pi + 1;
         return Array.from({ length: 5 }, (_, wi) => {
@@ -237,7 +265,6 @@ function parseTimetableData(rawData, grade, classNum, targetDate) {
             const dayData = classData[weekday];
             let code = (dayData && dayData[period]) ? dayData[period] : 0;
 
-            // 빈 데이터셋이면 baseline으로 채우기
             if (code === 0 && isEmptyDataset && baseData?.[grade]?.[classNum]?.[weekday]?.[period]) {
                 code = baseData[grade][classNum][weekday][period];
             }
@@ -249,6 +276,7 @@ function parseTimetableData(rawData, grade, classNum, targetDate) {
                 teacherIdx = Math.floor(code / bunri);
                 subjectIdx = code % bunri;
             } else {
+                // bunri === 1000 등
                 teacherIdx = code % bunri;
                 subjectIdx = Math.floor(code / bunri);
             }
@@ -256,7 +284,6 @@ function parseTimetableData(rawData, grade, classNum, targetDate) {
             const subject = (subjects[subjectIdx] || '').replace(/_/g, '').trim();
             const teacher = (teachers[teacherIdx] || '').replace(/\*$/, '').trim();
 
-            // 변동 여부 확인
             let changed = false;
             if (baseData?.[grade]?.[classNum]?.[weekday]?.[period]) {
                 const baseCode = baseData[grade][classNum][weekday][period];
@@ -285,7 +312,6 @@ export default async function handler(req, res) {
     try {
         const weekOffset = parseInt(req.query.weekOffset || '0', 10);
 
-        // weekOffset → targetDate (해당 주 월요일 날짜)
         const now = new Date();
         now.setDate(now.getDate() + weekOffset * 7);
         const day = now.getDay();
@@ -296,9 +322,9 @@ export default async function handler(req, res) {
 
         console.log(`[Comcigan] 요청: weekOffset=${weekOffset}, targetDate=${targetDate}`);
 
-        const prefix = await getPrefix();
-        const { code1, code2 } = await getSchoolCode(prefix);
-        const rawData = await getRawTimetableData(prefix, code1, code2);
+        const { searchPath, timePath, prefix } = await getPageCodes();
+        const schoolCode = await getSchoolCode(searchPath);
+        const rawData = await getRawTimetableData(timePath, prefix, schoolCode);
         const timetable = parseTimetableData(rawData, GRADE, CLASS, targetDate);
 
         res.status(200).json({ ok: true, timetable, targetDate });

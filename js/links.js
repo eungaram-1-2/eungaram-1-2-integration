@@ -36,30 +36,30 @@ function renderLinks() {
 
     let pwaCard = '';
     if (!isStandalone) {
-        if (isKakao) {
-            const siteUrl = 'https://eungaram-1-2.github.io/eungaram-1-2-integration/';
-            const chromeIntent = `intent://${siteUrl.replace('https://', '')}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent('https://play.google.com/store/apps/details?id=com.android.chrome')};end`;
-            const samsungIntent = `intent://${siteUrl.replace('https://', '')}#Intent;scheme=https;package=com.sec.android.app.sbrowser;S.browser_fallback_url=${encodeURIComponent('https://play.google.com/store/apps/details?id=com.sec.android.app.sbrowser')};end`;
-            pwaCard = `
-            <div id="pwaInstallCard" style="background:linear-gradient(135deg,#1428A0 0%,#0077C8 100%);border-radius:var(--radius);padding:20px 22px;margin-bottom:20px;color:#fff">
-                <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
-                    <span style="font-size:2rem;flex-shrink:0">📲</span>
-                    <div>
-                        <div style="font-weight:800;font-size:0.95rem;margin-bottom:4px">앱 설치가 막히면</div>
-                        <div style="font-size:0.8rem;opacity:0.85">다른 브라우저로 열어서 설치하세요</div>
-                    </div>
-                </div>
-                <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
-                    ${isAndroid ? `<a href="${chromeIntent}" style="flex:1;background:#fff;color:#1428A0;border-radius:var(--radius-full);padding:10px 0;font-size:0.85rem;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;display:block;font-family:inherit">🌐 크롬으로 열기</a>
-                    <a href="${samsungIntent}" style="flex:1;background:rgba(255,255,255,0.2);color:#fff;border-radius:var(--radius-full);padding:10px 0;font-size:0.85rem;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;display:block;border:1px solid rgba(255,255,255,0.4);font-family:inherit">🌐 삼성인터넷</a>` : `<a href="${siteUrl}" target="_blank" rel="noopener noreferrer" style="flex:1;background:#fff;color:#1428A0;border-radius:var(--radius-full);padding:10px 0;font-size:0.85rem;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;display:block;font-family:inherit">🌐 브라우저로 열기</a>`}
-                </div>
-                <div style="background:rgba(255,255,255,0.12);border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                    <span style="font-size:0.75rem;flex:1;word-break:break-all;opacity:0.8">${siteUrl}</span>
-                    <button onclick="navigator.clipboard.writeText('${siteUrl}').then(()=>{this.textContent='복사 완료';setTimeout(()=>{this.textContent='URL 복사'},2000)}).catch(()=>{this.textContent='복사 실패'})" style="background:#fff;color:#1428A0;border:none;border-radius:var(--radius-full);padding:6px 12px;font-size:0.75rem;font-weight:800;cursor:pointer;flex-shrink:0;font-family:inherit">URL 복사</button>
-                </div>
-                <div style="font-size:0.75rem;opacity:0.82;line-height:1.5">버튼이 안 뜨면 URL을 복사해서 크롬이나 삼성인터넷에 붙여 넣어도 됩니다.</div>
-            </div>`;
-        } else if (isIOS) {
+        // if (isKakao) {
+        //     const siteUrl = 'https://eungaram-1-2.github.io/eungaram-1-2-integration/';
+        //     const chromeIntent = `intent://${siteUrl.replace('https://', '')}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent('https://play.google.com/store/apps/details?id=com.android.chrome')};end`;
+        //     const samsungIntent = `intent://${siteUrl.replace('https://', '')}#Intent;scheme=https;package=com.sec.android.app.sbrowser;S.browser_fallback_url=${encodeURIComponent('https://play.google.com/store/apps/details?id=com.sec.android.app.sbrowser')};end`;
+        //     pwaCard = `
+        //     <div id="pwaInstallCard" style="background:linear-gradient(135deg,#1428A0 0%,#0077C8 100%);border-radius:var(--radius);padding:20px 22px;margin-bottom:20px;color:#fff">
+        //         <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+        //             <span style="font-size:2rem;flex-shrink:0">📲</span>
+        //             <div>
+        //                 <div style="font-weight:800;font-size:0.95rem;margin-bottom:4px">앱 설치가 막히면</div>
+        //                 <div style="font-size:0.8rem;opacity:0.85">다른 브라우저로 열어서 설치하세요</div>
+        //             </div>
+        //         </div>
+        //         <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+        //             ${isAndroid ? `<a href="${chromeIntent}" style="flex:1;background:#fff;color:#1428A0;border-radius:var(--radius-full);padding:10px 0;font-size:0.85rem;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;display:block;font-family:inherit">🌐 크롬으로 열기</a>
+        //             <a href="${samsungIntent}" style="flex:1;background:rgba(255,255,255,0.2);color:#fff;border-radius:var(--radius-full);padding:10px 0;font-size:0.85rem;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;display:block;border:1px solid rgba(255,255,255,0.4);font-family:inherit">🌐 삼성인터넷</a>` : `<a href="${siteUrl}" target="_blank" rel="noopener noreferrer" style="flex:1;background:#fff;color:#1428A0;border-radius:var(--radius-full);padding:10px 0;font-size:0.85rem;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;display:block;font-family:inherit">🌐 브라우저로 열기</a>`}
+        //         </div>
+        //         <div style="background:rgba(255,255,255,0.12);border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        //             <span style="font-size:0.75rem;flex:1;word-break:break-all;opacity:0.8">${siteUrl}</span>
+        //             <button onclick="navigator.clipboard.writeText('${siteUrl}').then(()=>{this.textContent='복사 완료';setTimeout(()=>{this.textContent='URL 복사'},2000)}).catch(()=>{this.textContent='복사 실패'})" style="background:#fff;color:#1428A0;border:none;border-radius:var(--radius-full);padding:6px 12px;font-size:0.75rem;font-weight:800;cursor:pointer;flex-shrink:0;font-family:inherit">URL 복사</button>
+        //         </div>
+        //         <div style="font-size:0.75rem;opacity:0.82;line-height:1.5">버튼이 안 뜨면 URL을 복사해서 크롬이나 삼성인터넷에 붙여 넣어도 됩니다.</div>
+        //     </div>`;
+        // } else if (isIOS) {
             pwaCard = `
             <div id="pwaInstallCard" style="background:linear-gradient(135deg,#1428A0 0%,#0077C8 100%);border-radius:var(--radius);padding:20px 22px;margin-bottom:20px;color:#fff;display:flex;align-items:center;gap:16px">
                 <span style="font-size:2rem;flex-shrink:0">📲</span>

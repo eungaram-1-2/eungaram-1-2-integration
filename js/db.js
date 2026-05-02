@@ -94,7 +94,17 @@ function startFirebaseSync(onFirstLoad) {
 }
 
 function currentUser() { return null; }  // 로그인 기능 삭제
-function isAdmin()     { return localStorage.getItem('adminAuth') === 'true'; }
+function isAdmin() {
+    if (localStorage.getItem('adminAuth') !== 'true') return false;
+    const loginTime = parseInt(localStorage.getItem('adminLoginTime') || '0');
+    // 2시간 세션 타임아웃
+    if (Date.now() - loginTime > 2 * 60 * 60 * 1000) {
+        localStorage.removeItem('adminAuth');
+        localStorage.removeItem('adminLoginTime');
+        return false;
+    }
+    return true;
+}
 function isLoggedIn()  { return false; }  // 로그인 기능 삭제
 function isBanned(userId) {
     const bans = DB.get('bans');

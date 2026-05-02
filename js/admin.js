@@ -4,6 +4,8 @@
 
 let _adminOrbClicks = 0;
 let _adminOrbTimer = null;
+let _adminLoginAttempts = 0;
+let _adminLockUntil = 0;
 
 function adminOrbClick() {
     openAdminLogin();
@@ -16,19 +18,42 @@ function openAdminLogin() {
     setTimeout(() => document.getElementById('adminPassword')?.focus(), 50);
 }
 
-function checkAdminPassword(pw) {
-    const ADMIN_PASSWORD = 'wngur!123';
-    if (pw === ADMIN_PASSWORD) {
+async function checkAdminPassword(pw) {
+    // 잠금 상태 확인 (5회 실패 시 5분 잠금)
+    if (Date.now() < _adminLockUntil) {
+        const remaining = Math.ceil((_adminLockUntil - Date.now()) / 1000);
+        const input = document.getElementById('adminPassword');
+        input.style.border = '2px solid #ef4444';
+        input.placeholder = `${remaining}초 후 다시 시도하세요`;
+        input.value = '';
+        return;
+    }
+
+    // SHA-256 해시 비교 (평문 비밀번호를 소스코드에 노출하지 않기 위함)
+    const ADMIN_HASH = '39135ba28dc7a6ef9a5f731336a71555aadad4554e157214cfb50a64acace995';
+    const encoder = new TextEncoder();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(pw));
+    const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+    if (hashHex === ADMIN_HASH) {
+        _adminLoginAttempts = 0;
         localStorage.setItem('adminAuth', 'true');
         localStorage.setItem('adminLoginTime', Date.now());
         logAdminAction('login', { ip: 'local', time: new Date().toLocaleString('ko-KR') });
         closeModal();
         navigate('admin');
     } else {
+        _adminLoginAttempts++;
+        if (_adminLoginAttempts >= 5) {
+            _adminLockUntil = Date.now() + 5 * 60 * 1000; // 5분 잠금
+            _adminLoginAttempts = 0;
+        }
         const input = document.getElementById('adminPassword');
         input.style.border = '2px solid #ef4444';
         input.value = '';
-        input.placeholder = '비밀번호가 틀렸습니다';
+        input.placeholder = _adminLoginAttempts >= 3
+            ? `비밀번호가 틀렸습니다 (${5 - _adminLoginAttempts}회 남음)`
+            : '비밀번호가 틀렸습니다';
         input.focus();
         setTimeout(() => { input.style.border = '1px solid var(--border)'; input.placeholder = '비밀번호'; }, 1500);
     }
@@ -703,16 +728,39 @@ function exportData() {
 function importData(event) {
     const file = event.target.files[0];
     if (!file) return;
+
+    // 파일 크기 제한 (1MB)
+    if (file.size > 1024 * 1024) {
+        alert('파일이 너무 큽니다 (최대 1MB)');
+        event.target.value = '';
+        return;
+    }
+
+    // JSON 파일만 허용
+    if (!file.name.endsWith('.json')) {
+        alert('JSON 파일만 가져올 수 있습니다');
+        event.target.value = '';
+        return;
+    }
+
+    // 허용된 키 목록 (DB._FB_SYNC_KEYS 기준)
+    const ALLOWED_KEYS = ['board', 'votes', 'ddays', 'bans', 'timeouts', 'chat', 'emergency_notice', 'timetable', 'reactions', 'site_settings'];
+
     const reader = new FileReader();
     reader.onload = e => {
         try {
             const data = JSON.parse(e.target.result);
-            if (!confirm(`${Object.keys(data).length - 1}개 항목을 복구할까요?`)) return;
-
             const keys = Object.keys(data).filter(k => k !== '_exported');
-            keys.forEach(k => {
-                DB.set(k, data[k]);
-            });
+
+            // 허용되지 않은 키 차단
+            const invalidKeys = keys.filter(k => !ALLOWED_KEYS.includes(k));
+            if (invalidKeys.length > 0) {
+                alert(`허용되지 않은 데이터 키가 포함되어 있습니다: ${invalidKeys.join(', ')}`);
+                return;
+            }
+
+            if (!confirm(`${keys.length}개 항목을 복구할까요?`)) return;
+            keys.forEach(k => DB.set(k, data[k]));
             alert('복구가 완료되었습니다');
             render();
         } catch (err) {

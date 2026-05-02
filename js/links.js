@@ -59,7 +59,7 @@ function renderLinks() {
         //         </div>
         //         <div style="font-size:0.75rem;opacity:0.82;line-height:1.5">버튼이 안 뜨면 URL을 복사해서 크롬이나 삼성인터넷에 붙여 넣어도 됩니다.</div>
         //     </div>`;
-        // } else if (isIOS) {
+        if (isIOS) {
             pwaCard = `
             <div id="pwaInstallCard" style="background:linear-gradient(135deg,#1428A0 0%,#0077C8 100%);border-radius:var(--radius);padding:20px 22px;margin-bottom:20px;color:#fff;display:flex;align-items:center;gap:16px">
                 <span style="font-size:2rem;flex-shrink:0">📲</span>

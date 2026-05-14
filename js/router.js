@@ -278,7 +278,7 @@ function _checkSitePopup() {
         overlay.id = 'sitePopupOverlay';
         overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box';
         overlay.innerHTML = `
-        <div style="background:var(--card);border-radius:16px;padding:28px 24px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+        <div style="background:var(--bg-card);border-radius:16px;padding:28px 24px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
             <h3 style="margin:0 0 12px;font-size:1.05rem;font-weight:700">${escapeHtml(popup.title || '')}</h3>
             <p style="font-size:0.9rem;line-height:1.65;white-space:pre-line;color:var(--text-muted);margin:0 0 20px">${escapeHtml(popup.message || '')}</p>
             <button onclick="sessionStorage.setItem('sitePopupDismissed','1');document.getElementById('sitePopupOverlay').remove()" style="padding:10px;width:100%;background:var(--primary);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;font-size:0.95rem">

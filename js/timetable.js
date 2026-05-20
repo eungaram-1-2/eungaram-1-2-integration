@@ -69,7 +69,7 @@ function _buildTimetableHtml(data, weekOffset) {
                 return `<div class="tt-today-chip" style="background:${color}">
                     <span class="period-num">${p.num}교시 ${p.time}</span>
                     <span style="font-size:1rem;font-weight:800;color:#fff">${c.s}</span>
-                    
+
                 </div>`;
             }).filter(Boolean).join('');
             const dayLabel = data.days[todayIdx] + '요일';
@@ -122,7 +122,7 @@ function _buildTimetableHtml(data, weekOffset) {
             return `<div class="tt-mobile-card" style="border-left: 3px solid ${color}">
                 <div style="font-size:0.72rem;color:var(--primary);font-weight:600;margin-bottom:4px">${p.num}교시 · ${p.time}</div>
                 <div style="font-size:1rem;font-weight:700;color:#000">${c.s}</div>
-                
+
             </div>`;
         }).filter(Boolean).join('');
         return `<div class="tt-mobile-day"${todayStyle}${todayAttr}>

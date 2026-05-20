@@ -1,351 +1,244 @@
 // =============================================
-// 홈 페이지
+// 홈 대시보드
 // =============================================
 function renderHome() {
-    const now = new Date(); now.setHours(0, 0, 0, 0);
+    const realNow = new Date();
+    const nowMid  = new Date(); nowMid.setHours(0, 0, 0, 0);
     const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-    const todayDow = dayNames[new Date().getDay()];
+    const todayDow = realNow.getDay();
 
-    // ── D-Day 데이터 ──
+    const y  = realNow.getFullYear();
+    const mo = String(realNow.getMonth() + 1).padStart(2, '0');
+    const d  = String(realNow.getDate()).padStart(2, '0');
+    const dow = dayNames[todayDow];
+
+    // D-Day
     const upcomingDdays = DB.get('ddays')
-        .filter(d => new Date(d.date + 'T00:00:00') >= now)
+        .filter(dd => new Date(dd.date + 'T00:00:00') >= nowMid)
         .sort((a, b) => new Date(a.date) - new Date(b.date))
-        .slice(0, 5);
+        .slice(0, 4);
 
-    let ddayStripItems = '';
-    if (upcomingDdays.length > 0) {
-        ddayStripItems = upcomingDdays.map(d => {
-            const diff = calcDday(d.date);
-            const label = formatDdayLabel(diff);
-            let cls = 'dday-chip-normal';
-            if (diff === 0) cls = 'dday-chip-today';
-            else if (diff <= 3) cls = 'dday-chip-urgent';
-            else if (diff <= 7) cls = 'dday-chip-soon';
-            return `<div class="dday-chip ${cls}" onclick="navigate('dday')">
-                <span>${d.emoji || '📌'}</span>
-                <strong>${escapeHtml(d.title)}</strong>
-                <span class="dday-chip-label">${label}</span>
-            </div>`;
-        }).join('');
-    }
-    const ddayStrip = ddayStripItems
-        ? `<div class="dday-strip"><div class="dday-banner">${ddayStripItems}</div></div>`
-        : '';
-
-    // ── 사이드바 D-Day 목록 ──
-    let sideDdayItems = '';
-    if (upcomingDdays.length > 0) {
-        sideDdayItems = upcomingDdays.slice(0, 4).map(d => {
-            const diff = calcDday(d.date);
+    const ddayHtml = upcomingDdays.length > 0
+        ? upcomingDdays.map(dd => {
+            const diff = calcDday(dd.date);
             const label = formatDdayLabel(diff);
             let badgeBg = 'rgba(79,70,229,0.1)'; let badgeColor = 'var(--primary)';
-            if (diff === 0) { badgeBg = 'rgba(239,68,68,0.12)'; badgeColor = '#ef4444'; }
-            else if (diff <= 3) { badgeBg = 'rgba(245,158,11,0.12)'; badgeColor = '#d97706'; }
-            else if (diff <= 7) { badgeBg = 'rgba(6,182,212,0.12)'; badgeColor = '#0891b2'; }
+            if (diff === 0)       { badgeBg = 'rgba(239,68,68,0.12)';    badgeColor = '#ef4444'; }
+            else if (diff <= 3)   { badgeBg = 'rgba(245,158,11,0.12)';   badgeColor = '#d97706'; }
+            else if (diff <= 7)   { badgeBg = 'rgba(6,182,212,0.12)';    badgeColor = '#0891b2'; }
             return `<div class="side-dday-item">
-                <span class="side-dday-label">${d.emoji || '📌'} ${escapeHtml(d.title)}</span>
+                <span class="side-dday-label">${dd.emoji || '📌'} ${escapeHtml(dd.title)}</span>
                 <span class="side-dday-badge" style="background:${badgeBg};color:${badgeColor}">${label}</span>
             </div>`;
-        }).join('');
-    } else {
-        sideDdayItems = `<p style="font-size:0.82rem;color:var(--text-muted);padding:8px 0">등록된 D-Day가 없습니다.</p>`;
-    }
+        }).join('')
+        : '';
 
-    const lunchHtml = ''; // renderLunchWidget();
-    // setTimeout(() => loadLunchWidget(), 0);
+    // 학사일정 미니 (초기 렌더 — NEIS 로드 전)
+    const calHtml = _buildCalHtml(y, mo, d, dayNames);
 
-    setTimeout(() => { _initHeroCanvas(); _initHeroClock(); }, 0);
+    // 바로가기
+    const linksHtml = QUICK_LINKS.map(link => {
+        let onClickAttr = '';
+        if (link.audio)      onClickAttr = `onclick="openSchoolSongModal('${link.audio}','${escapeHtml(link.title)}')"`;
+        else if (link.page)  onClickAttr = `onclick="navigate('${link.page}')"`;
+        else                 onClickAttr = `onclick="window.open('${link.url}','_blank','noopener')"`;
+        return `<div class="home-link-row" ${onClickAttr}>
+            <span class="home-link-icon-wrap" style="background:${link.color}1A;color:${link.color}">${link.icon}</span>
+            <span class="home-link-title-txt">${escapeHtml(link.title)}</span>
+            <span class="home-link-arr">›</span>
+        </div>`;
+    }).join('');
+
+    // 시간표 탭 — 주중이면 오늘, 주말이면 월요일
+    const days = ['월', '화', '수', '목', '금'];
+    const todayTtIdx = (todayDow >= 1 && todayDow <= 5) ? todayDow - 1 : 0;
+    const ttTabs = days.map((day, i) =>
+        `<button class="home-tt-tab${i === todayTtIdx ? ' active' : ''}"
+            onclick="homeSelectTtDay(${i})">${day}</button>`
+    ).join('');
+
+    setTimeout(() => {
+        loadLunchWidget();
+        _renderHomeTtDay(todayTtIdx);
+        _refreshCalAfterNeis(y, mo, d, dayNames);
+    }, 0);
 
     return `
-    <div class="hero">
-        <canvas class="hero-canvas" id="heroCanvas"></canvas>
-        <div class="hero-blob hero-blob-1"></div>
-        <div class="hero-blob hero-blob-2"></div>
-        <div class="hero-blob hero-blob-3"></div>
-        <div class="hero-blob hero-blob-4"></div>
-        <div class="hero-grid"></div>
-
-        <div class="hero-inner">
-            <div class="hero-content">
-                <div class="hero-top-row">
-                    <div class="hero-badge">🏫 은가람 중학교 1학년 2반</div>
-                    <span class="hero-clock-badge" id="heroClock"></span>
+    <div class="home-dashboard">
+        <div class="home-dash-header">
+            <img src="assets/logo.svg" alt="은가람중학교" class="home-dash-logo-img">
+            <div class="home-dash-info">
+                <div class="home-dash-school">
+                    은가람중학교
+                    <span class="home-dash-class">1학년 2반</span>
                 </div>
-                <!-- <h1>서로 배우고<br><span class="highlight">함께 성장하는</span><br>공동체</h1>
-                <p>급식·시간표·학사일정을 한 곳에서 확인하세요</p> -->
-                <div class="home-icon-grid">
-                    <div class="icon-grid-btn" onclick="navigate('timetable')">
-                        <span class="icon-grid-emoji">📅</span>
-                        <span class="icon-grid-label">시간표</span>
+                <div class="home-dash-date">오늘은 ${y}년 ${mo}월 ${d}일 ${dow}요일입니다</div>
+            </div>
+        </div>
+
+        <div class="home-two-col" style="margin-top:12px">
+            <div class="home-main-col">
+
+                <!-- 이번 주 급식 -->
+                <div class="home-card">
+                    <div class="home-card-hd">
+                        <span class="home-card-icon">🍱</span>
+                        <span class="home-card-title">이번 주 급식</span>
+                        <button class="home-card-more" onclick="navigate('lunch')">전체보기 →</button>
                     </div>
-                    <div class="icon-grid-btn" onclick="navigate('lunch')">
-                        <span class="icon-grid-emoji">🍱</span>
-                        <span class="icon-grid-label">급식</span>
+                    ${renderLunchWidget()}
+                </div>
+
+                <!-- 시간표 -->
+                <div class="home-card" style="margin-top:20px">
+                    <div class="home-card-hd">
+                        <span class="home-card-icon">📅</span>
+                        <span class="home-card-title">시간표</span>
+                        <button class="home-card-more" onclick="navigate('timetable')">전체보기 →</button>
                     </div>
-                    <div class="icon-grid-btn" onclick="navigate('academic')">
-                        <span class="icon-grid-emoji">🗓️</span>
-                        <span class="icon-grid-label">학사일정</span>
+                    <div class="home-tt-tabs" role="tablist">${ttTabs}</div>
+                    <div class="home-tt-chips" id="homeTtChips"></div>
+                </div>
+
+            </div>
+
+            <div class="home-side-col">
+
+                <!-- 학사일정 -->
+                <div class="home-card">
+                    <div class="home-card-hd">
+                        <span class="home-card-icon">🗓️</span>
+                        <span class="home-card-title">학사일정</span>
+                        <button class="home-card-more" onclick="navigate('academic')">더보기 →</button>
                     </div>
-                    <div class="icon-grid-btn" onclick="navigate('links')">
-                        <span class="icon-grid-emoji">🔗</span>
-                        <span class="icon-grid-label">바로가기</span>
+                    <div class="home-cal-list" id="homeCalList">${calHtml}</div>
+                </div>
+
+                <!-- 바로가기 -->
+                <div class="home-card">
+                    <div class="home-card-hd">
+                        <span class="home-card-icon">🔗</span>
+                        <span class="home-card-title">바로가기</span>
+                        <button class="home-card-more" onclick="navigate('links')">더보기 →</button>
                     </div>
+                    <div class="home-links-list">${linksHtml}</div>
                 </div>
-            </div>
-            <!-- <div class="hero-orb-visual" onclick="adminOrbClick()" style="cursor:pointer" aria-hidden="true">
-                <div class="hero-orb-glow"></div>
-            </div> -->
-        </div>
 
-    </div>
+                ${upcomingDdays.length > 0 ? `
+                <!-- D-Day -->
+                <div class="home-card">
+                    <div class="home-card-hd">
+                        <span class="home-card-icon">📌</span>
+                        <span class="home-card-title">D-Day</span>
+                        <button class="home-card-more" onclick="navigate('dday')">더보기 →</button>
+                    </div>
+                    ${ddayHtml}
+                </div>` : ''}
 
-    <!-- ${ddayStrip} -->
-
-    <!--
-    <div style="max-width:1160px;margin:0 auto;padding:0 20px">
-        ${lunchHtml}
-    </div>
-
-    <div class="features" style="padding-top:48px">
-        <div class="section-header">
-            <h2>주요 기능</h2>
-            <p>학급 운영에 필요한 모든 기능을 제공합니다</p>
-        </div>
-        <div class="feature-mosaic" style="max-width:1160px;margin:0 auto;padding:0 20px">
-            <div class="feature-card" onclick="navigate('timetable')">
-                <div class="feature-card-inner">
-                    <div class="feature-icon">📅</div>
-                    <h3>스마트 시간표</h3>
-                    <p>오늘 수업을<br>한눈에.</p>
-                </div>
-            </div>
-            <div class="feature-card" onclick="navigate('lunch')">
-                <div class="feature-card-inner">
-                    <div class="feature-icon">🍱</div>
-                    <h3>오늘의 급식</h3>
-                    <p>매일 업데이트되는<br>식단 정보.</p>
-                </div>
-            </div>
-            <div class="feature-card" onclick="navigate('academic')">
-                <div class="feature-card-inner">
-                    <div class="feature-icon">🗓️</div>
-                    <h3>학사일정</h3>
-                    <p>학교 주요 일정을<br>한눈에 확인.</p>
-                </div>
-            </div>
-            <div class="feature-card" onclick="navigate('links')">
-                <div class="feature-card-inner">
-                    <div class="feature-icon">🔗</div>
-                    <h3>바로가기</h3>
-                    <p>자주 쓰는 링크를<br>한 곳에서.</p>
-                </div>
             </div>
         </div>
-    </div>
-    -->
-
-    <!-- <div class="school-info-section">
-        <div class="section-header">
-            <h2>🏫 은가람 중학교 소개</h2>
-            <p>우리 학교를 소개합니다</p>
-        </div>
-
-        <div class="school-motto-card">
-            <div class="school-motto-badge">교훈</div>
-            <div class="school-motto-text">지혜 · 사랑 · 열정</div>
-        </div>
-
-        <div class="school-info-list">
-            <div class="school-info-item">
-                <div class="school-info-img-wrap" style="border-color:#7c3aed">
-                    <img src="assets/logo.svg" alt="교표" class="school-info-img">
-                </div>
-                <div class="school-info-body">
-                    <div class="school-info-badge" style="background:#7c3aed">교표</div>
-                    <ul class="school-info-bullets" style="--dot:#7c3aed">
-                        <li>지구를 표현하는 원안에 책으로 쌓아올린 나무는 은가람중학교의 교목인 소나무를 상징함</li>
-                        <li>테두리의 보라색의 원은 은가람중학교의 교화인 라일락을 상징하는 색으로 교목과 교화가 어우러져 화합과 협동을 추구함</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="school-info-item">
-                <div class="school-info-img-wrap" style="border-color:#16a34a">
-                    <div class="school-info-emoji">🌲</div>
-                </div>
-                <div class="school-info-body">
-                    <div class="school-info-badge" style="background:#16a34a">교목</div>
-                    <ul class="school-info-bullets" style="--dot:#16a34a">
-                        <li>소나무를 우리말로는 '솔'이라고 하는데 높고 으뜸이라는 의미를 가짐.</li>
-                        <li>사계절 늘 푸른 침엽수로 정직 인내 번영을 상징하며 소나무의 기상과 같이 높은 꿈과 이상을 지니길 바라는 의미</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="school-info-item">
-                <div class="school-info-img-wrap" style="border-color:#e11d48">
-                    <div class="school-info-emoji">🌸</div>
-                </div>
-                <div class="school-info-body">
-                    <div class="school-info-badge" style="background:#e11d48">교화</div>
-                    <ul class="school-info-bullets" style="--dot:#e11d48">
-                        <li>라일락의 많은 꽃이 모여 아름다움을 나타냄은 협동단결의 표상이며 겸손을 지닌 향기로운 청소년으로서 사랑받은 인간상을 추구함.</li>
-                        <li>라일락의 꽃말은 '젊은날의추억'임. 달콤하고 은은하며 품위있는 향기를 지녔으며 꿈과 희망을 안겨주는 꽃임</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div> -->`;
+    </div>`;
 }
 
 // =============================================
-// 히어로 캔버스 파티클
+// 학사일정 HTML 빌드 헬퍼
+// =============================================
+function _buildCalHtml(y, mo, d, dayNames) {
+    if (typeof academicCalendarData === 'undefined' || !academicCalendarData?.events?.length) {
+        return `<p class="home-cal-empty">일정 정보를 불러오는 중...</p>`;
+    }
+    const todayStr = `${y}-${mo}-${d}`;
+    const upcoming = academicCalendarData.events
+        .filter(e => e.date >= todayStr)
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .slice(0, 6);
+
+    if (!upcoming.length) return `<p class="home-cal-empty">다가오는 일정이 없습니다</p>`;
+
+    return upcoming.map(e => {
+        const ed   = new Date(e.date + 'T00:00:00');
+        const em   = ed.getMonth() + 1;
+        const edd  = ed.getDate();
+        const edow = dayNames[ed.getDay()];
+        let bc = 'hcal-badge-event';
+        if (e.category === 'exam')    bc = 'hcal-badge-exam';
+        else if (e.category === 'holiday') bc = 'hcal-badge-holiday';
+        return `<div class="home-cal-row">
+            <div class="home-cal-date-col">
+                <span class="home-cal-mday">${em}/${edd}</span>
+                <span class="home-cal-mdow">${edow}</span>
+            </div>
+            <span class="home-cal-title-txt">${escapeHtml(e.title)}</span>
+            <span class="home-cal-badge ${bc}">${e.category === 'exam' ? '시험' : e.category === 'holiday' ? '휴일' : '행사'}</span>
+        </div>`;
+    }).join('');
+}
+
+// NEIS 로드 완료 후 학사일정 갱신
+async function _refreshCalAfterNeis(y, mo, d, dayNames) {
+    if (typeof loadNeisSchedule !== 'function') return;
+    try {
+        await loadNeisSchedule();
+        const el = document.getElementById('homeCalList');
+        if (el) el.innerHTML = _buildCalHtml(y, mo, d, dayNames) ||
+            `<p class="home-cal-empty">다가오는 일정이 없습니다</p>`;
+    } catch (_) {}
+}
+
+// =============================================
+// 홈 시간표 위젯
+// =============================================
+function homeSelectTtDay(idx) {
+    document.querySelectorAll('.home-tt-tab').forEach((t, i) =>
+        t.classList.toggle('active', i === idx)
+    );
+    _renderHomeTtDay(idx);
+}
+
+function _renderHomeTtDay(dayIdx) {
+    const el = document.getElementById('homeTtChips');
+    if (!el) return;
+
+    const schedule = TIMETABLE?.schedule;
+    const periods  = TIMETABLE?.periods || [];
+
+    if (!schedule || !periods.length) {
+        el.innerHTML = `<span style="color:var(--text-muted);font-size:0.85rem">시간표 정보가 없습니다</span>`;
+        return;
+    }
+
+    const chips = periods.map((p, i) => {
+        const cell = schedule[i]?.[dayIdx];
+        const subj = cell?.s || '';
+        if (!subj) return '';
+        const color = (typeof SUBJ_COLORS !== 'undefined' && SUBJ_COLORS[subj]) || '#1428A0';
+        const bgColor = color + '18';
+        const borderColor = color + '30';
+        return `<div class="home-tt-chip" style="background:${bgColor};border:1.5px solid ${borderColor}">
+            <span class="home-tt-period">${i + 1}교시</span>
+            <span class="home-tt-subj" style="color:${color}">${subj}</span>
+        </div>`;
+    }).filter(Boolean).join('');
+
+    el.innerHTML = chips || `<span style="color:var(--text-muted);font-size:0.85rem">수업이 없는 날입니다</span>`;
+}
+
+// =============================================
+// 레거시 히어로 함수 (다른 코드에서 호출 방지)
 // =============================================
 let _heroAnimId = null;
-let _heroCleanup = null; // #27: 이전 이벤트 리스너 cleanup 참조
+let _heroCleanup = null;
 
 function _initHeroCanvas() {
     if (_heroAnimId) { cancelAnimationFrame(_heroAnimId); _heroAnimId = null; }
-
-    // #27: 이전 호출에서 등록된 resize/visibilitychange 리스너 제거
     if (_heroCleanup) { _heroCleanup(); _heroCleanup = null; }
-
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-    const canvas = document.getElementById('heroCanvas');
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    const hero = canvas.parentElement;
-
-    function resize() {
-        canvas.width  = hero.offsetWidth;
-        canvas.height = hero.offsetHeight;
-    }
-    resize();
-
-    // #28: 느린 연결 시 파티클/별 수 절반으로 감소
-    const conn = navigator.connection;
-    const isSlow = conn && ['slow-2g', '2g'].includes(conn.effectiveType);
-    const COUNT = isSlow ? 45 : 90;
-    const STAR_COUNT = isSlow ? 9 : 18;
-
-    const particles = Array.from({ length: COUNT }, () => ({
-        x:         Math.random() * canvas.width,
-        y:         Math.random() * canvas.height,
-        r:         Math.random() * 1.6 + 0.3,
-        speed:     Math.random() * 0.35 + 0.08,
-        drift:     (Math.random() - 0.5) * 0.3,
-        alpha:     Math.random() * 0.6 + 0.2,
-        pulse:     Math.random() * Math.PI * 2,
-        pulseSpeed: Math.random() * 0.025 + 0.008,
-    }));
-
-    const stars = Array.from({ length: STAR_COUNT }, () => ({
-        x:         Math.random() * canvas.width,
-        y:         Math.random() * canvas.height,
-        r:         Math.random() * 1.2 + 0.8,
-        alpha:     Math.random(),
-        pulse:     Math.random() * Math.PI * 2,
-        pulseSpeed: Math.random() * 0.04 + 0.015,
-    }));
-
-    // #28: isDark를 매 프레임 DOM에서 읽지 않고 캐시 후 10프레임마다 갱신
-    let _isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    let _frameCount = 0;
-
-    function draw() {
-        _frameCount++;
-        if (_frameCount % 10 === 0) {
-            _isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        }
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        const dustColor = _isDark ? '200, 220, 255' : '255, 240, 210';
-
-        // 파티클 (떠오르는 먼지)
-        for (const p of particles) {
-            p.pulse += p.pulseSpeed;
-            const a = p.alpha * (0.5 + 0.5 * Math.sin(p.pulse));
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(${dustColor}, ${a})`;
-            ctx.fill();
-
-            p.y -= p.speed;
-            p.x += p.drift;
-            if (p.y < -5) { p.y = canvas.height + 5; p.x = Math.random() * canvas.width; }
-            if (p.x < -5 || p.x > canvas.width + 5) p.x = Math.random() * canvas.width;
-        }
-
-        // #28: 별은 radial gradient 대신 단순 arc + globalAlpha (gradient 생성 비용 제거)
-        const starFill = _isDark ? 'rgba(200, 220, 255, 1)' : 'rgba(255, 215, 120, 1)';
-        for (const s of stars) {
-            s.pulse += s.pulseSpeed;
-            const a = 0.3 + 0.7 * ((Math.sin(s.pulse) + 1) / 2);
-            const size = s.r * (0.7 + 0.5 * ((Math.sin(s.pulse * 0.7) + 1) / 2));
-
-            ctx.fillStyle = starFill;
-            ctx.globalAlpha = a * 0.85;
-            ctx.beginPath();
-            ctx.arc(s.x, s.y, size, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.globalAlpha = a * 0.15;
-            ctx.beginPath();
-            ctx.arc(s.x, s.y, size * 3, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.globalAlpha = 1;
-        }
-
-        _heroAnimId = requestAnimationFrame(draw);
-    }
-
-    draw();
-
-    // 히어로 영역 벗어나면 중단
-    const obs = new IntersectionObserver(entries => {
-        if (!entries[0].isIntersecting) {
-            cancelAnimationFrame(_heroAnimId);
-            _heroAnimId = null;
-            obs.disconnect();
-        }
-    });
-    obs.observe(hero);
-
-    // #27: 배경 탭 전환 시 애니메이션 정지 (배터리/CPU 절약)
-    function handleVisibility() {
-        if (document.hidden) {
-            if (_heroAnimId) { cancelAnimationFrame(_heroAnimId); _heroAnimId = null; }
-        } else if (!_heroAnimId) {
-            draw();
-        }
-    }
-    document.addEventListener('visibilitychange', handleVisibility);
-    window.addEventListener('resize', resize, { passive: true });
-
-    // #27: cleanup 참조 저장 — 다음 _initHeroCanvas 호출 시 이전 리스너 제거
-    _heroCleanup = () => {
-        window.removeEventListener('resize', resize);
-        document.removeEventListener('visibilitychange', handleVisibility);
-    };
+    // dashboard mode — no canvas
 }
-
-// =============================================
-// 히어로 실시간 시계
-// =============================================
-let _heroClockTimer = null;
 
 function _initHeroClock() {
     const el = document.getElementById('heroClock');
     if (!el) return;
     const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
     const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, '0');
-    const d = String(now.getDate()).padStart(2, '0');
-    const dow = dayNames[now.getDay()];
-    el.textContent = `${y}.${m}.${d} (${dow})`;
+    el.textContent = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} (${dayNames[now.getDay()]})`;
 }

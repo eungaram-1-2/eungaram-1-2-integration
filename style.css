@@ -71,12 +71,27 @@
 body {
     font-family: 'Pretendard Variable', 'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
     color: var(--text);
-    background: var(--bg-page);
+    background-color: #EEE9FF;
+    background-image:
+        radial-gradient(ellipse 110% 65% at -8% -8%, rgba(139,92,246,0.28) 0%, transparent 55%),
+        radial-gradient(ellipse 80% 55% at 108% 5%, rgba(99,102,241,0.22) 0%, transparent 55%),
+        radial-gradient(ellipse 55% 75% at 50% 112%, rgba(167,139,250,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse 65% 45% at 18% 105%, rgba(196,181,253,0.12) 0%, transparent 55%);
+    background-attachment: fixed;
     line-height: 1.7;
     min-height: 100dvh;
     -webkit-font-smoothing: antialiased;
     -webkit-text-size-adjust: 100%;
     overscroll-behavior-y: none;
+}
+
+[data-theme="dark"] body {
+    background-color: #0A0A10;
+    background-image:
+        radial-gradient(ellipse 110% 65% at -8% -8%, rgba(109,40,217,0.18) 0%, transparent 55%),
+        radial-gradient(ellipse 80% 55% at 108% 5%, rgba(67,56,202,0.14) 0%, transparent 55%),
+        radial-gradient(ellipse 55% 75% at 50% 112%, rgba(124,58,237,0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 65% 45% at 18% 105%, rgba(91,33,182,0.08) 0%, transparent 55%);
 }
 
 a { text-decoration: none; color: inherit; }
@@ -2872,6 +2887,7 @@ button { font-family: inherit; }
     font-size: 0.74rem;
     font-weight: 700;
     margin-bottom: 12px;
+    transform: translate(-6px, 5px);
 }
 
 [data-theme="dark"] .lunch-kcal {
@@ -6380,4 +6396,283 @@ html.theme-transitioning *::after {
 @keyframes skeleton-loading {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
+}
+
+/* =============================================
+   홈 대시보드
+   ============================================= */
+.home-dashboard {
+    padding-top: calc(64px + env(safe-area-inset-top, 0px));
+    min-height: 100dvh;
+    padding-bottom: 48px;
+}
+
+.home-dash-header {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 28px 20px 12px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.home-dash-logo-img {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    border: 1.5px solid var(--border);
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(139,92,246,0.12);
+}
+
+.home-dash-info { display: flex; flex-direction: column; gap: 4px; }
+
+.home-dash-school {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.4px;
+    line-height: 1.3;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.home-dash-class {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--primary);
+    background: var(--primary-bg);
+    padding: 2px 10px;
+    border-radius: 9999px;
+    border: 1px solid var(--primary-lighter);
+}
+
+.home-dash-date {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* 홈 카드 */
+.home-card {
+    background: rgba(255,255,255,0.82);
+    backdrop-filter: blur(16px) saturate(130%);
+    -webkit-backdrop-filter: blur(16px) saturate(130%);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    box-shadow: 0 4px 24px rgba(139,92,246,0.08), 0 1px 4px rgba(0,0,0,0.04);
+    transition: box-shadow 0.2s;
+}
+[data-theme="dark"] .home-card {
+    background: rgba(22,22,34,0.82);
+    border-color: rgba(255,255,255,0.07);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3), 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.home-card-hd {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+.home-card-icon { font-size: 1.05rem; flex-shrink: 0; }
+.home-card-title {
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: var(--text);
+    flex: 1;
+    letter-spacing: -0.2px;
+}
+.home-card-more {
+    background: none;
+    border: none;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--primary);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.2s;
+    font-family: inherit;
+}
+.home-card-more:hover { background: var(--primary-bg); }
+
+/* 홈 카드 내 급식 위젯 — 헤더 숨기기 */
+.home-card .lunch-widget-header { display: none; }
+.home-card .lunch-widget {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+}
+.home-card .lunch-widget-body {
+    border-radius: var(--radius-sm);
+    padding: 0;
+}
+
+/* 시간표 탭 */
+.home-tt-tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+.home-tt-tab {
+    padding: 5px 14px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+}
+.home-tt-tab.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(20,40,160,0.25);
+}
+.home-tt-tab:hover:not(.active) {
+    border-color: var(--primary-lighter);
+    color: var(--primary);
+    background: var(--primary-bg);
+}
+
+/* 시간표 칩 */
+.home-tt-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 40px;
+}
+.home-tt-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    min-width: 62px;
+}
+.home-tt-period {
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+.home-tt-subj {
+    font-size: 0.85rem;
+    font-weight: 800;
+}
+
+/* 학사일정 */
+.home-cal-list { display: flex; flex-direction: column; }
+.home-cal-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border-light);
+}
+.home-cal-row:last-child { border-bottom: none; }
+.home-cal-date-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 30px;
+    flex-shrink: 0;
+}
+.home-cal-mday {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.1;
+}
+.home-cal-mdow {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+.home-cal-title-txt {
+    flex: 1;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.4;
+}
+.home-cal-badge {
+    flex-shrink: 0;
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+}
+.hcal-badge-exam { background: rgba(239,68,68,0.12); color: #ef4444; }
+.hcal-badge-holiday { background: rgba(34,197,94,0.12); color: #16a34a; }
+.hcal-badge-event { background: rgba(99,102,241,0.12); color: #6366f1; }
+.home-cal-empty { font-size: 0.82rem; color: var(--text-muted); padding: 8px 0; }
+
+/* 바로가기 */
+.home-links-list { display: flex; flex-direction: column; }
+.home-link-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-light);
+    cursor: pointer;
+    border-radius: 0;
+    transition: background 0.2s, padding 0.2s, margin 0.2s;
+}
+.home-link-row:last-child { border-bottom: none; }
+.home-link-row:hover {
+    background: var(--primary-bg);
+    margin: 0 -8px;
+    padding-left: 8px;
+    padding-right: 8px;
+    border-radius: var(--radius-xs);
+}
+.home-link-icon-wrap {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.home-link-title-txt {
+    flex: 1;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+}
+.home-link-arr { font-size: 1.1rem; color: var(--text-muted); }
+
+/* 모바일 홈 대시보드 */
+@media (max-width: 768px) {
+    .home-dash-header {
+        padding: 20px 16px 8px;
+        gap: 12px;
+    }
+    .home-dash-logo-img { width: 44px; height: 44px; }
+    .home-dash-school { font-size: 1rem; }
+    .home-two-col {
+        padding: 0 16px;
+        margin-top: 8px !important;
+    }
+    .home-card { padding: 16px 16px; }
+    .home-tt-chip { padding: 7px 10px; min-width: 54px; }
+    .home-tt-tab { padding: 5px 11px; font-size: 0.75rem; }
+    .home-dashboard { padding-bottom: 80px; }
+    .home-side-col { min-width: 0; width: 100%; }
+}
+
+@media (max-width: 480px) {
+    .home-dash-school { font-size: 0.9rem; }
+    .home-tt-chips { gap: 6px; }
+    .home-tt-chip { min-width: 48px; padding: 6px 8px; }
 }

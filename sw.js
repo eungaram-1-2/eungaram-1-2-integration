@@ -3,7 +3,7 @@
 // 버전: eg-1-2-v6
 // =============================================
 
-const CACHE_VERSION = 'eg-1-2-v11';
+const CACHE_VERSION = 'eg-1-2-v12';
 const STATIC_CACHE  = `${CACHE_VERSION}-static`;
 const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
 

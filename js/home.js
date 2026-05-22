@@ -79,11 +79,12 @@ function renderHome() {
         <div class="home-two-col" style="margin-top:12px">
             <div class="home-main-col">
 
-                <!-- 이번 주 급식 -->
+                <!-- 오늘 급식 -->
                 <div class="home-card">
                     <div class="home-card-hd">
                         <span class="home-card-icon">🍱</span>
-                        <span class="home-card-title">이번 주 급식</span>
+                        <span class="home-card-title">오늘 급식</span>
+                        <button onclick="shareLunch()" style="font-size:0.72rem;padding:3px 9px;background:var(--primary);border:none;border-radius:6px;cursor:pointer;color:white!important;-webkit-text-fill-color:white!important;font-weight:600;line-height:1.4">📤 공유</button>
                         <button class="home-card-more" onclick="navigate('lunch')">전체보기 →</button>
                     </div>
                     ${renderLunchWidget()}

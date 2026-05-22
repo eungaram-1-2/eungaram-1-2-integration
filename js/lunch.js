@@ -410,9 +410,8 @@ async function loadLunchWidget() {
     ).join('');
 
     body.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-            <button onclick="shareLunch()" style="margin-left:8px;font-size:0.75rem;padding:6px 12px;background:var(--primary);border:none;border-radius:6px;cursor:pointer;color:white!important;-webkit-text-fill-color:white!important;font-weight:600">📤 공유</button>
-            ${kcalBadge || '<span></span>'}
+        <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:4px">
+            ${kcalBadge || ''}
         </div>
         <ul class="lunch-list">${itemsHtml}</ul>`;
 }

@@ -2972,6 +2972,8 @@ button { font-family: inherit; }
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    margin-left: 8px;
+    margin-top: -12px;
 }
 
 .lunch-item {
@@ -6461,7 +6463,7 @@ html.theme-transitioning *::after {
     -webkit-backdrop-filter: blur(16px) saturate(130%);
     border: 1px solid rgba(255,255,255,0.7);
     border-radius: var(--radius);
-    padding: 20px 22px;
+    padding: 20px 22px 32px;
     box-shadow: 0 4px 24px rgba(139,92,246,0.08), 0 1px 4px rgba(0,0,0,0.04);
     transition: box-shadow 0.2s;
 }
@@ -6509,6 +6511,10 @@ html.theme-transitioning *::after {
 .home-card .lunch-widget-body {
     border-radius: var(--radius-sm);
     padding: 0;
+}
+.home-card .lunch-kcal {
+    transform: none;
+    margin-bottom: 6px;
 }
 
 /* 시간표 탭 */

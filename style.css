@@ -6513,7 +6513,7 @@ html.theme-transitioning *::after {
     padding: 0;
 }
 .home-card .lunch-kcal {
-    transform: none;
+    transform: translateY(8px);
     margin-bottom: 6px;
 }
 

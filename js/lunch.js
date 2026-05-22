@@ -410,10 +410,10 @@ async function loadLunchWidget() {
     ).join('');
 
     body.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:4px">
+        <div style="display:flex;align-items:center;margin-bottom:4px;padding-left:10px">
             ${kcalBadge || ''}
         </div>
-        <ul class="lunch-list">${itemsHtml}</ul>`;
+        <ul class="lunch-list" style="margin-top:8px">${itemsHtml}<li class="lunch-item" style="visibility:hidden" aria-hidden="true">　</li><li class="lunch-item" style="visibility:hidden" aria-hidden="true">　</li></ul>`;
 }
 
 // =============================================

@@ -2,6 +2,13 @@
   "buildCommand": "echo 'Static site - no build needed'",
   "outputDirectory": ".",
   "installCommand": "npm install",
+  "redirects": [
+    {
+      "source": "/data/(.*)\\.csv",
+      "destination": "/",
+      "statusCode": 302
+    }
+  ],
   "rewrites": [
     {
       "source": "/((?!api/|assets/|data/|js/|scripts/|admin-panel/|manifest\\.json|sw\\.js|style\\.css|style\\.min\\.css|favicon\\.ico|robots\\.txt).*)",

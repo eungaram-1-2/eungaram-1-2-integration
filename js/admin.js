@@ -716,6 +716,13 @@ function exportData() {
         const val = DB.get(k, null);
         if (val !== null) data[k] = val;
     });
+    // IP 주소 마스킹 (개인정보 보호)
+    if (data.access_logs && Array.isArray(data.access_logs)) {
+        data.access_logs = data.access_logs.map(log => ({
+            ...log,
+            ip: log.ip ? log.ip.replace(/(\d+)\.(\d+)\.\d+\.\d+/, '$1.$2.*.*') : log.ip
+        }));
+    }
     data._exported = new Date().toISOString();
     const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
     const a = document.createElement('a');

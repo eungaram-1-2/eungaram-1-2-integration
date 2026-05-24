@@ -34,6 +34,10 @@ npm-debug.log*
 *.xlsx
 *.xls
 
+# 계정 정보 (민감 데이터 — 절대 추적하지 않음)
+data/accounts.csv
+data/*.csv
+
 .vercel
 
 # Testing

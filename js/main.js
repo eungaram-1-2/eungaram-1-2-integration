@@ -32,77 +32,6 @@ async function pwaInstall() {
     if (outcome === 'accepted') _pwaPrompt = null;
 }
 
-function isKakaoAndroidInApp() {
-    const ua = navigator.userAgent || '';
-    return /KAKAOTALK/i.test(ua) && /android/i.test(ua);
-}
-
-function tryOpenExternalBrowserFromKakao() {
-    const ua = navigator.userAgent || '';
-    if (!/KAKAOTALK/i.test(ua)) return false;
-
-    const isAndroid = /android/i.test(ua);
-    const isIOS = /iPhone|iPad|iPod/i.test(ua);
-    if (!isAndroid && !isIOS) return false;
-
-    const attemptKey = 'kakao_external_browser_attempted';
-    if (sessionStorage.getItem(attemptKey)) return false;
-    sessionStorage.setItem(attemptKey, String(Date.now()));
-
-    const targetUrl = location.href;
-    const intentPath = targetUrl.replace(/^https?:\/\//i, '');
-
-    if (isAndroid) {
-        const chromeIntent = `intent://${intentPath}#Intent;scheme=https;package=com.android.chrome;end`;
-        const samsungIntent = `intent://${intentPath}#Intent;scheme=https;package=com.sec.android.app.sbrowser;end`;
-
-        let handedOff = false;
-        const markHandedOff = () => { handedOff = true; };
-        const onVisibilityChange = () => { if (document.visibilityState === 'hidden') markHandedOff(); };
-        const cleanup = () => {
-            window.removeEventListener('pagehide', markHandedOff);
-            document.removeEventListener('visibilitychange', onVisibilityChange);
-            window.removeEventListener('blur', markHandedOff);
-        };
-
-        window.addEventListener('pagehide', markHandedOff, { once: true });
-        document.addEventListener('visibilitychange', onVisibilityChange);
-        window.addEventListener('blur', markHandedOff, { once: true });
-
-        setTimeout(() => {
-            location.href = chromeIntent;
-
-            setTimeout(() => {
-                if (handedOff) { cleanup(); return; }
-                location.href = samsungIntent;
-
-                setTimeout(() => {
-                    cleanup();
-                    if (!handedOff) location.href = 'x-safari-' + targetUrl; // 둘 다 실패 → Safari
-                }, 1500);
-            }, 1200);
-        }, 250);
-
-    } else if (isIOS) {
-        // iOS: Chrome → Safari 순서로 시도
-        const chromeURL = 'googlechromes://' + intentPath;
-
-        let handedOff = false;
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') handedOff = true;
-        }, { once: true });
-
-        setTimeout(() => {
-            location.href = chromeURL;  // Chrome 시도
-
-            setTimeout(() => {
-                if (!handedOff) location.href = 'x-safari-' + targetUrl;  // Safari 시도
-            }, 1500);
-        }, 250);
-    }
-
-    return true;
-}
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -190,7 +119,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentPage = 'home';
     }
     render();
-    tryOpenExternalBrowserFromKakao();
 
     // Firebase 백그라운드 동기화 (업데이트가 오면 자동 re-render)
     startFirebaseSync();

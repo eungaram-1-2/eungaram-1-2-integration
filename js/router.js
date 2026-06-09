@@ -4,6 +4,23 @@
 let currentPage = 'home';
 let pageParams  = {};
 
+const _PAGE_LABELS = {
+    home: '홈', timetable: '시간표', lunch: '급식', academic: '학사일정',
+    chat: '채팅', votes: '투표', dday: 'D-Day', links: '바로가기',
+    suggestion: '건의함', games: '미니게임', cleaning: '청소 당번',
+    quotes: '명언', privacy: '개인정보 처리방침'
+};
+
+function _announcePageChange(page) {
+    const region = document.getElementById('liveRegion');
+    if (!region) return;
+    region.textContent = '';
+    // 짧은 딜레이 후 설정해야 스크린리더가 변경을 감지함
+    setTimeout(() => {
+        region.textContent = `${_PAGE_LABELS[page] || page} 페이지로 이동했습니다.`;
+    }, 50);
+}
+
 function navigate(page, params = {}) {
     if (!RateLimit.check('navigate')) return;
     if (currentPage === page && JSON.stringify(pageParams) === JSON.stringify(params)) return;
@@ -12,7 +29,14 @@ function navigate(page, params = {}) {
     history.pushState({ page, params }, '', location.pathname + '#' + page);
     if (isAdmin() && typeof logAccess === 'function') logAccess();
     render();
+    _announcePageChange(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // 페이지 전환 후 메인 영역으로 포커스 이동 (스크린리더 탐색 지원)
+    setTimeout(() => {
+        const app = document.getElementById('app');
+        if (app) app.focus();
+    }, 0);
 
     // 모바일 메뉴 자동 닫기
     const menu     = document.getElementById('navMenu');
@@ -221,7 +245,8 @@ function updateNav() {
         const guestHidden = [];
         li.style.display = (!loggedIn && guestHidden.includes(p)) ? 'none' : '';
         a.classList.remove('active');
-        if (p === currentPage ||
+        a.removeAttribute('aria-current');
+        const isActive = p === currentPage ||
             (p === 'board'     && currentPage.startsWith('board'))  ||
             (p === 'votes'     && currentPage.startsWith('vote'))   ||
             (p === 'links'     && currentPage === 'links')          ||
@@ -229,8 +254,10 @@ function updateNav() {
             (p === 'lunch'     && currentPage === 'lunch')  ||
             (p === 'academic'  && currentPage === 'academic')  ||
             (p === 'weather'   && currentPage === 'weather') ||
-            (p === 'cleaning'  && currentPage === 'cleaning')) {
+            (p === 'cleaning'  && currentPage === 'cleaning');
+        if (isActive) {
             a.classList.add('active');
+            a.setAttribute('aria-current', 'page');
         }
     });
 }

@@ -10,15 +10,36 @@ const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
 // 사전 캐싱할 정적 자산
 const PRECACHE_URLS = [
     './',
+    './index.html',
+    './manifest.json',
     './style.min.css?v=37',
+    // 부팅에 필요한 핵심 JS (로드 순서 의존성 있음)
+    './js/logger.js?v=1',
+    './js/error-handler.js?v=1',
+    './js/config.js?v=36',
+    './js/utils.js?v=35',
+    './js/security.js?v=35',
+    './js/firebase-config.js?v=35',
+    './js/db.js?v=36',
+    './js/cache-manager.js?v=1',
+    './js/theme.js?v=35',
+    './js/modal.js?v=35',
+    './js/router.js?v=36',
     './js/main.js?v=38',
-    './js/router.js?v=35',
+    // 자주 방문하는 페이지
+    './js/home.js?v=35',
     './js/lunch.js?v=36',
     './js/timetable.js?v=37',
     './js/neis-timetable.js?v=37',
+    './js/academic-calendar.js?v=35',
+    './js/static-pages.js?v=36',
+    // 자산
     './assets/logo.svg',
     './assets/icon-pwa.svg'
 ];
+
+// 동적 캐시 최대 항목 수
+const DYNAMIC_CACHE_MAX = 60;
 
 // 네트워크 우선으로 처리할 URL 패턴 (API 요청)
 const NETWORK_FIRST_PATTERNS = [
@@ -52,6 +73,18 @@ self.addEventListener('install', event => {
 });
 
 // ──────────────────────────────────────────────
+// 동적 캐시 크기 제한 (오래된 항목 자동 삭제)
+// ──────────────────────────────────────────────
+async function trimDynamicCache() {
+    const cache = await caches.open(DYNAMIC_CACHE);
+    const keys  = await cache.keys();
+    if (keys.length > DYNAMIC_CACHE_MAX) {
+        const toDelete = keys.slice(0, keys.length - DYNAMIC_CACHE_MAX);
+        await Promise.all(toDelete.map(k => cache.delete(k)));
+    }
+}
+
+// ──────────────────────────────────────────────
 // activate 이벤트: 이전 캐시 삭제 + 클라이언트 알림
 // ──────────────────────────────────────────────
 self.addEventListener('activate', event => {
@@ -67,6 +100,7 @@ self.addEventListener('activate', event => {
                     });
                 return Promise.all(deleteOld);
             })
+            .then(() => trimDynamicCache())
             .then(() => self.clients.claim())
             .then(() => {
                 // 모든 열린 클라이언트에 업데이트 알림 전송
@@ -115,6 +149,7 @@ async function staleWhileRevalidate(request) {
         .then(response => {
             if (response && response.status === 200 && response.type === 'basic') {
                 cache.put(request, response.clone());
+                trimDynamicCache();
             }
             return response;
         })

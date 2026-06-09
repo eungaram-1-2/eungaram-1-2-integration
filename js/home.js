@@ -39,23 +39,31 @@ function renderHome() {
     // 바로가기
     const linksHtml = QUICK_LINKS.map(link => {
         let onClickAttr = '';
-        if (link.audio)      onClickAttr = `onclick="openSchoolSongModal('${link.audio}','${escapeHtml(link.title)}')"`;
-        else if (link.page)  onClickAttr = `onclick="navigate('${link.page}')"`;
-        else                 onClickAttr = `onclick="window.open('${link.url}','_blank','noopener')"`;
-        return `<div class="home-link-row" ${onClickAttr}>
-            <span class="home-link-icon-wrap" style="background:${link.color}1A;color:${link.color}">${link.icon}</span>
+        let extraAttrs = '';
+        if (link.audio) {
+            onClickAttr = `onclick="openSchoolSongModal('${link.audio}','${escapeHtml(link.title)}')"`;
+        } else if (link.page) {
+            onClickAttr = `onclick="navigate('${link.page}')"`;
+        } else {
+            onClickAttr = `onclick="window.open('${link.url}','_blank','noopener')"`;
+            extraAttrs = `aria-label="${escapeHtml(link.title)} (새 탭에서 열기)"`;
+        }
+        return `<button type="button" class="home-link-row" ${onClickAttr} ${extraAttrs}>
+            <span class="home-link-icon-wrap" aria-hidden="true" style="background:${link.color}1A;color:${link.color}">${link.icon}</span>
             <span class="home-link-title-txt">${escapeHtml(link.title)}</span>
-            <span class="home-link-arr">›</span>
-        </div>`;
+            <span class="home-link-arr" aria-hidden="true">›</span>
+        </button>`;
     }).join('');
 
     // 시간표 탭 — 주중이면 오늘, 주말이면 월요일
     const days = ['월', '화', '수', '목', '금'];
     const todayTtIdx = (todayDow >= 1 && todayDow <= 5) ? todayDow - 1 : 0;
-    const ttTabs = days.map((day, i) =>
-        `<button class="home-tt-tab${i === todayTtIdx ? ' active' : ''}"
-            onclick="homeSelectTtDay(${i})">${day}</button>`
-    ).join('');
+    const ttTabs = days.map((day, i) => {
+        const isActive = i === todayTtIdx;
+        return `<button class="home-tt-tab${isActive ? ' active' : ''}"
+            role="tab" aria-selected="${isActive}" tabindex="${isActive ? '0' : '-1'}"
+            onclick="homeSelectTtDay(${i})">${day}요일</button>`;
+    }).join('');
 
     setTimeout(() => {
         loadLunchWidget();
@@ -190,11 +198,29 @@ async function _refreshCalAfterNeis(y, mo, d, dayNames) {
 // 홈 시간표 위젯
 // =============================================
 function homeSelectTtDay(idx) {
-    document.querySelectorAll('.home-tt-tab').forEach((t, i) =>
-        t.classList.toggle('active', i === idx)
-    );
+    document.querySelectorAll('.home-tt-tab').forEach((t, i) => {
+        const isActive = i === idx;
+        t.classList.toggle('active', isActive);
+        t.setAttribute('aria-selected', isActive);
+        t.setAttribute('tabindex', isActive ? '0' : '-1');
+    });
     _renderHomeTtDay(idx);
 }
+
+// 시간표 탭 키보드 네비게이션 (방향키)
+document.addEventListener('keydown', function(e) {
+    if (!e.target.classList.contains('home-tt-tab')) return;
+    const tabs = Array.from(document.querySelectorAll('.home-tt-tab'));
+    const cur  = tabs.indexOf(e.target);
+    let next = -1;
+    if (e.key === 'ArrowRight') next = (cur + 1) % tabs.length;
+    if (e.key === 'ArrowLeft')  next = (cur - 1 + tabs.length) % tabs.length;
+    if (next >= 0) {
+        e.preventDefault();
+        homeSelectTtDay(next);
+        tabs[next].focus();
+    }
+});
 
 function _renderHomeTtDay(dayIdx) {
     const el = document.getElementById('homeTtChips');
